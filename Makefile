@@ -1,6 +1,6 @@
 include config.mk
+debug?=0
 prefix?=/usr/local
-INSTALL?=install
 
 BIN_NAME=rvvbench
 ASTYLE_ARGS=--options=none --suffix=none --quiet \
@@ -8,11 +8,21 @@ ASTYLE_ARGS=--options=none --suffix=none --quiet \
 VERSION_STR=$(BIN_NAME)-${RVVBENCH_VERSION}.${RVVBENCH_SUBVERSION}
 INSTALL_DIR="$(prefix)/bin"
 PKG_CONFIG ?= "pkg-config"
+INSTALL ?= install
 
-
+# debug handling
+ifeq ($(debug),1)
+	# make debug=1
+	# no optimization, with debug symbols install unstripped
+	CFLAGS+=	-O0 -g
+	INSTALLFLAGS=
+else
+	# TODO: measure different settings
+	CFLAGS+=	-O2
+	INSTALLFLAGS=	-s
+endif
 
 CFLAGS+=	-Wall -std=c11 -D_GNU_SOURCE \
-		-g \
 		-I. \
 		-DRVVBENCH_VERSION_STR="\"$(VERSION_STR)\"" \
 		-DRVVBENCH_RVV_SUPPORT=$(RVVBENCH_RVV_SUPPORT)
@@ -57,7 +67,7 @@ clean:
 
 install: all
 		-@mkdir -p $(INSTALL_DIR)
-		$(INSTALL) -m 755 $(BIN_NAME) $(INSTALL_DIR)
+		$(INSTALL) -m 755 $(INSTALLFLAGS) $(BIN_NAME) $(INSTALL_DIR)
 
 install_target: install
 
