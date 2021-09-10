@@ -12,11 +12,13 @@
 
 #include "test_memcpy.h"
 
+#if RVVBENCH_RV_SUPPORT == 1
+extern void memcpy_rv_wlenx4(void *src, void *dest, unsigned int len);
 #if RVVBENCH_RVV_SUPPORT == 1
-extern void memcpy_int_32x4(void *src, void *dest, unsigned int len);
-extern int memcpy_rvv_8(void *src, void *dest, unsigned int len);
+extern void memcpy_rvv_8(void *src, void *dest, unsigned int len);
 extern void memcpy_rvv_32(void *src, void *dest, unsigned int len);
-#endif
+#endif /* RVVBENCH_RVV_SUPPORT == 1 */
+#endif /* RVVBENCH_RV_SUPPORT == 1 */
 
 
 struct data {
@@ -66,15 +68,16 @@ static int subtest_run_sys(subtest_t *subtest)
 }
 
 
-#if RVVBENCH_RVV_SUPPORT == 1
-static int subtest_run_int_32x4(subtest_t *subtest)
+#if RVVBENCH_RV_SUPPORT == 1
+static int subtest_run_rv_wlenx4(subtest_t *subtest)
 {
 	struct data *d = (struct data*)subtest->test->data;
-	memcpy_int_32x4(d->dest, d->src, d->len);
+	memcpy_rv_wlenx4(d->dest, d->src, d->len);
 	return 0;
 }
 
 
+#if RVVBENCH_RVV_SUPPORT == 1
 static int subtest_run_rvv_8(subtest_t *subtest)
 {
 	struct data *d = (struct data*)subtest->test->data;
@@ -90,6 +93,7 @@ static int subtest_run_rvv_32(subtest_t *subtest)
 	return 0;
 }
 #endif /* RVVBENCH_RVV_SUPPORT == 1 */
+#endif /* RVVBENCH_RV_SUPPORT == 1 */
 
 
 static int subtests_add(test_t *test)
@@ -98,7 +102,7 @@ static int subtests_add(test_t *test)
 
 	ret = test_add_subtest(test,
 			       "system",
-			       false,
+			       false, false,
 			       subtest_init,
 			       subtest_run_sys,
 			       subtest_cleanup,
@@ -106,20 +110,21 @@ static int subtests_add(test_t *test)
 	if (ret < 0)
 		return ret;
 
-#if RVVBENCH_RVV_SUPPORT == 1
+#if RVVBENCH_RV_SUPPORT == 1
 	ret = test_add_subtest(test,
-			       "4 32bit int regs",
-			       true,
+			       "4 int regs",
+			       true, false,
 			       subtest_init,
-			       subtest_run_int_32x4,
+			       subtest_run_rv_wlenx4,
 			       subtest_cleanup,
 			       0);
 	if (ret < 0)
 		return ret;
 
+#if RVVBENCH_RVV_SUPPORT == 1
 	ret = test_add_subtest(test,
 			       "rvv 8bit elements",
-			       true,
+			       true, true,
 			       subtest_init,
 			       subtest_run_rvv_8,
 			       subtest_cleanup,
@@ -129,7 +134,7 @@ static int subtests_add(test_t *test)
 
 	ret = test_add_subtest(test,
 			       "rvv 32bit elements",
-			       true,
+			       true, true,
 			       subtest_init,
 			       subtest_run_rvv_32,
 			       subtest_cleanup,
@@ -137,6 +142,7 @@ static int subtests_add(test_t *test)
 	if (ret < 0)
 		return ret;
 #endif /* RVVBENCH_RVV_SUPPORT == 1 */
+#endif /* RVVBENCH_RV_SUPPORT == 1 */
 
 	return 0;
 }

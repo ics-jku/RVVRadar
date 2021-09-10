@@ -6,7 +6,7 @@
 
 
 static subtest_t *subtest_create(
-	const char *name, bool rvv,
+	const char *name, bool rv, bool rvv,
 	test_init_subtest_t init,
 	test_run_subtest_t run,
 	test_cleanup_subtest_t cleanup,
@@ -17,6 +17,7 @@ static subtest_t *subtest_create(
 		return NULL;
 
 	subtest->name = name;
+	subtest->rv = rv;
 	subtest->rvv = rvv;
 	subtest->init = init;
 	subtest->run = run;
@@ -241,14 +242,14 @@ int testset_add_test(testset_t *testset, test_t *test)
 
 int test_add_subtest(
 	test_t *test,
-	const char *name, bool rvv,
+	const char *name, bool rv, bool rvv,
 	test_init_subtest_t init,
 	test_run_subtest_t run,
 	test_cleanup_subtest_t cleanup,
 	unsigned int data_len)
 {
 	subtest_t *subtest = subtest_create(
-				     name, rvv,
+				     name, rv, rvv,
 				     init, run, cleanup,
 				     data_len);
 	if (subtest == NULL)

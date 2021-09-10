@@ -1,10 +1,17 @@
 
 Configuration (config.mk)
 
-RISC-V toolchain with support for vector (binutils)
+RISC-V toolchain
+RVVBENCH_RV_SUPPORT=1
+
+Platform independent -> without RISC-V and vector benchmarks
+RVVBENCH_RV_SUPPORT=0
+
+Only if RVVBENCH_RV_SUPPORT=1
+RISC-V toolchain with support for vector (binutils) (64bit only!)
 RVVBENCH_RVV_SUPPORT=1
 
-Platform independent -> without vector benchmarks
+RISC-V without vector benchmarks
 RVVBENCH_RVV_SUPPORT=0
 
 

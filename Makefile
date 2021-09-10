@@ -25,6 +25,7 @@ endif
 CFLAGS+=	-Wall -std=c11 -D_GNU_SOURCE \
 		-I. \
 		-DRVVBENCH_VERSION_STR="\"$(VERSION_STR)\"" \
+		-DRVVBENCH_RV_SUPPORT=$(RVVBENCH_RV_SUPPORT) \
 		-DRVVBENCH_RVV_SUPPORT=$(RVVBENCH_RVV_SUPPORT)
 LIBS+=
 LDFLAGS+=
@@ -35,10 +36,14 @@ HEADERS := $(wildcard *.h)
 # by ifdefs (RVVBENCH_RVV_SUPPORT) in code.
 C_SOURCES := $(wildcard *.c)
 
-# All assembler code is for RISC-V AND RVV only.
-ifeq ($(RVVBENCH_RVV_SUPPORT),1)
-ASFLAGS += "-march=rv64imafdcv"
-ASM_SOURCES := $(wildcard *.s)
+ifeq ($(RVVBENCH_RV_SUPPORT),1)
+  # All files ending with *_rv.s is for RISC-V
+  ASM_SOURCES := $(wildcard *_rv.s)
+  ifeq ($(RVVBENCH_RVV_SUPPORT),1)
+    ASFLAGS += -march=rv64imafdcv
+    # All files ending with *_rvv.s is for RISC-V Vector extension
+    ASM_SOURCES += $(wildcard *_rvv.s)
+  endif
 else
 ASM_SOURCES :=
 endif

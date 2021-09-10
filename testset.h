@@ -15,7 +15,8 @@ typedef int (*test_cleanup_subtest_t)(struct subtest *subtest);
 typedef struct subtest {
 	const char *name;			// name of the subtest
 	unsigned int index;			// index in subtest list
-	bool rvv;				// is a rvv test
+	bool rv;				// is a RISC-V test
+	bool rvv;				// is a RISC-V vector test
 
 	test_init_subtest_t init;		// called before subtest
 	test_run_subtest_t run;			// subtest function (measured)
@@ -108,7 +109,7 @@ int testset_add_test(testset_t *testset, test_t *test);
  */
 int test_add_subtest(
 	test_t *test,
-	const char *name, bool rvv,
+	const char *name, bool rv, bool rvv,
 	test_init_subtest_t init,
 	test_run_subtest_t run,
 	test_cleanup_subtest_t cleanup,
