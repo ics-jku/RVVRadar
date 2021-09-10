@@ -2,6 +2,7 @@
 #define CHRONO_H
 
 #include <time.h>
+#include <stdio.h>
 
 /*
  * Usage example
@@ -60,5 +61,21 @@ int chrono_start(chrono_t *chrono);
  * return: 0 .. ok; <0 .. error
  */
 int chrono_stop(chrono_t *chrono);
+
+
+/*
+ * print chrono statistics as csv
+ * (count;td...)
+ * return: same as for fprintf
+ */
+int chrono_fprintf_csv(chrono_t *chrono, FILE *out);
+
+
+/*
+ * print chrono statistics human readable
+ * return: same as for fprintf
+ */
+int chrono_fprintf_pretty(chrono_t *chrono, const char *indent, FILE *out);
+
 
 #endif /* CHRONO_H */

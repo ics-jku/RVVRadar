@@ -96,3 +96,37 @@ int chrono_stop(chrono_t *chrono)
 
 	return 0;
 }
+
+
+int chrono_fprintf_csv(chrono_t *chrono, FILE *out)
+{
+	if (chrono == NULL || out == NULL) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	return fprintf(out, "%i;%llu;%llu;%llu",
+		       chrono->count,
+		       chrono->tdmin,
+		       chrono->tdmax,
+		       chrono->tdavg);
+}
+
+
+int chrono_fprintf_pretty(chrono_t *chrono, const char *indent, FILE *out)
+{
+	if (chrono == NULL || out == NULL) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	return fprintf(out,
+		       "%scount: %i\n"
+		       "%smin:   %llu\n"
+		       "%smax:   %llu\n"
+		       "%savg:   %llu\n",
+		       indent, chrono->count,
+		       indent, chrono->tdmin,
+		       indent, chrono->tdmax,
+		       indent, chrono->tdavg);
+}

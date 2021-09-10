@@ -41,13 +41,10 @@ void run_subtest_iterations(subtest_t *subtest, int iterations)
 	printf("done. (%lluus)\n", subtest->chrono.tdsum);
 
 	printf("Summary (type;len;#iterations;min;max;avg)\n");
-	printf("%s;%s;%i;%llu;%llu;%llu\n",
-	       subtest->test->name,
-	       subtest->name,
-	       subtest->chrono.count,
-	       subtest->chrono.tdmin,
-	       subtest->chrono.tdmax,
-	       subtest->chrono.tdavg); /* TODO get len of subtest */
+	printf("%s;%s;", subtest->test->name, subtest->name);
+	chrono_fprintf_csv(&subtest->chrono, stdout);
+
+	chrono_fprintf_pretty(&subtest->chrono, " + ", stdout);
 }
 
 void runtest(test_t *test, int seed, int iterations)
