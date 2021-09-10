@@ -56,7 +56,7 @@ $(BIN_NAME): $(OBJS) $(HEADERS)
 		$(CC) $(OBJS) $(CFLAGS) $(LDFLAGS) $(LIBS) -o $@
 
 check:
-		cppcheck -q -f . ${SOURCES} ${HEADERS}
+		cppcheck -q -f . ${C_SOURCES} ${HEADERS}
 
 style:
 		(PWD=`pwd`; astyle $(ASTYLE_ARGS) $(C_SOURCES) $(HEADERS);)
