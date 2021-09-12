@@ -7,8 +7,8 @@
 #include <errno.h>
 #include <sys/random.h>
 
-#include "testset.h"
-#include "test_memcpy.h"
+#include "bmarkset.h"
+#include "bmark_memcpy.h"
 
 
 
@@ -65,7 +65,7 @@ int memcpytesttest()
 {
 	int ret = 0;
 
-	testset_t *testset = testset_create("rvvbench");
+	testset_t *testset = testset_create("rvvbmark");
 	if (testset == NULL)
 		return -1;
 
@@ -90,9 +90,9 @@ __ret_testset_destroy:
 
 int main(int argc, char **argv)
 {
-	printf("%s (C) 2021 Manfred Schlaegl <manfred.schlaegl@gmx.at>\n", RVVBENCH_VERSION_STR);
+	printf("%s (C) 2021 Manfred Schlaegl <manfred.schlaegl@gmx.at>\n", RVVBMARK_VERSION_STR);
 	printf("RISC-V RVV support is ");
-#if RVVBENCH_RVV_SUPPORT == 1
+#if RVVBMARK_RVV_SUPPORT == 1
 	printf("enabled\n");
 #else
 	printf("disabled\n");

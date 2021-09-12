@@ -2,10 +2,10 @@ include config.mk
 debug?=0
 prefix?=/usr/local
 
-BIN_NAME=rvvbench
+BIN_NAME=rvvbmark
 ASTYLE_ARGS=--options=none --suffix=none --quiet \
 	    --style=linux --indent=force-tab=8 --pad-header --pad-oper --indent-preprocessor
-VERSION_STR=$(BIN_NAME)-${RVVBENCH_VERSION}.${RVVBENCH_SUBVERSION}
+VERSION_STR=$(BIN_NAME)-${RVVBMARK_VERSION}.${RVVBMARK_SUBVERSION}
 INSTALL_DIR="$(prefix)/bin"
 PKG_CONFIG ?= "pkg-config"
 INSTALL ?= install
@@ -24,22 +24,22 @@ endif
 
 CFLAGS+=	-Wall -std=c11 -D_GNU_SOURCE \
 		-I. \
-		-DRVVBENCH_VERSION_STR="\"$(VERSION_STR)\"" \
-		-DRVVBENCH_RV_SUPPORT=$(RVVBENCH_RV_SUPPORT) \
-		-DRVVBENCH_RVV_SUPPORT=$(RVVBENCH_RVV_SUPPORT)
+		-DRVVBMARK_VERSION_STR="\"$(VERSION_STR)\"" \
+		-DRVVBMARK_RV_SUPPORT=$(RVVBMARK_RV_SUPPORT) \
+		-DRVVBMARK_RVV_SUPPORT=$(RVVBMARK_RVV_SUPPORT)
 LIBS+=
 LDFLAGS+=
 
 HEADERS := $(wildcard *.h)
 
 # Generally all C code is platform independent. Special cases are handled
-# by ifdefs (RVVBENCH_RVV_SUPPORT) in code.
+# by ifdefs (RVVBMARK_RVV_SUPPORT) in code.
 C_SOURCES := $(wildcard *.c)
 
-ifeq ($(RVVBENCH_RV_SUPPORT),1)
+ifeq ($(RVVBMARK_RV_SUPPORT),1)
   # All files ending with *_rv.s is for RISC-V
   ASM_SOURCES := $(wildcard *_rv.s)
-  ifeq ($(RVVBENCH_RVV_SUPPORT),1)
+  ifeq ($(RVVBMARK_RVV_SUPPORT),1)
     ASFLAGS += -march=rv64imafdcv
     # All files ending with *_rvv.s is for RISC-V Vector extension
     ASM_SOURCES += $(wildcard *_rvv.s)

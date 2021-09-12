@@ -2,17 +2,17 @@
 Configuration (config.mk)
 
 RISC-V toolchain
-RVVBENCH_RV_SUPPORT=1
+RVVBMARK_RV_SUPPORT=1
 
 Platform independent -> without RISC-V and vector benchmarks
-RVVBENCH_RV_SUPPORT=0
+RVVBMARK_RV_SUPPORT=0
 
-Only if RVVBENCH_RV_SUPPORT=1
+Only if RVVBMARK_RV_SUPPORT=1
 RISC-V toolchain with support for vector (binutils) (64bit only!)
-RVVBENCH_RVV_SUPPORT=1
+RVVBMARK_RVV_SUPPORT=1
 
 RISC-V without vector benchmarks
-RVVBENCH_RVV_SUPPORT=0
+RVVBMARK_RVV_SUPPORT=0
 
 
 Build & Install
@@ -33,15 +33,15 @@ make debug=1
 Build for debug and install in /usr/local/bin
 make debug=1 install
 
-Build for debug and install in /opt/rvvbench/bin
-make prefix=/opt/rvvbench debug=1 install
+Build for debug and install in /opt/rvvbmark/bin
+make prefix=/opt/rvvbmark debug=1 install
 
 Build without debug
 make debug=0
 or
 make
 
-Build without debug and install in /opt/rvvbench/bin
-make prefix=/opt/rvvbench debug=0 install
+Build without debug and install in /opt/rvvbmark/bin
+make prefix=/opt/rvvbmark debug=0 install
 or
-make prefix=/opt/rvvbench install
+make prefix=/opt/rvvbmark install

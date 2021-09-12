@@ -2,7 +2,7 @@
 #include <stdbool.h>
 #include <errno.h>
 
-#include "testset.h"
+#include "bmarkset.h"
 
 
 static subtest_t *subtest_create(

@@ -10,15 +10,15 @@
 #include <sys/random.h>
 #include <time.h>
 
-#include "test_memcpy.h"
+#include "bmark_memcpy.h"
 
-#if RVVBENCH_RV_SUPPORT == 1
+#if RVVBMARK_RV_SUPPORT == 1
 extern void memcpy_rv_wlenx4(void *src, void *dest, unsigned int len);
-#if RVVBENCH_RVV_SUPPORT == 1
+#if RVVBMARK_RVV_SUPPORT == 1
 extern void memcpy_rvv_8(void *src, void *dest, unsigned int len);
 extern void memcpy_rvv_32(void *src, void *dest, unsigned int len);
-#endif /* RVVBENCH_RVV_SUPPORT == 1 */
-#endif /* RVVBENCH_RV_SUPPORT == 1 */
+#endif /* RVVBMARK_RVV_SUPPORT == 1 */
+#endif /* RVVBMARK_RV_SUPPORT == 1 */
 
 
 struct data {
@@ -68,7 +68,7 @@ static int subtest_run_sys(subtest_t *subtest)
 }
 
 
-#if RVVBENCH_RV_SUPPORT == 1
+#if RVVBMARK_RV_SUPPORT == 1
 static int subtest_run_rv_wlenx4(subtest_t *subtest)
 {
 	struct data *d = (struct data*)subtest->test->data;
@@ -77,7 +77,7 @@ static int subtest_run_rv_wlenx4(subtest_t *subtest)
 }
 
 
-#if RVVBENCH_RVV_SUPPORT == 1
+#if RVVBMARK_RVV_SUPPORT == 1
 static int subtest_run_rvv_8(subtest_t *subtest)
 {
 	struct data *d = (struct data*)subtest->test->data;
@@ -92,8 +92,8 @@ static int subtest_run_rvv_32(subtest_t *subtest)
 	memcpy_rvv_32(d->dest, d->src, d->len);
 	return 0;
 }
-#endif /* RVVBENCH_RVV_SUPPORT == 1 */
-#endif /* RVVBENCH_RV_SUPPORT == 1 */
+#endif /* RVVBMARK_RVV_SUPPORT == 1 */
+#endif /* RVVBMARK_RV_SUPPORT == 1 */
 
 
 static int subtests_add(test_t *test)
@@ -110,7 +110,7 @@ static int subtests_add(test_t *test)
 	if (ret < 0)
 		return ret;
 
-#if RVVBENCH_RV_SUPPORT == 1
+#if RVVBMARK_RV_SUPPORT == 1
 	ret = test_add_subtest(test,
 			       "4 int regs",
 			       true, false,
@@ -121,7 +121,7 @@ static int subtests_add(test_t *test)
 	if (ret < 0)
 		return ret;
 
-#if RVVBENCH_RVV_SUPPORT == 1
+#if RVVBMARK_RVV_SUPPORT == 1
 	ret = test_add_subtest(test,
 			       "rvv 8bit elements",
 			       true, true,
@@ -141,8 +141,8 @@ static int subtests_add(test_t *test)
 			       0);
 	if (ret < 0)
 		return ret;
-#endif /* RVVBENCH_RVV_SUPPORT == 1 */
-#endif /* RVVBENCH_RV_SUPPORT == 1 */
+#endif /* RVVBMARK_RVV_SUPPORT == 1 */
+#endif /* RVVBMARK_RV_SUPPORT == 1 */
 
 	return 0;
 }
