@@ -25,63 +25,63 @@ void dump_field(char *f, int len)
 	printf("\n");
 }
 
-void run_subtest_iterations(subtest_t *subtest, int iterations)
+void run_subbmark_iterations(subbmark_t *subbmark, int iterations)
 {
 	for (int i = 0; i < iterations; i++) {
 		printf("iteration %i: ", i);
-		if (test_subtest_exec(subtest, i) < 0) {
+		if (bmark_subbmark_exec(subbmark, i) < 0) {
 			printf("FAIL!\n");
 			//dump_field(src, len);
 			//dump_field(dest, len);
 			continue;
 		}
 
-		printf("OK (%lluus)\n", subtest->chrono.tdlast);
+		printf("OK (%lluus)\n", subbmark->chrono.tdlast);
 	}
-	printf("done. (%lluus)\n", subtest->chrono.tdsum);
+	printf("done. (%lluus)\n", subbmark->chrono.tdsum);
 
 	printf("Summary (type;len;#iterations;min;max;avg)\n");
-	printf("%s;%s;", subtest->test->name, subtest->name);
-	chrono_fprintf_csv(&subtest->chrono, stdout);
+	printf("%s;%s;", subbmark->bmark->name, subbmark->name);
+	chrono_fprintf_csv(&subbmark->chrono, stdout);
 
-	chrono_fprintf_pretty(&subtest->chrono, " + ", stdout);
+	chrono_fprintf_pretty(&subbmark->chrono, " + ", stdout);
 }
 
-void runtest(test_t *test, int seed, int iterations)
+void runbmark(bmark_t *bmark, int seed, int iterations)
 {
-	test_init(test, seed);
+	bmark_init(bmark, seed);
 
 	for (
-		subtest_t *s = test_get_first_subtest(test);
+		subbmark_t *s = bmark_get_first_subbmark(bmark);
 		s != NULL;
-		s = test_get_next_subtest(s)
+		s = bmark_get_next_subbmark(s)
 	)
-		run_subtest_iterations(s, iterations);
+		run_subbmark_iterations(s, iterations);
 
-	test_cleanup(test);
+	bmark_cleanup(bmark);
 }
 
-int memcpytesttest()
+int memcpybmarkbmark()
 {
 	int ret = 0;
 
-	testset_t *testset = testset_create("rvvbmark");
-	if (testset == NULL)
+	bmarkset_t *bmarkset = bmarkset_create("rvvbmark");
+	if (bmarkset == NULL)
 		return -1;
 
-	if (test_memcpy_add(testset, 1024 * 1024 * 10 + 1) < 0) {
-		goto __ret_testset_destroy;
+	if (bmark_memcpy_add(bmarkset, 1024 * 1024 * 10 + 1) < 0) {
+		goto __ret_bmarkset_destroy;
 		return -1;
 	}
 
-	testset_reset(testset);
+	bmarkset_reset(bmarkset);
 
-	runtest(testset->tests_head, 0, 10);
+	runbmark(bmarkset->bmarks_head, 0, 10);
 
 	ret = 0;
 
-__ret_testset_destroy:
-	testset_destroy(testset);
+__ret_bmarkset_destroy:
+	bmarkset_destroy(bmarkset);
 	return ret;
 }
 
@@ -99,7 +99,7 @@ int main(int argc, char **argv)
 #endif
 
 
-	memcpytesttest();
+	memcpybmarkbmark();
 
 	return 0;
 }

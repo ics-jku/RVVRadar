@@ -41,18 +41,18 @@ static void dump_field(char *f, int len)
 }
 
 
-/* cleanup dest array before test */
-static int subtest_init(subtest_t *subtest, int iteration)
+/* reset dest array before benchmark run */
+static int subbmark_init(subbmark_t *subbmark, int iteration)
 {
-	struct data *d = (struct data*)subtest->test->data;
+	struct data *d = (struct data*)subbmark->bmark->data;
 	memset(d->dest, 0, d->len);
 	return 0;
 }
 
 
-static int subtest_cleanup(subtest_t *subtest)
+static int subbmark_cleanup(subbmark_t *subbmark)
 {
-	struct data *d = (struct data*)subtest->test->data;
+	struct data *d = (struct data*)subbmark->bmark->data;
 	int ret = memcmp(d->dest, d->src, d->len);
 	if (!ret)
 		return 0;
@@ -60,35 +60,35 @@ static int subtest_cleanup(subtest_t *subtest)
 }
 
 
-static int subtest_run_sys(subtest_t *subtest)
+static int subbmark_run_sys(subbmark_t *subbmark)
 {
-	struct data *d = (struct data*)subtest->test->data;
+	struct data *d = (struct data*)subbmark->bmark->data;
 	memcpy(d->dest, d->src, d->len);
 	return 0;
 }
 
 
 #if RVVBMARK_RV_SUPPORT == 1
-static int subtest_run_rv_wlenx4(subtest_t *subtest)
+static int subbmark_run_rv_wlenx4(subbmark_t *subbmark)
 {
-	struct data *d = (struct data*)subtest->test->data;
+	struct data *d = (struct data*)subbmark->bmark->data;
 	memcpy_rv_wlenx4(d->dest, d->src, d->len);
 	return 0;
 }
 
 
 #if RVVBMARK_RVV_SUPPORT == 1
-static int subtest_run_rvv_8(subtest_t *subtest)
+static int subbmark_run_rvv_8(subbmark_t *subbmark)
 {
-	struct data *d = (struct data*)subtest->test->data;
+	struct data *d = (struct data*)subbmark->bmark->data;
 	memcpy_rvv_8(d->dest, d->src, d->len);
 	return 0;
 }
 
 
-static int subtest_run_rvv_32(subtest_t *subtest)
+static int subbmark_run_rvv_32(subbmark_t *subbmark)
 {
-	struct data *d = (struct data*)subtest->test->data;
+	struct data *d = (struct data*)subbmark->bmark->data;
 	memcpy_rvv_32(d->dest, d->src, d->len);
 	return 0;
 }
@@ -96,49 +96,49 @@ static int subtest_run_rvv_32(subtest_t *subtest)
 #endif /* RVVBMARK_RV_SUPPORT == 1 */
 
 
-static int subtests_add(test_t *test)
+static int subbmarks_add(bmark_t *bmark)
 {
 	int ret;
 
-	ret = test_add_subtest(test,
-			       "system",
-			       false, false,
-			       subtest_init,
-			       subtest_run_sys,
-			       subtest_cleanup,
-			       0);
+	ret = bmark_add_subbmark(bmark,
+				 "system",
+				 false, false,
+				 subbmark_init,
+				 subbmark_run_sys,
+				 subbmark_cleanup,
+				 0);
 	if (ret < 0)
 		return ret;
 
 #if RVVBMARK_RV_SUPPORT == 1
-	ret = test_add_subtest(test,
-			       "4 int regs",
-			       true, false,
-			       subtest_init,
-			       subtest_run_rv_wlenx4,
-			       subtest_cleanup,
-			       0);
+	ret = bmark_add_subbmark(bmark,
+				 "4 int regs",
+				 true, false,
+				 subbmark_init,
+				 subbmark_run_rv_wlenx4,
+				 subbmark_cleanup,
+				 0);
 	if (ret < 0)
 		return ret;
 
 #if RVVBMARK_RVV_SUPPORT == 1
-	ret = test_add_subtest(test,
-			       "rvv 8bit elements",
-			       true, true,
-			       subtest_init,
-			       subtest_run_rvv_8,
-			       subtest_cleanup,
-			       0);
+	ret = bmark_add_subbmark(bmark,
+				 "rvv 8bit elements",
+				 true, true,
+				 subbmark_init,
+				 subbmark_run_rvv_8,
+				 subbmark_cleanup,
+				 0);
 	if (ret < 0)
 		return ret;
 
-	ret = test_add_subtest(test,
-			       "rvv 32bit elements",
-			       true, true,
-			       subtest_init,
-			       subtest_run_rvv_32,
-			       subtest_cleanup,
-			       0);
+	ret = bmark_add_subbmark(bmark,
+				 "rvv 32bit elements",
+				 true, true,
+				 subbmark_init,
+				 subbmark_run_rvv_32,
+				 subbmark_cleanup,
+				 0);
 	if (ret < 0)
 		return ret;
 #endif /* RVVBMARK_RVV_SUPPORT == 1 */
@@ -148,9 +148,9 @@ static int subtests_add(test_t *test)
 }
 
 
-static int init(struct test *test, int seed)
+static int init(struct bmark *bmark, int seed)
 {
-	struct data *d = (struct data*)test->data;
+	struct data *d = (struct data*)bmark->data;
 	int ret = 0;
 
 	/* alloc */
@@ -183,9 +183,9 @@ __err_src:
 }
 
 
-static int cleanup(struct test *test)
+static int cleanup(struct bmark *bmark)
 {
-	struct data *d = (struct data*)test->data;
+	struct data *d = (struct data*)bmark->data;
 	if (d == NULL)
 		return 0;
 	free(d->src);
@@ -194,22 +194,22 @@ static int cleanup(struct test *test)
 }
 
 
-int test_memcpy_add(testset_t *testset, unsigned int len)
+int bmark_memcpy_add(bmarkset_t *bmarkset, unsigned int len)
 {
-	test_t *test = test_create("memcpy", init, cleanup, sizeof(struct data));
-	if (test == NULL)
+	bmark_t *bmark = bmark_create("memcpy", init, cleanup, sizeof(struct data));
+	if (bmark == NULL)
 		return -1;
 
-	struct data *d = (struct data*)test->data;
+	struct data *d = (struct data*)bmark->data;
 	d->len = len;
 
-	if (subtests_add(test) < 0) {
-		test_destroy(test);
+	if (subbmarks_add(bmark) < 0) {
+		bmark_destroy(bmark);
 		return -1;
 	}
 
-	if (testset_add_test(testset, test) < 0) {
-		test_destroy(test);
+	if (bmarkset_add_bmark(bmarkset, bmark) < 0) {
+		bmark_destroy(bmark);
 		return -1;
 	}
 

@@ -5,68 +5,68 @@
 #include "bmarkset.h"
 
 
-static subtest_t *subtest_create(
+static subbmark_t *subbmark_create(
 	const char *name, bool rv, bool rvv,
-	test_init_subtest_t init,
-	test_run_subtest_t run,
-	test_cleanup_subtest_t cleanup,
+	bmark_init_subbmark_t init,
+	bmark_run_subbmark_t run,
+	bmark_cleanup_subbmark_t cleanup,
 	int data_len)
 {
-	subtest_t *subtest = calloc(1, sizeof(subtest_t));
-	if (subtest == NULL)
+	subbmark_t *subbmark = calloc(1, sizeof(subbmark_t));
+	if (subbmark == NULL)
 		return NULL;
 
-	subtest->name = name;
-	subtest->rv = rv;
-	subtest->rvv = rvv;
-	subtest->init = init;
-	subtest->run = run;
-	subtest->cleanup = cleanup;
+	subbmark->name = name;
+	subbmark->rv = rv;
+	subbmark->rvv = rvv;
+	subbmark->init = init;
+	subbmark->run = run;
+	subbmark->cleanup = cleanup;
 
 	/* alloc optional data area */
 	if (data_len == 0)
-		return subtest;
-	subtest->data = calloc(1, data_len);
-	if (subtest->data == NULL) {
-		free(subtest);
+		return subbmark;
+	subbmark->data = calloc(1, data_len);
+	if (subbmark->data == NULL) {
+		free(subbmark);
 		return NULL;
 	}
 
-	return subtest;
+	return subbmark;
 }
 
 
-static void subtest_destroy(subtest_t *subtest)
+static void subbmark_destroy(subbmark_t *subbmark)
 {
-	if (subtest == NULL)
+	if (subbmark == NULL)
 		return;
 
 	/* free optional data area */
-	if (subtest->data)
-		free(subtest->data);
+	if (subbmark->data)
+		free(subbmark->data);
 
-	free(subtest);
+	free(subbmark);
 }
 
 
-static void subtest_reset(subtest_t *subtest)
+static void subbmark_reset(subbmark_t *subbmark)
 {
-	if (subtest == NULL)
+	if (subbmark == NULL)
 		return;
-	chrono_reset(&subtest->chrono);
+	chrono_reset(&subbmark->chrono);
 }
 
 
-static void test_reset(test_t *test)
+static void bmark_reset(bmark_t *bmark)
 {
-	if (test == NULL)
+	if (bmark == NULL)
 		return;
 	for (
-		subtest_t *s = test->subtests_head;
+		subbmark_t *s = bmark->subbmarks_head;
 		s != NULL;
 		s = s->next
 	)
-		subtest_reset(s);
+		subbmark_reset(s);
 }
 
 
@@ -76,49 +76,49 @@ static void test_reset(test_t *test)
  * wrappers for function pointers
  */
 
-static int test_init_subtest(subtest_t *subtest, int iteration)
+static int bmark_init_subbmark(subbmark_t *subbmark, int iteration)
 {
-	if (subtest == NULL) {
+	if (subbmark == NULL) {
 		errno = EINVAL;
 		return -1;
 	}
 
 	/* nothing todo? */
-	if (subtest->init == NULL)
+	if (subbmark->init == NULL)
 		return 0;
 
-	return subtest->init(subtest, iteration);
+	return subbmark->init(subbmark, iteration);
 }
 
 
-static int test_run_subtest(subtest_t *subtest)
+static int bmark_run_subbmark(subbmark_t *subbmark)
 {
-	if (subtest == NULL) {
+	if (subbmark == NULL) {
 		errno = EINVAL;
 		return -1;
 	}
 
 	/* nothing todo? */
-	if (subtest->run == NULL)
+	if (subbmark->run == NULL)
 		return 0;
 
-	return subtest->run(subtest);
+	return subbmark->run(subbmark);
 
 }
 
 
-static int test_cleanup_subtest(subtest_t *subtest)
+static int bmark_cleanup_subbmark(subbmark_t *subbmark)
 {
-	if (subtest == NULL) {
+	if (subbmark == NULL) {
 		errno = EINVAL;
 		return -1;
 	}
 
 	/* nothing todo? */
-	if (subtest->cleanup == NULL)
+	if (subbmark->cleanup == NULL)
 		return 0;
 
-	return subtest->cleanup(subtest);
+	return subbmark->cleanup(subbmark);
 }
 
 
@@ -130,218 +130,218 @@ static int test_cleanup_subtest(subtest_t *subtest)
 
 
 /*
- * allocated and create a new testset
+ * allocated and create a new bmarkset
  */
-testset_t *testset_create(const char *name)
+bmarkset_t *bmarkset_create(const char *name)
 {
-	testset_t *testset = calloc(1, sizeof(testset_t));
-	if (testset == NULL)
+	bmarkset_t *bmarkset = calloc(1, sizeof(bmarkset_t));
+	if (bmarkset == NULL)
 		return NULL;
 
-	testset->name = name;
+	bmarkset->name = name;
 
-	return testset;
+	return bmarkset;
 }
 
-void testset_destroy(testset_t *testset)
+void bmarkset_destroy(bmarkset_t *bmarkset)
 {
-	if (testset == NULL)
+	if (bmarkset == NULL)
 		return;
-	test_t *t = testset->tests_head;
+	bmark_t *t = bmarkset->bmarks_head;
 	while (t != NULL) {
-		test_t *n = t->next;
-		test_destroy(t);
+		bmark_t *n = t->next;
+		bmark_destroy(t);
 		t = n;
 	}
-	free(testset);
+	free(bmarkset);
 }
 
 
-test_t *test_create(
+bmark_t *bmark_create(
 	const char *name,
-	test_init_test_t init,
-	test_cleanup_test_t cleanup,
+	bmark_init_bmark_t init,
+	bmark_cleanup_bmark_t cleanup,
 	unsigned int data_len)
 {
-	test_t *test = calloc(1, sizeof(test_t));
-	if (test == NULL)
+	bmark_t *bmark = calloc(1, sizeof(bmark_t));
+	if (bmark == NULL)
 		return NULL;
 
-	test->name = name;
-	test->init = init;
-	test->cleanup = cleanup;
+	bmark->name = name;
+	bmark->init = init;
+	bmark->cleanup = cleanup;
 
 	/* alloc optional data area */
 	if (data_len == 0)
-		return test;
-	test->data = calloc(1, data_len);
-	if (test->data == NULL) {
-		free(test);
+		return bmark;
+	bmark->data = calloc(1, data_len);
+	if (bmark->data == NULL) {
+		free(bmark);
 		return NULL;
 	}
 
-	return test;
+	return bmark;
 }
 
 
-void testset_reset(testset_t *testset)
+void bmarkset_reset(bmarkset_t *bmarkset)
 {
-	if (testset == NULL)
+	if (bmarkset == NULL)
 		return;
 	for (
-		test_t *t = testset->tests_head;
+		bmark_t *t = bmarkset->bmarks_head;
 		t != NULL;
 		t = t->next
 	)
-		test_reset(t);
+		bmark_reset(t);
 }
 
 
-void test_destroy(test_t *test)
+void bmark_destroy(bmark_t *bmark)
 {
-	if (test == NULL)
+	if (bmark == NULL)
 		return;
-	subtest_t *s = test->subtests_head;
+	subbmark_t *s = bmark->subbmarks_head;
 	while (s != NULL) {
-		subtest_t *n = s->next;
-		subtest_destroy(s);
+		subbmark_t *n = s->next;
+		subbmark_destroy(s);
 		s = n;
 	}
 
 	/* free optional data area */
-	if (test->data)
-		free(test->data);
+	if (bmark->data)
+		free(bmark->data);
 
-	free(test);
+	free(bmark);
 }
 
 
-int testset_add_test(testset_t *testset, test_t *test)
+int bmarkset_add_bmark(bmarkset_t *bmarkset, bmark_t *bmark)
 {
-	if (testset == NULL || test == NULL) {
+	if (bmarkset == NULL || bmark == NULL) {
 		errno = EINVAL;
 		return -1;
 	}
 
 	/* add to link list */
-	test->index = testset->tests_len;
-	if (testset->tests_tail == NULL)
+	bmark->index = bmarkset->bmarks_len;
+	if (bmarkset->bmarks_tail == NULL)
 		/* first element */
-		testset->tests_head = test;
+		bmarkset->bmarks_head = bmark;
 	else
-		testset->tests_tail->next = test;
-	testset->tests_tail = test;
-	testset->tests_len++;
+		bmarkset->bmarks_tail->next = bmark;
+	bmarkset->bmarks_tail = bmark;
+	bmarkset->bmarks_len++;
 
-	/* link test (parent) */
-	test->testset = testset;
+	/* link bmark (parent) */
+	bmark->bmarkset = bmarkset;
 
 	return 0;
 }
 
 
-int test_add_subtest(
-	test_t *test,
+int bmark_add_subbmark(
+	bmark_t *bmark,
 	const char *name, bool rv, bool rvv,
-	test_init_subtest_t init,
-	test_run_subtest_t run,
-	test_cleanup_subtest_t cleanup,
+	bmark_init_subbmark_t init,
+	bmark_run_subbmark_t run,
+	bmark_cleanup_subbmark_t cleanup,
 	unsigned int data_len)
 {
-	subtest_t *subtest = subtest_create(
-				     name, rv, rvv,
-				     init, run, cleanup,
-				     data_len);
-	if (subtest == NULL)
+	subbmark_t *subbmark = subbmark_create(
+				       name, rv, rvv,
+				       init, run, cleanup,
+				       data_len);
+	if (subbmark == NULL)
 		return -1;
 
 	/* add to link list */
-	subtest->index = test->subtests_len;
-	if (test->subtests_tail == NULL)
+	subbmark->index = bmark->subbmarks_len;
+	if (bmark->subbmarks_tail == NULL)
 		/* first element */
-		test->subtests_head = subtest;
+		bmark->subbmarks_head = subbmark;
 	else
-		test->subtests_tail->next = subtest;
-	test->subtests_tail = subtest;
-	test->subtests_len++;
+		bmark->subbmarks_tail->next = subbmark;
+	bmark->subbmarks_tail = subbmark;
+	bmark->subbmarks_len++;
 
-	/* link test (parent) */
-	subtest->test = test;
+	/* link bmark (parent) */
+	subbmark->bmark = bmark;
 
 	return 0;
 }
 
 
-int test_init(test_t *test, int seed)
+int bmark_init(bmark_t *bmark, int seed)
 {
-	if (test == NULL) {
+	if (bmark == NULL) {
 		errno = ENODEV;
 		return -1;
 	}
 
 	/* nothing todo? */
-	if (test->init == NULL)
+	if (bmark->init == NULL)
 		return 0;
 
-	return test->init(test, seed);
+	return bmark->init(bmark, seed);
 }
 
 
-int test_cleanup(test_t *test)
+int bmark_cleanup(bmark_t *bmark)
 {
-	if (test == NULL) {
+	if (bmark == NULL) {
 		errno = EINVAL;
 		return -1;
 	}
 
 	/* nothing todo? */
-	if (test->cleanup == NULL)
+	if (bmark->cleanup == NULL)
 		return 0;
 
-	return test->cleanup(test);
+	return bmark->cleanup(bmark);
 }
 
 
-subtest_t *test_get_first_subtest(test_t *test)
+subbmark_t *bmark_get_first_subbmark(bmark_t *bmark)
 {
-	if (test == NULL) {
+	if (bmark == NULL) {
 		errno = EINVAL;
 		return NULL;
 	}
 
-	return test->subtests_head;
+	return bmark->subbmarks_head;
 }
 
 
-subtest_t *test_get_next_subtest(subtest_t *subtest)
+subbmark_t *bmark_get_next_subbmark(subbmark_t *subbmark)
 {
-	if (subtest == NULL) {
+	if (subbmark == NULL) {
 		errno = EINVAL;
 		return NULL;
 	}
 
-	return subtest->next;
+	return subbmark->next;
 }
 
 
-int test_subtest_exec(subtest_t *subtest, int iteration)
+int bmark_subbmark_exec(subbmark_t *subbmark, int iteration)
 {
 	int ret = 0;
 
 	/* init run */
-	ret = test_init_subtest(subtest, iteration);
+	ret = bmark_init_subbmark(subbmark, iteration);
 	if (ret < 0)
 		return -1;
 
 	/* run and measure */
-	chrono_start(&subtest->chrono);
-	ret = test_run_subtest(subtest);
+	chrono_start(&subbmark->chrono);
+	ret = bmark_run_subbmark(subbmark);
 	if (ret < 0)
 		return -1;
-	chrono_stop(&subtest->chrono);
+	chrono_stop(&subbmark->chrono);
 
 	/* cleanup run */
-	ret = test_cleanup_subtest(subtest);
+	ret = bmark_cleanup_subbmark(subbmark);
 	if (ret < 0)
 		return -1;
 

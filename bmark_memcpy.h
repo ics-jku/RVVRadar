@@ -1,3 +1,8 @@
+#ifndef BMARK_MEMCPY_H
+#define BMARK_MEMCPY_H
+
 #include "bmarkset.h"
 
-int test_memcpy_add(testset_t *testset, unsigned int len);
+int bmark_memcpy_add(bmarkset_t *bmarkset, unsigned int len);
+
+#endif /* BMARK_MEMCPY_H */

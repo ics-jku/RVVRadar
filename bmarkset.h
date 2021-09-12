@@ -1,125 +1,125 @@
-#ifndef TESTSET_H
-#define TESTSET_H
+#ifndef BMARKSET_H
+#define BMARKSET_H
 
 #include <stdbool.h>
 
 #include "chrono.h"
 
 
-struct subtest;
-typedef int (*test_init_subtest_t)(struct subtest *subtest, int iteration);
-typedef int (*test_run_subtest_t)(struct subtest *subtest);
-typedef int (*test_cleanup_subtest_t)(struct subtest *subtest);
+struct subbmark;
+typedef int (*bmark_init_subbmark_t)(struct subbmark *subbmark, int iteration);
+typedef int (*bmark_run_subbmark_t)(struct subbmark *subbmark);
+typedef int (*bmark_cleanup_subbmark_t)(struct subbmark *subbmark);
 
 
-typedef struct subtest {
-	const char *name;			// name of the subtest
-	unsigned int index;			// index in subtest list
-	bool rv;				// is a RISC-V test
-	bool rvv;				// is a RISC-V vector test
+typedef struct subbmark {
+	const char *name;			// name of the subbmark
+	unsigned int index;			// index in subbmark list
+	bool rv;				// is a RISC-V bmark
+	bool rvv;				// is a RISC-V vector bmark
 
-	test_init_subtest_t init;		// called before subtest
-	test_run_subtest_t run;			// subtest function (measured)
-	test_cleanup_subtest_t cleanup;		// called after subtest TODO: cleanup + check!
+	bmark_init_subbmark_t init;		// called before subbmark
+	bmark_run_subbmark_t run;		// subbmark function (measured)
+	bmark_cleanup_subbmark_t cleanup;	// called after subbmark TODO: cleanup + check!
 
-	struct test *test;			// parent test
-	struct subtest *next;			// next in subtest list
+	struct bmark *bmark;			// parent bmark
+	struct subbmark *next;			// next in subbmark list
 
 	chrono_t chrono;			// chrono (including result statistics)
 
-	void *data;				// optional data for the subtest
-} subtest_t;
+	void *data;				// optional data for the subbmark
+} subbmark_t;
 
 
-struct test;
-typedef int (*test_init_test_t)(struct test *test, int seed);
-typedef int (*test_cleanup_test_t)(struct test *test);
+struct bmark;
+typedef int (*bmark_init_bmark_t)(struct bmark *bmark, int seed);
+typedef int (*bmark_cleanup_bmark_t)(struct bmark *bmark);
 
-typedef struct test {
-	const char *name;			// name of the test
-	unsigned int index;			// index in test list
+typedef struct bmark {
+	const char *name;			// name of the bmark
+	unsigned int index;			// index in bmark list
 
-	// linked list of subtests
-	struct subtest *subtests_head;
-	struct subtest *subtests_tail;
-	unsigned int subtests_len;
+	// linked list of subbmarks
+	struct subbmark *subbmarks_head;
+	struct subbmark *subbmarks_tail;
+	unsigned int subbmarks_len;
 
-	test_init_test_t init;			// called before test
-	test_cleanup_test_t cleanup;		// called after test
+	bmark_init_bmark_t init;		// called before bmark
+	bmark_cleanup_bmark_t cleanup;		// called after bmark
 
-	struct testset *testset;		// parent testset
-	struct test *next;			// next in test list
+	struct bmarkset *bmarkset;		// parent bmarkset
+	struct bmark *next;			// next in bmark list
 
-	void *data;				// optional data for the test
-} test_t;
+	void *data;				// optional data for the bmark
+} bmark_t;
 
 
-typedef struct testset {
+typedef struct bmarkset {
 	const char *name;
 
-	// linked list of subtests
-	struct test *tests_head;
-	struct test *tests_tail;
-	unsigned int tests_len;
-} testset_t;
+	// linked list of subbmarks
+	struct bmark *bmarks_head;
+	struct bmark *bmarks_tail;
+	unsigned int bmarks_len;
+} bmarkset_t;
 
 
 /*
- * allocated and create a new testset
+ * allocated and create a new bmarkset
  */
-testset_t *testset_create(const char *name);
+bmarkset_t *bmarkset_create(const char *name);
 
 
 /*
- * reset all tests
+ * reset all bmarks
  */
-void testset_reset(testset_t *testset);
+void bmarkset_reset(bmarkset_t *bmarkset);
 
 
 /*
- * destroy the testset
+ * destroy the bmarkset
  */
-void testset_destroy(testset_t *testset);
+void bmarkset_destroy(bmarkset_t *bmarkset);
 
 
 /*
- * create a test
- * handling of optional given data (free) is handled by test!
+ * create a bmark
+ * handling of optional given data (free) is handled by bmark!
  */
-test_t *test_create(
+bmark_t *bmark_create(
 	const char *name,
-	test_init_test_t init,
-	test_cleanup_test_t cleanup,
+	bmark_init_bmark_t init,
+	bmark_cleanup_bmark_t cleanup,
 	unsigned int data_len);
 
 
 /*
- * destroy the test
+ * destroy the bmark
  * (data will also freed here)
  */
-void test_destroy(test_t *test);
+void bmark_destroy(bmark_t *bmark);
 
 
-int testset_add_test(testset_t *testset, test_t *test);
+int bmarkset_add_bmark(bmarkset_t *bmarkset, bmark_t *bmark);
 
 
 /*
- * allocated and create a new test
+ * allocated and create a new bmark
  * returns NULL on error
  */
-int test_add_subtest(
-	test_t *test,
+int bmark_add_subbmark(
+	bmark_t *bmark,
 	const char *name, bool rv, bool rvv,
-	test_init_subtest_t init,
-	test_run_subtest_t run,
-	test_cleanup_subtest_t cleanup,
+	bmark_init_subbmark_t init,
+	bmark_run_subbmark_t run,
+	bmark_cleanup_subbmark_t cleanup,
 	unsigned int data_len);
 
-int test_subtest_exec(subtest_t *subtest, int iteration);
+int bmark_subbmark_exec(subbmark_t *subbmark, int iteration);
 
-int test_init(test_t *test, int seed);
-int test_cleanup(test_t *test);
-subtest_t *test_get_first_subtest(test_t *test);
-subtest_t *test_get_next_subtest(subtest_t *subtest);
+int bmark_init(bmark_t *bmark, int seed);
+int bmark_cleanup(bmark_t *bmark);
+subbmark_t *bmark_get_first_subbmark(bmark_t *bmark);
+subbmark_t *bmark_get_next_subbmark(subbmark_t *subbmark);
 
-#endif /* TESTSET_H */
+#endif /* BMARKSET_H */
