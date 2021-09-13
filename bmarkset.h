@@ -25,6 +25,8 @@ typedef struct subbmark {
 	struct bmark *bmark;			// parent bmark
 	struct subbmark *next;			// next in subbmark list
 
+	unsigned int runs;			// number of runs
+	unsigned int fails;			// number of failed runs
 	chrono_t chrono;			// chrono (including result statistics)
 
 	void *data;				// optional data for the subbmark

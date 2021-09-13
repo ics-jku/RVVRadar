@@ -57,6 +57,10 @@ static void subbmark_reset(subbmark_t *subbmark)
 {
 	if (subbmark == NULL)
 		return;
+
+	subbmark->runs = 0;
+	subbmark->fails = 0;
+
 	chrono_reset(&subbmark->chrono);
 }
 
@@ -111,22 +115,31 @@ int subbmark_exec(subbmark_t *subbmark, int iteration)
 {
 	int ret = 0;
 
+	subbmark->runs++;
+
 	ret = subbmark_call_preexec(subbmark, iteration);
 	if (ret < 0)
-		return -1;
+		goto __err;
 
 	/* exec and measure */
 	chrono_start(&subbmark->chrono);
 	ret = subbmark_call_exec(subbmark);
 	if (ret < 0)
-		return -1;
+		goto __err;
 	chrono_stop(&subbmark->chrono);
 
 	ret = subbmark_call_postexec(subbmark);
 	if (ret < 0)
-		return -1;
+		goto __err;
 
-	return 0;
+	ret = 0;
+	goto __ret;
+
+__err:
+	ret = -1;
+	subbmark->fails++;
+__ret:
+	return ret;
 }
 
 
