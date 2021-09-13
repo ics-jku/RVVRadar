@@ -12,6 +12,7 @@ VERSION_STR=$(BIN_NAME)-${RVVBMARK_VERSION}.${RVVBMARK_SUBVERSION}
 INSTALL_BIN_DIR="$(RVVBMARK_INSTALL_PREFIX)/bin"
 PKG_CONFIG ?= "pkg-config"
 INSTALL ?= install
+STRIP ?= strip
 
 # debug handling
 ifeq ($(debug),1)
@@ -22,7 +23,7 @@ ifeq ($(debug),1)
 else
 	# TODO: measure different settings
 	CFLAGS+=	-O2
-	INSTALLFLAGS=	-s
+	INSTALLFLAGS=	-s --strip-program=$(STRIP)
 endif
 
 CFLAGS+=	-Wall -std=c11 -D_GNU_SOURCE \

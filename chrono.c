@@ -98,7 +98,7 @@ int chrono_stop(chrono_t *chrono)
 }
 
 
-int chrono_fprintf_csv(chrono_t *chrono, FILE *out)
+int chrono_print_csv(chrono_t *chrono, FILE *out)
 {
 	if (chrono == NULL || out == NULL) {
 		errno = EINVAL;
@@ -113,7 +113,7 @@ int chrono_fprintf_csv(chrono_t *chrono, FILE *out)
 }
 
 
-int chrono_fprintf_pretty(chrono_t *chrono, const char *indent, FILE *out)
+int chrono_print_pretty(chrono_t *chrono, const char *indent, FILE *out)
 {
 	if (chrono == NULL || out == NULL) {
 		errno = EINVAL;

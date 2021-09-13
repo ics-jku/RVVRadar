@@ -25,27 +25,6 @@ void dump_field(char *f, int len)
 	printf("\n");
 }
 
-void run_subbmark_iterations(subbmark_t *subbmark, int iterations)
-{
-	for (int i = 0; i < iterations; i++) {
-		printf("iteration %i: ", i);
-		if (subbmark_exec(subbmark, i) < 0) {
-			printf("FAIL!\n");
-			//dump_field(src, len);
-			//dump_field(dest, len);
-			continue;
-		}
-
-		printf("OK (%lluus)\n", subbmark->chrono.tdlast);
-	}
-	printf("done. (%lluus)\n", subbmark->chrono.tdsum);
-
-	printf("Summary (type;len;#iterations;min;max;avg)\n");
-	printf("%s;%s;", subbmark->bmark->name, subbmark->name);
-	chrono_fprintf_csv(&subbmark->chrono, stdout);
-
-	chrono_fprintf_pretty(&subbmark->chrono, " + ", stdout);
-}
 
 void runbmark(bmark_t *bmark, int seed, int iterations)
 {
@@ -56,7 +35,7 @@ void runbmark(bmark_t *bmark, int seed, int iterations)
 		s != NULL;
 		s = bmark_get_next_subbmark(s)
 	)
-		run_subbmark_iterations(s, iterations);
+		//subbmark_exec_iterations(s, iterations, true);
 
 	bmark_call_postexec(bmark);
 }
