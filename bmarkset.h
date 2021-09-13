@@ -39,6 +39,7 @@ typedef int (*bmark_postexec_fp_t)(struct bmark *bmark);
 
 typedef struct bmark {
 	const char *name;			// name of the bmark
+	char *parastr;				// string containing parameters as string
 	unsigned int index;			// index in bmark list
 
 	// linked list of subbmarks
@@ -82,9 +83,11 @@ int subbmark_exec(subbmark_t *subbmark, int iteration);
 /*
  * create a bmark
  * handling of optional given data (free) is handled by bmark!
+ * parastr will be duplicated and handled by bmark -> heap allocated paramers are valid!
  */
 bmark_t *bmark_create(
 	const char *name,
+	char *parastr,
 	bmark_preexec_fp_t preexec,
 	bmark_postexec_fp_t postexec,
 	unsigned int data_len);

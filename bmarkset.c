@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
 #include <errno.h>
 
 #include "bmarkset.h"
@@ -149,6 +150,7 @@ __ret:
 
 bmark_t *bmark_create(
 	const char *name,
+	char *parastr,
 	bmark_preexec_fp_t preexec,
 	bmark_postexec_fp_t postexec,
 	unsigned int data_len)
@@ -158,6 +160,9 @@ bmark_t *bmark_create(
 		return NULL;
 
 	bmark->name = name;
+	if (parastr == NULL)
+		parastr = "";
+	bmark->parastr = strdup(parastr);
 	bmark->preexec = preexec;
 	bmark->postexec = postexec;
 
@@ -184,6 +189,8 @@ void bmark_destroy(bmark_t *bmark)
 		subbmark_destroy(s);
 		s = n;
 	}
+
+	free(bmark->parastr);
 
 	/* free optional data area */
 	free(bmark->data);

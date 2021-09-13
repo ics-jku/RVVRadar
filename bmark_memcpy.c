@@ -196,10 +196,21 @@ static int cleanup(struct bmark *bmark)
 
 int bmark_memcpy_add(bmarkset_t *bmarkset, unsigned int len)
 {
-	bmark_t *bmark = bmark_create("memcpy", init, cleanup, sizeof(struct data));
+	/* build parameter string */
+	char parastr[256] = "\0";
+	snprintf(parastr, 256, "len=%u", len);
+
+	/* create benchmark */
+	bmark_t *bmark = bmark_create(
+				 "memcpy",
+				 parastr,
+				 init,
+				 cleanup,
+				 sizeof(struct data));
 	if (bmark == NULL)
 		return -1;
 
+	/* set private data and add sub benchmarks */
 	struct data *d = (struct data*)bmark->data;
 	d->len = len;
 
@@ -208,6 +219,7 @@ int bmark_memcpy_add(bmarkset_t *bmarkset, unsigned int len)
 		return -1;
 	}
 
+	/* add benchmark to set */
 	if (bmarkset_add_bmark(bmarkset, bmark) < 0) {
 		bmark_destroy(bmark);
 		return -1;
