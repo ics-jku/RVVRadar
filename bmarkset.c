@@ -9,11 +9,15 @@
 /*
  * HELPERS
  */
+
+#define DATAOUT	stdout
+#define INFOOUT	stderr
+
 /* print to stderr if verbose == true */
 #define pinfo(args...)				\
 	do {					\
 		if (verbose)			\
-			fprintf(stderr, args);	\
+			fprintf(INFOOUT, args);	\
 	} while(0)
 
 
@@ -190,7 +194,7 @@ static int subbmark_print_csv(subbmark_t *subbmark, FILE *out)
 	       subbmark->name,
 	       subbmark->runs,
 	       subbmark->fails);
-	chrono_print_csv(&subbmark->chrono, stdout);
+	chrono_print_csv(&subbmark->chrono, out);
 	printf("\n");
 	return 0;
 }
@@ -213,10 +217,10 @@ static int subbmark_run(subbmark_t *subbmark, int iterations, bool verbose)
 	}
 	pinfo("\r                                                              \r");
 	if (verbose)
-		subbmark_print_pretty(subbmark, stderr);
+		subbmark_print_pretty(subbmark, INFOOUT);
 
 	// data output
-	subbmark_print_csv(subbmark, stdout);
+	subbmark_print_csv(subbmark, DATAOUT);
 
 	return 0;
 }
