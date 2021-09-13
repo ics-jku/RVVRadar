@@ -1,0 +1,35 @@
+#!/bin/bash
+
+RVVBMARK_RV_SUPPORT=0
+RVVBMARK_RVV_SUPPORT=0
+
+
+echo -en "Check toolchain RISC-V support .. "
+if $AS bmark_memcpy_rv.s -o /dev/null > /dev/null 2>&1 ; then
+	echo "yes"
+	RVVBMARK_RV_SUPPORT=1
+else
+	echo "no"
+fi
+
+echo -en "Check toolchain RISC-V vector (rv64imafdcv) support .. "
+if $AS -march=rv64imafdcv bmark_memcpy_rvv.s -o /dev/null > /dev/null 2>&1 ; then
+	echo "yes"
+	RVVBMARK_RVV_SUPPORT=1
+else
+	echo "no"
+fi
+
+sed config.mk.in						\
+	-e s/\@RVVBMARK_RV_SUPPORT\@/$RVVBMARK_RV_SUPPORT/g	\
+	-e s/\@RVVBMARK_RVV_SUPPORT\@/$RVVBMARK_RVV_SUPPORT/g	\
+	> config.mk
+
+echo "done."
+echo 
+echo "Next steps:"
+echo "make"
+echo "make install"
+echo
+
+exit 0

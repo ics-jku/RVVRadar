@@ -1,21 +1,11 @@
 
-Configuration (config.mk)
-
-RISC-V toolchain
-RVVBMARK_RV_SUPPORT=1
-
-Platform independent -> without RISC-V and vector benchmarks
-RVVBMARK_RV_SUPPORT=0
-
-Only if RVVBMARK_RV_SUPPORT=1
-RISC-V toolchain with support for vector (binutils) (64bit only!)
-RVVBMARK_RVV_SUPPORT=1
-
-RISC-V without vector benchmarks
-RVVBMARK_RVV_SUPPORT=0
 
 
-Build & Install
+
+Configuration, Build & Install
+
+./configure
+determines if toolchain supports RISC-V and vector extension (64bit)
 
 "debug"
 debug=1 .. no optimization, debug symbols, unstripped install
@@ -45,3 +35,21 @@ Build without debug and install in /opt/rvvbmark/bin
 make prefix=/opt/rvvbmark debug=0 install
 or
 make prefix=/opt/rvvbmark install
+
+
+
+Details to config.mk
+
+RISC-V toolchain
+RVVBMARK_RV_SUPPORT=1
+
+Platform independent -> without RISC-V and vector benchmarks
+RVVBMARK_RV_SUPPORT=0
+
+Only if RVVBMARK_RV_SUPPORT=1
+RISC-V toolchain with support for vector (binutils) (64bit only!)
+RVVBMARK_RVV_SUPPORT=1
+
+RISC-V without vector benchmarks
+RVVBMARK_RVV_SUPPORT=0
+

@@ -1,4 +1,8 @@
+ifeq (,$(wildcard config.mk))
+    $(error Not configured yet -> call configure / see README.md)
+endif
 include config.mk
+
 debug?=0
 prefix?=/usr/local
 
@@ -69,6 +73,9 @@ style:
 clean:
 		- rm $(BIN_NAME)
 		- rm *.o
+
+distclean: clean
+		- rm config.mk
 
 install: all
 		-@mkdir -p $(INSTALL_DIR)
