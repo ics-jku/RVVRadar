@@ -98,6 +98,17 @@ int chrono_stop(chrono_t *chrono)
 }
 
 
+int chrono_print_csv_head(FILE *out)
+{
+	if (out == NULL) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	return fprintf(out, "count;tdmin [us];tdmax [us];tdavg [us]");
+}
+
+
 int chrono_print_csv(chrono_t *chrono, FILE *out)
 {
 	if (chrono == NULL || out == NULL) {

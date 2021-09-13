@@ -64,6 +64,14 @@ int chrono_stop(chrono_t *chrono);
 
 
 /*
+ * print csv head for chrono statistics
+ * (count;td...)
+ * return: same as for fprintf
+ */
+int chrono_print_csv_head(FILE *out);
+
+
+/*
  * print chrono statistics as csv
  * (count;td...)
  * return: same as for fprintf
