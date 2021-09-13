@@ -3,6 +3,7 @@
 Benchmark tool for RISC-V vector extension (RVV)
 (C) 2021 Manfred Schlaegl <manfred.schlaegl@gmx.at>
 
+
 ## Configuration, Build & Install
 
 ### Configuration
@@ -11,6 +12,7 @@ Benchmark tool for RISC-V vector extension (RVV)
 > ```
 determines if toolchain supports RISC-V and vector extension (64bit)
 sets install prefix
+
 
 ### Build
 > ```
@@ -23,10 +25,23 @@ debug=1 .. no optimization, debug symbols, unstripped install
 debug=0 .. optimization, no debug symbols, stripped install
 Note: switching beween debug on/off requires a clean!
 
+
 ### Install
 Install to configured prefix (default="/usr/local/bin")
 > ```
 > make install
+> ```
+
+
+### Clean
+Clean all build artefacts
+> ```
+> make clean
+> ```
+
+Clean all build artefacts and configuration
+> ```
+> make distclean
 > ```
 
 
