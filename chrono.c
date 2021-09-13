@@ -5,7 +5,7 @@
 #include "chrono.h"
 
 
-/* time difference in us */
+/* time difference in ns */
 static unsigned long long timespec_diff(const struct timespec start, const struct timespec end)
 {
 	struct timespec diff;
@@ -18,7 +18,7 @@ static unsigned long long timespec_diff(const struct timespec start, const struc
 		diff.tv_nsec = end.tv_nsec - start.tv_nsec;
 	}
 
-	return diff.tv_sec * 1000000 + diff.tv_nsec / 1000;
+	return diff.tv_sec * 1000000000 + diff.tv_nsec;
 }
 
 
@@ -105,7 +105,7 @@ int chrono_print_csv_head(FILE *out)
 		return -1;
 	}
 
-	return fprintf(out, "count;tdmin [us];tdmax [us];tdavg [us]");
+	return fprintf(out, "count;tdmin [ns];tdmax [ns];tdavg [ns]");
 }
 
 
@@ -132,10 +132,10 @@ int chrono_print_pretty(chrono_t *chrono, const char *indent, FILE *out)
 	}
 
 	return fprintf(out,
-		       "%scount: %i\n"
-		       "%smin:   %llu\n"
-		       "%smax:   %llu\n"
-		       "%savg:   %llu\n",
+		       "%scount:    %i\n"
+		       "%smin [ns]: %llu\n"
+		       "%smax [ns]: %llu\n"
+		       "%savg [ns]: %llu\n",
 		       indent, chrono->count,
 		       indent, chrono->tdmin,
 		       indent, chrono->tdmax,
