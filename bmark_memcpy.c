@@ -196,6 +196,18 @@ static int cleanup(struct bmark *bmark)
 
 int bmark_memcpy_add(bmarkset_t *bmarkset, unsigned int len)
 {
+	/*
+	 * fixup data len
+	 *
+	 * some implementations only allow muliples of x bytes
+	 * multiples of 4*64 byte will work for every test
+	 * -> ensure len is a multiple of 4*64 bytes
+	 *
+	 * Caution: implementation works only for powers of two!
+	 */
+	len &= ~(4 * 64 - 1);	// cut down to prev multiple
+	len |= 4 * 64;		// round up to next multiple
+
 	/* build parameter string */
 	char parastr[256] = "\0";
 	snprintf(parastr, 256, "len=%u", len);
