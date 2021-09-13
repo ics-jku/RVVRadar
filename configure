@@ -1,8 +1,67 @@
 #!/bin/bash
 
+RVVBMARK_INSTALL_PREFIX="/usr/local"
 RVVBMARK_RV_SUPPORT=0
 RVVBMARK_RVV_SUPPORT=0
 
+
+usage()
+{
+  cat <<_ACEOF
+\`configure' configures rvvbmark to adapt to many kinds of systems.
+
+Usage: $0 [OPTION]...
+
+Defaults for the options are specified in brackets.
+
+Configuration:
+  -h, --help              display this help and exit
+
+Installation directories:
+  --prefix=PREFIX         install files in PREFIX
+                          [$RVVBMARK_INSTALL_PREFIX]
+
+_ACEOF
+}
+
+args=$(getopt -o h --long help,prefix: -- "$@")
+if [[ $? -ne 0 ]] ; then
+	usage
+	exit 1
+fi
+eval set -- "$args"
+while [[ $# -gt 0 ]]
+do
+	case "$1" in
+	--prefix)
+		RVVBMARK_INSTALL_PREFIX="$2"
+		shift
+		;;
+	-h|--help)
+		usage
+		exit 0
+		;;
+	--)
+		shift
+		break
+		;;
+	*)
+		perr "Invalid option: $1"
+		usage
+		exit 1
+		;;
+	esac
+	shift
+done
+
+
+echo -en "Check install prefix \"$RVVBMARK_INSTALL_PREFIX\" .. "
+if ! [[ -d $RVVBMARK_INSTALL_PREFIX ]] ; then
+	echo "does not exist"
+	exit 1
+else
+	echo "ok"
+fi
 
 echo -en "Check toolchain RISC-V support .. "
 if $AS bmark_memcpy_rv.s -o /dev/null > /dev/null 2>&1 ; then
@@ -20,9 +79,10 @@ else
 	echo "no"
 fi
 
-sed config.mk.in						\
-	-e s/\@RVVBMARK_RV_SUPPORT\@/$RVVBMARK_RV_SUPPORT/g	\
-	-e s/\@RVVBMARK_RVV_SUPPORT\@/$RVVBMARK_RVV_SUPPORT/g	\
+sed config.mk.in							\
+	-e s#\@RVVBMARK_RV_SUPPORT\@#$RVVBMARK_RV_SUPPORT#g		\
+	-e s#\@RVVBMARK_RVV_SUPPORT\@#$RVVBMARK_RVV_SUPPORT#g		\
+	-e s#\@RVVBMARK_INSTALL_PREFIX\@#$RVVBMARK_INSTALL_PREFIX#g	\
 	> config.mk
 
 echo "done."

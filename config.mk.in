@@ -8,3 +8,6 @@ RVVBMARK_RV_SUPPORT=@RVVBMARK_RV_SUPPORT@
 # Does toolchain support RISC-V vector extension (RVV)
 # (can be built for non-rvv when set to zero)
 RVVBMARK_RVV_SUPPORT=@RVVBMARK_RV_SUPPORT@
+
+
+RVVBMARK_INSTALL_PREFIX=@RVVBMARK_INSTALL_PREFIX@

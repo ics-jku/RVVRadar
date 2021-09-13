@@ -1,55 +1,52 @@
+# RVVBMARK
 
+Benchmark tool for RISC-V vector extension (RVV)
+(C) 2021 Manfred Schlaegl <manfred.schlaegl@gmx.at>
 
+## Configuration, Build & Install
 
-
-Configuration, Build & Install
-
-./configure
+### Configuration
+> ```
+> ./configure
+> ```
 determines if toolchain supports RISC-V and vector extension (64bit)
+sets install prefix
 
+### Build
+> ```
+> make
+> ```
+
+Variables:
 "debug"
 debug=1 .. no optimization, debug symbols, unstripped install
 debug=0 .. optimization, no debug symbols, stripped install
 Note: switching beween debug on/off requires a clean!
 
-"prefix"
-prefix for install target
-
-Examples:
-
-Build for debug
-make debug=1 
-
-Build for debug and install in /usr/local/bin
-make debug=1 install
-
-Build for debug and install in /opt/rvvbmark/bin
-make prefix=/opt/rvvbmark debug=1 install
-
-Build without debug
-make debug=0
-or
-make
-
-Build without debug and install in /opt/rvvbmark/bin
-make prefix=/opt/rvvbmark debug=0 install
-or
-make prefix=/opt/rvvbmark install
+### Install
+Install to configured prefix (default="/usr/local/bin")
+> ```
+> make install
+> ```
 
 
+### Examples
 
-Details to config.mk
+Configure build and install to /usr/local/bin
+> ```
+> ./configure
+> make
+> make install
+> ```
 
-RISC-V toolchain
-RVVBMARK_RV_SUPPORT=1
+Configure, build and install to /opt/rvvbmark/bin
+> ```
+> ./configure --prefix=opt/rvvbmark install
+> make install
+> ```
 
-Platform independent -> without RISC-V and vector benchmarks
-RVVBMARK_RV_SUPPORT=0
-
-Only if RVVBMARK_RV_SUPPORT=1
-RISC-V toolchain with support for vector (binutils) (64bit only!)
-RVVBMARK_RVV_SUPPORT=1
-
-RISC-V without vector benchmarks
-RVVBMARK_RVV_SUPPORT=0
-
+Build for debug (unstripped and with debug symbols)
+> ```
+> make clean
+> make debug=1
+> ```

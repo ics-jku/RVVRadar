@@ -4,13 +4,12 @@ endif
 include config.mk
 
 debug?=0
-prefix?=/usr/local
 
 BIN_NAME=rvvbmark
 ASTYLE_ARGS=--options=none --suffix=none --quiet \
 	    --style=linux --indent=force-tab=8 --pad-header --pad-oper --indent-preprocessor
 VERSION_STR=$(BIN_NAME)-${RVVBMARK_VERSION}.${RVVBMARK_SUBVERSION}
-INSTALL_DIR="$(prefix)/bin"
+INSTALL_BIN_DIR="$(RVVBMARK_INSTALL_PREFIX)/bin"
 PKG_CONFIG ?= "pkg-config"
 INSTALL ?= install
 
@@ -78,12 +77,12 @@ distclean: clean
 		- rm config.mk
 
 install: all
-		-@mkdir -p $(INSTALL_DIR)
-		$(INSTALL) -m 755 $(INSTALLFLAGS) $(BIN_NAME) $(INSTALL_DIR)
+		-@mkdir -p $(INSTALL_BIN_DIR)
+		$(INSTALL) -m 755 $(INSTALLFLAGS) $(BIN_NAME) $(INSTALL_BIN_DIR)
 
 install_target: install
 
 uninstall:
-		-rm -f $(INSTALL_DIR)/$(BIN_NAME)
+		-rm -f $(INSTALL_BIN_DIR)/$(BIN_NAME)
 		
 uninstall_target: uninstall
