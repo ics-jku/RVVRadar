@@ -67,15 +67,6 @@ typedef struct bmarkset {
 } bmarkset_t;
 
 
-
-
-/*
- * SUBBMARK
- */
-
-int subbmark_exec(subbmark_t *subbmark, int iteration);
-
-
 /*
  * BMARK
  */
@@ -113,13 +104,6 @@ int bmark_add_subbmark(
 	unsigned int data_len);
 
 
-int bmark_call_preexec(bmark_t *bmark, int seed);
-int bmark_call_postexec(bmark_t *bmark);
-
-subbmark_t *bmark_get_first_subbmark(bmark_t *bmark);
-subbmark_t *bmark_get_next_subbmark(subbmark_t *subbmark);
-
-
 /*
  * BMARKSET
  */
@@ -146,6 +130,12 @@ int bmarkset_add_bmark(bmarkset_t *bmarkset, bmark_t *bmark);
  * reset all bmarks
  */
 void bmarkset_reset(bmarkset_t *bmarkset);
+
+
+/*
+ * run the benchmark set
+ */
+int bmarkset_run(bmarkset_t *bmark, int seed, int iterations, bool verbose);
 
 
 #endif /* BMARKSET_H */

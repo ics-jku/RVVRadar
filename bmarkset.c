@@ -7,6 +7,17 @@
 
 
 /*
+ * HELPERS
+ */
+/* print to stderr if verbose == true */
+#define pinfo(args...)				\
+	do {					\
+		if (verbose)			\
+			fprintf(stderr, args);	\
+	} while(0)
+
+
+/*
  * SUBBMARK
  */
 
@@ -112,9 +123,14 @@ static int subbmark_call_postexec(subbmark_t *subbmark)
 }
 
 
-int subbmark_exec(subbmark_t *subbmark, int iteration)
+static int subbmark_run_single(subbmark_t *subbmark, int iteration)
 {
 	int ret = 0;
+
+	if (subbmark == NULL) {
+		errno = EINVAL;
+		return -1;
+	}
 
 	subbmark->runs++;
 
@@ -141,6 +157,68 @@ __err:
 	subbmark->fails++;
 __ret:
 	return ret;
+}
+
+
+static int subbmark_print_pretty(subbmark_t *subbmark, FILE *out)
+{
+	if (subbmark == NULL || out == NULL) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	fprintf(out, "     + sub: %s\n", subbmark->name);
+	fprintf(out, "       + runs:  %i\n", subbmark->runs);
+	fprintf(out, "       + fails: %i\n", subbmark->fails);
+	fprintf(out, "       + timing:\n");
+	chrono_print_pretty(&subbmark->chrono, "         + ", out);
+	return 0;
+}
+
+
+static int subbmark_print_csv(subbmark_t *subbmark, FILE *out)
+{
+	if (subbmark == NULL || out == NULL) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	printf("%s;%s(%s);%s;%i;%i;",
+	       subbmark->bmark->bmarkset->name,
+	       subbmark->bmark->name,
+	       subbmark->bmark->parastr,
+	       subbmark->name,
+	       subbmark->runs,
+	       subbmark->fails);
+	chrono_print_csv(&subbmark->chrono, stdout);
+	printf("\n");
+	return 0;
+}
+
+
+static int subbmark_run(subbmark_t *subbmark, int iterations, bool verbose)
+{
+	if (subbmark == NULL) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	for (int iteration = 0; iteration < iterations; iteration++) {
+		pinfo("\r%s: %i/%i -> ", subbmark->name, iteration + 1, iterations);
+		if (subbmark_run_single(subbmark, iteration) < 0) {
+			pinfo("FAIL!");
+			continue;
+		}
+		pinfo("OK! (%lluus)", subbmark->chrono.tdavg);
+	}
+	pinfo("\r                                                              \r");
+	if (verbose)
+		subbmark_print_pretty(subbmark, stderr);
+
+	// data output
+	subbmark_print_csv(subbmark, stdout);
+
+	return 0;
 }
 
 
@@ -281,7 +359,7 @@ int bmark_call_preexec(bmark_t *bmark, int seed)
 }
 
 
-int bmark_call_postexec(bmark_t *bmark)
+static int bmark_call_postexec(bmark_t *bmark)
 {
 	if (bmark == NULL) {
 		errno = EINVAL;
@@ -293,6 +371,42 @@ int bmark_call_postexec(bmark_t *bmark)
 		return 0;
 
 	return bmark->postexec(bmark);
+}
+
+
+static int bmark_run(bmark_t *bmark, int seed, int iterations, bool verbose)
+{
+	int ret;
+
+	if (bmark == NULL) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	pinfo("   + benchm: %s(%s)\n", bmark->name, bmark->parastr);
+
+	/* call preexec */
+	ret = bmark_call_preexec(bmark, seed);
+	if (ret < 0)
+		return -1;
+
+	/* run all sub benchmarks */
+	for (
+		subbmark_t *s = bmark->subbmarks_head;
+		s != NULL;
+		s = s->next
+	) {
+		ret = subbmark_run(s, iterations, verbose);
+		if (ret < 0)
+			return -1;
+	}
+
+	/* call postexec */
+	ret = bmark_call_postexec(bmark);
+	if (ret < 0)
+		return -1;
+
+	return 0;
 }
 
 
@@ -360,4 +474,28 @@ void bmarkset_reset(bmarkset_t *bmarkset)
 		t = t->next
 	)
 		bmark_reset(t);
+}
+
+
+int bmarkset_run(bmarkset_t *bmarkset, int seed, int iterations, bool verbose)
+{
+	int ret;
+
+	if (bmarkset == NULL) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	pinfo(" + set: %s\n", bmarkset->name);
+	for (
+		bmark_t *b = bmarkset->bmarks_head;
+		b != NULL;
+		b = b->next
+	) {
+		ret = bmark_run(b, seed, iterations, verbose);
+		if (ret < 0)
+			return -1;
+	}
+
+	return 0;
 }

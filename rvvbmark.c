@@ -25,37 +25,29 @@ void dump_field(char *f, int len)
 	printf("\n");
 }
 
-
-void runbmark(bmark_t *bmark, int seed, int iterations)
-{
-	bmark_call_preexec(bmark, seed);
-
-	for (
-		subbmark_t *s = bmark_get_first_subbmark(bmark);
-		s != NULL;
-		s = bmark_get_next_subbmark(s)
-	)
-		//subbmark_exec_iterations(s, iterations, true);
-
-	bmark_call_postexec(bmark);
-}
-
 int memcpybmarkbmark()
 {
 	int ret = 0;
+	//int len = 1024 * 1024 * 10 + 1;
+	int len = 1024 * 1024;
 
 	bmarkset_t *bmarkset = bmarkset_create("rvvbmark");
 	if (bmarkset == NULL)
 		return -1;
 
-	if (bmark_memcpy_add(bmarkset, 1024 * 1024 * 10 + 1) < 0) {
+	if (bmark_memcpy_add(bmarkset, len) < 0) {
+		goto __ret_bmarkset_destroy;
+		return -1;
+	}
+
+	if (bmark_memcpy_add(bmarkset, len * 2) < 0) {
 		goto __ret_bmarkset_destroy;
 		return -1;
 	}
 
 	bmarkset_reset(bmarkset);
 
-	runbmark(bmarkset->bmarks_head, 0, 10);
+	bmarkset_run(bmarkset, 0, 1000, true);
 
 	ret = 0;
 
