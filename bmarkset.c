@@ -186,8 +186,7 @@ void bmark_destroy(bmark_t *bmark)
 	}
 
 	/* free optional data area */
-	if (bmark->data)
-		free(bmark->data);
+	free(bmark->data);
 
 	free(bmark);
 }
