@@ -29,7 +29,7 @@ void run_subbmark_iterations(subbmark_t *subbmark, int iterations)
 {
 	for (int i = 0; i < iterations; i++) {
 		printf("iteration %i: ", i);
-		if (bmark_subbmark_exec(subbmark, i) < 0) {
+		if (subbmark_exec(subbmark, i) < 0) {
 			printf("FAIL!\n");
 			//dump_field(src, len);
 			//dump_field(dest, len);
@@ -49,7 +49,7 @@ void run_subbmark_iterations(subbmark_t *subbmark, int iterations)
 
 void runbmark(bmark_t *bmark, int seed, int iterations)
 {
-	bmark_init(bmark, seed);
+	bmark_call_preexec(bmark, seed);
 
 	for (
 		subbmark_t *s = bmark_get_first_subbmark(bmark);
@@ -58,7 +58,7 @@ void runbmark(bmark_t *bmark, int seed, int iterations)
 	)
 		run_subbmark_iterations(s, iterations);
 
-	bmark_cleanup(bmark);
+	bmark_call_postexec(bmark);
 }
 
 int memcpybmarkbmark()

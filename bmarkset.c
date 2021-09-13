@@ -5,11 +5,15 @@
 #include "bmarkset.h"
 
 
+/*
+ * SUBBMARK
+ */
+
 static subbmark_t *subbmark_create(
 	const char *name, bool rv, bool rvv,
-	bmark_init_subbmark_t init,
-	bmark_run_subbmark_t run,
-	bmark_cleanup_subbmark_t cleanup,
+	subbmark_preexec_fp_t preexec,
+	subbmark_exec_fp_t exec,
+	subbmark_postexec_fp_t postexec,
 	int data_len)
 {
 	subbmark_t *subbmark = calloc(1, sizeof(subbmark_t));
@@ -19,9 +23,9 @@ static subbmark_t *subbmark_create(
 	subbmark->name = name;
 	subbmark->rv = rv;
 	subbmark->rvv = rvv;
-	subbmark->init = init;
-	subbmark->run = run;
-	subbmark->cleanup = cleanup;
+	subbmark->preexec = preexec;
+	subbmark->exec = exec;
+	subbmark->postexec = postexec;
 
 	/* alloc optional data area */
 	if (data_len == 0)
@@ -57,26 +61,7 @@ static void subbmark_reset(subbmark_t *subbmark)
 }
 
 
-static void bmark_reset(bmark_t *bmark)
-{
-	if (bmark == NULL)
-		return;
-	for (
-		subbmark_t *s = bmark->subbmarks_head;
-		s != NULL;
-		s = s->next
-	)
-		subbmark_reset(s);
-}
-
-
-
-
-/*
- * wrappers for function pointers
- */
-
-static int bmark_init_subbmark(subbmark_t *subbmark, int iteration)
+static int subbmark_call_preexec(subbmark_t *subbmark, int iteration)
 {
 	if (subbmark == NULL) {
 		errno = EINVAL;
@@ -84,14 +69,14 @@ static int bmark_init_subbmark(subbmark_t *subbmark, int iteration)
 	}
 
 	/* nothing todo? */
-	if (subbmark->init == NULL)
+	if (subbmark->preexec == NULL)
 		return 0;
 
-	return subbmark->init(subbmark, iteration);
+	return subbmark->preexec(subbmark, iteration);
 }
 
 
-static int bmark_run_subbmark(subbmark_t *subbmark)
+static int subbmark_call_exec(subbmark_t *subbmark)
 {
 	if (subbmark == NULL) {
 		errno = EINVAL;
@@ -99,15 +84,15 @@ static int bmark_run_subbmark(subbmark_t *subbmark)
 	}
 
 	/* nothing todo? */
-	if (subbmark->run == NULL)
+	if (subbmark->exec == NULL)
 		return 0;
 
-	return subbmark->run(subbmark);
+	return subbmark->exec(subbmark);
 
 }
 
 
-static int bmark_cleanup_subbmark(subbmark_t *subbmark)
+static int subbmark_call_postexec(subbmark_t *subbmark)
 {
 	if (subbmark == NULL) {
 		errno = EINVAL;
@@ -115,52 +100,44 @@ static int bmark_cleanup_subbmark(subbmark_t *subbmark)
 	}
 
 	/* nothing todo? */
-	if (subbmark->cleanup == NULL)
+	if (subbmark->postexec == NULL)
 		return 0;
 
-	return subbmark->cleanup(subbmark);
+	return subbmark->postexec(subbmark);
 }
 
 
+int subbmark_exec(subbmark_t *subbmark, int iteration)
+{
+	int ret = 0;
+
+	ret = subbmark_call_preexec(subbmark, iteration);
+	if (ret < 0)
+		return -1;
+
+	/* exec and measure */
+	chrono_start(&subbmark->chrono);
+	ret = subbmark_call_exec(subbmark);
+	if (ret < 0)
+		return -1;
+	chrono_stop(&subbmark->chrono);
+
+	ret = subbmark_call_postexec(subbmark);
+	if (ret < 0)
+		return -1;
+
+	return 0;
+}
 
 
 /*
- * API
+ * BMARK
  */
-
-
-/*
- * allocated and create a new bmarkset
- */
-bmarkset_t *bmarkset_create(const char *name)
-{
-	bmarkset_t *bmarkset = calloc(1, sizeof(bmarkset_t));
-	if (bmarkset == NULL)
-		return NULL;
-
-	bmarkset->name = name;
-
-	return bmarkset;
-}
-
-void bmarkset_destroy(bmarkset_t *bmarkset)
-{
-	if (bmarkset == NULL)
-		return;
-	bmark_t *t = bmarkset->bmarks_head;
-	while (t != NULL) {
-		bmark_t *n = t->next;
-		bmark_destroy(t);
-		t = n;
-	}
-	free(bmarkset);
-}
-
 
 bmark_t *bmark_create(
 	const char *name,
-	bmark_init_bmark_t init,
-	bmark_cleanup_bmark_t cleanup,
+	bmark_preexec_fp_t preexec,
+	bmark_postexec_fp_t postexec,
 	unsigned int data_len)
 {
 	bmark_t *bmark = calloc(1, sizeof(bmark_t));
@@ -168,8 +145,8 @@ bmark_t *bmark_create(
 		return NULL;
 
 	bmark->name = name;
-	bmark->init = init;
-	bmark->cleanup = cleanup;
+	bmark->preexec = preexec;
+	bmark->postexec = postexec;
 
 	/* alloc optional data area */
 	if (data_len == 0)
@@ -181,19 +158,6 @@ bmark_t *bmark_create(
 	}
 
 	return bmark;
-}
-
-
-void bmarkset_reset(bmarkset_t *bmarkset)
-{
-	if (bmarkset == NULL)
-		return;
-	for (
-		bmark_t *t = bmarkset->bmarks_head;
-		t != NULL;
-		t = t->next
-	)
-		bmark_reset(t);
 }
 
 
@@ -213,6 +177,133 @@ void bmark_destroy(bmark_t *bmark)
 		free(bmark->data);
 
 	free(bmark);
+}
+
+
+int bmark_add_subbmark(
+	bmark_t *bmark,
+	const char *name, bool rv, bool rvv,
+	subbmark_preexec_fp_t preexec,
+	subbmark_exec_fp_t exec,
+	subbmark_postexec_fp_t postexec,
+	unsigned int data_len)
+{
+	subbmark_t *subbmark = subbmark_create(
+				       name, rv, rvv,
+				       preexec, exec, postexec,
+				       data_len);
+	if (subbmark == NULL)
+		return -1;
+
+	/* add to link list */
+	subbmark->index = bmark->subbmarks_len;
+	if (bmark->subbmarks_tail == NULL)
+		/* first element */
+		bmark->subbmarks_head = subbmark;
+	else
+		bmark->subbmarks_tail->next = subbmark;
+	bmark->subbmarks_tail = subbmark;
+	bmark->subbmarks_len++;
+
+	/* link bmark (parent) */
+	subbmark->bmark = bmark;
+
+	return 0;
+}
+
+
+static void bmark_reset(bmark_t *bmark)
+{
+	if (bmark == NULL)
+		return;
+	for (
+		subbmark_t *s = bmark->subbmarks_head;
+		s != NULL;
+		s = s->next
+	)
+		subbmark_reset(s);
+}
+
+
+subbmark_t *bmark_get_first_subbmark(bmark_t *bmark)
+{
+	if (bmark == NULL) {
+		errno = EINVAL;
+		return NULL;
+	}
+
+	return bmark->subbmarks_head;
+}
+
+
+subbmark_t *bmark_get_next_subbmark(subbmark_t *subbmark)
+{
+	if (subbmark == NULL) {
+		errno = EINVAL;
+		return NULL;
+	}
+
+	return subbmark->next;
+}
+
+
+int bmark_call_preexec(bmark_t *bmark, int seed)
+{
+	if (bmark == NULL) {
+		errno = ENODEV;
+		return -1;
+	}
+
+	/* nothing todo? */
+	if (bmark->preexec == NULL)
+		return 0;
+
+	return bmark->preexec(bmark, seed);
+}
+
+
+int bmark_call_postexec(bmark_t *bmark)
+{
+	if (bmark == NULL) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	/* nothing todo? */
+	if (bmark->postexec == NULL)
+		return 0;
+
+	return bmark->postexec(bmark);
+}
+
+
+/*
+ * BMARKSET
+ */
+
+bmarkset_t *bmarkset_create(const char *name)
+{
+	bmarkset_t *bmarkset = calloc(1, sizeof(bmarkset_t));
+	if (bmarkset == NULL)
+		return NULL;
+
+	bmarkset->name = name;
+
+	return bmarkset;
+}
+
+
+void bmarkset_destroy(bmarkset_t *bmarkset)
+{
+	if (bmarkset == NULL)
+		return;
+	bmark_t *t = bmarkset->bmarks_head;
+	while (t != NULL) {
+		bmark_t *n = t->next;
+		bmark_destroy(t);
+		t = n;
+	}
+	free(bmarkset);
 }
 
 
@@ -240,110 +331,14 @@ int bmarkset_add_bmark(bmarkset_t *bmarkset, bmark_t *bmark)
 }
 
 
-int bmark_add_subbmark(
-	bmark_t *bmark,
-	const char *name, bool rv, bool rvv,
-	bmark_init_subbmark_t init,
-	bmark_run_subbmark_t run,
-	bmark_cleanup_subbmark_t cleanup,
-	unsigned int data_len)
+void bmarkset_reset(bmarkset_t *bmarkset)
 {
-	subbmark_t *subbmark = subbmark_create(
-				       name, rv, rvv,
-				       init, run, cleanup,
-				       data_len);
-	if (subbmark == NULL)
-		return -1;
-
-	/* add to link list */
-	subbmark->index = bmark->subbmarks_len;
-	if (bmark->subbmarks_tail == NULL)
-		/* first element */
-		bmark->subbmarks_head = subbmark;
-	else
-		bmark->subbmarks_tail->next = subbmark;
-	bmark->subbmarks_tail = subbmark;
-	bmark->subbmarks_len++;
-
-	/* link bmark (parent) */
-	subbmark->bmark = bmark;
-
-	return 0;
-}
-
-
-int bmark_init(bmark_t *bmark, int seed)
-{
-	if (bmark == NULL) {
-		errno = ENODEV;
-		return -1;
-	}
-
-	/* nothing todo? */
-	if (bmark->init == NULL)
-		return 0;
-
-	return bmark->init(bmark, seed);
-}
-
-
-int bmark_cleanup(bmark_t *bmark)
-{
-	if (bmark == NULL) {
-		errno = EINVAL;
-		return -1;
-	}
-
-	/* nothing todo? */
-	if (bmark->cleanup == NULL)
-		return 0;
-
-	return bmark->cleanup(bmark);
-}
-
-
-subbmark_t *bmark_get_first_subbmark(bmark_t *bmark)
-{
-	if (bmark == NULL) {
-		errno = EINVAL;
-		return NULL;
-	}
-
-	return bmark->subbmarks_head;
-}
-
-
-subbmark_t *bmark_get_next_subbmark(subbmark_t *subbmark)
-{
-	if (subbmark == NULL) {
-		errno = EINVAL;
-		return NULL;
-	}
-
-	return subbmark->next;
-}
-
-
-int bmark_subbmark_exec(subbmark_t *subbmark, int iteration)
-{
-	int ret = 0;
-
-	/* init run */
-	ret = bmark_init_subbmark(subbmark, iteration);
-	if (ret < 0)
-		return -1;
-
-	/* run and measure */
-	chrono_start(&subbmark->chrono);
-	ret = bmark_run_subbmark(subbmark);
-	if (ret < 0)
-		return -1;
-	chrono_stop(&subbmark->chrono);
-
-	/* cleanup run */
-	ret = bmark_cleanup_subbmark(subbmark);
-	if (ret < 0)
-		return -1;
-
-	return 0;
+	if (bmarkset == NULL)
+		return;
+	for (
+		bmark_t *t = bmarkset->bmarks_head;
+		t != NULL;
+		t = t->next
+	)
+		bmark_reset(t);
 }

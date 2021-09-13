@@ -7,9 +7,9 @@
 
 
 struct subbmark;
-typedef int (*bmark_init_subbmark_t)(struct subbmark *subbmark, int iteration);
-typedef int (*bmark_run_subbmark_t)(struct subbmark *subbmark);
-typedef int (*bmark_cleanup_subbmark_t)(struct subbmark *subbmark);
+typedef int (*subbmark_preexec_fp_t)(struct subbmark *subbmark, int iteration);
+typedef int (*subbmark_exec_fp_t)(struct subbmark *subbmark);
+typedef int (*subbmark_postexec_fp_t)(struct subbmark *subbmark);
 
 
 typedef struct subbmark {
@@ -18,9 +18,9 @@ typedef struct subbmark {
 	bool rv;				// is a RISC-V bmark
 	bool rvv;				// is a RISC-V vector bmark
 
-	bmark_init_subbmark_t init;		// called before subbmark
-	bmark_run_subbmark_t run;		// subbmark function (measured)
-	bmark_cleanup_subbmark_t cleanup;	// called after subbmark TODO: cleanup + check!
+	subbmark_preexec_fp_t preexec;		// called before subbmark
+	subbmark_exec_fp_t exec;		// subbmark function (measured)
+	subbmark_postexec_fp_t postexec;	// called after subbmark
 
 	struct bmark *bmark;			// parent bmark
 	struct subbmark *next;			// next in subbmark list
@@ -32,8 +32,8 @@ typedef struct subbmark {
 
 
 struct bmark;
-typedef int (*bmark_init_bmark_t)(struct bmark *bmark, int seed);
-typedef int (*bmark_cleanup_bmark_t)(struct bmark *bmark);
+typedef int (*bmark_preexec_fp_t)(struct bmark *bmark, int seed);
+typedef int (*bmark_postexec_fp_t)(struct bmark *bmark);
 
 typedef struct bmark {
 	const char *name;			// name of the bmark
@@ -44,8 +44,8 @@ typedef struct bmark {
 	struct subbmark *subbmarks_tail;
 	unsigned int subbmarks_len;
 
-	bmark_init_bmark_t init;		// called before bmark
-	bmark_cleanup_bmark_t cleanup;		// called after bmark
+	bmark_preexec_fp_t preexec;		// called before bmark
+	bmark_postexec_fp_t postexec;		// called after bmark
 
 	struct bmarkset *bmarkset;		// parent bmarkset
 	struct bmark *next;			// next in bmark list
@@ -64,23 +64,18 @@ typedef struct bmarkset {
 } bmarkset_t;
 
 
-/*
- * allocated and create a new bmarkset
- */
-bmarkset_t *bmarkset_create(const char *name);
 
 
 /*
- * reset all bmarks
+ * SUBBMARK
  */
-void bmarkset_reset(bmarkset_t *bmarkset);
+
+int subbmark_exec(subbmark_t *subbmark, int iteration);
 
 
 /*
- * destroy the bmarkset
+ * BMARK
  */
-void bmarkset_destroy(bmarkset_t *bmarkset);
-
 
 /*
  * create a bmark
@@ -88,8 +83,8 @@ void bmarkset_destroy(bmarkset_t *bmarkset);
  */
 bmark_t *bmark_create(
 	const char *name,
-	bmark_init_bmark_t init,
-	bmark_cleanup_bmark_t cleanup,
+	bmark_preexec_fp_t preexec,
+	bmark_postexec_fp_t postexec,
 	unsigned int data_len);
 
 
@@ -100,9 +95,6 @@ bmark_t *bmark_create(
 void bmark_destroy(bmark_t *bmark);
 
 
-int bmarkset_add_bmark(bmarkset_t *bmarkset, bmark_t *bmark);
-
-
 /*
  * allocated and create a new bmark
  * returns NULL on error
@@ -110,16 +102,45 @@ int bmarkset_add_bmark(bmarkset_t *bmarkset, bmark_t *bmark);
 int bmark_add_subbmark(
 	bmark_t *bmark,
 	const char *name, bool rv, bool rvv,
-	bmark_init_subbmark_t init,
-	bmark_run_subbmark_t run,
-	bmark_cleanup_subbmark_t cleanup,
+	subbmark_preexec_fp_t preexec,
+	subbmark_exec_fp_t exec,
+	subbmark_postexec_fp_t postexec,
 	unsigned int data_len);
 
-int bmark_subbmark_exec(subbmark_t *subbmark, int iteration);
 
-int bmark_init(bmark_t *bmark, int seed);
-int bmark_cleanup(bmark_t *bmark);
+int bmark_call_preexec(bmark_t *bmark, int seed);
+int bmark_call_postexec(bmark_t *bmark);
+
 subbmark_t *bmark_get_first_subbmark(bmark_t *bmark);
 subbmark_t *bmark_get_next_subbmark(subbmark_t *subbmark);
+
+
+/*
+ * BMARKSET
+ */
+
+/*
+ * allocated and create a new bmarkset
+ */
+bmarkset_t *bmarkset_create(const char *name);
+
+
+/*
+ * destroy the bmarkset
+ */
+void bmarkset_destroy(bmarkset_t *bmarkset);
+
+
+/*
+ * add a new bmark to set
+ */
+int bmarkset_add_bmark(bmarkset_t *bmarkset, bmark_t *bmark);
+
+
+/*
+ * reset all bmarks
+ */
+void bmarkset_reset(bmarkset_t *bmarkset);
+
 
 #endif /* BMARKSET_H */
