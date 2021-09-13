@@ -259,6 +259,10 @@ bmark_t *bmark_create(
 	if (parastr == NULL)
 		parastr = "";
 	bmark->parastr = strdup(parastr);
+	if (bmark->parastr == NULL) {
+		free(bmark);
+		return NULL;
+	}
 	bmark->preexec = preexec;
 	bmark->postexec = postexec;
 
@@ -268,6 +272,7 @@ bmark_t *bmark_create(
 	bmark->data = calloc(1, data_len);
 	if (bmark->data == NULL) {
 		free(bmark);
+		free(bmark->parastr);
 		return NULL;
 	}
 
