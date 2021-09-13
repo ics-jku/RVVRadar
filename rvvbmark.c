@@ -70,13 +70,21 @@ __ret_bmarkset_destroy:
 int main(int argc, char **argv)
 {
 	printf("%s (C) 2021 Manfred Schlaegl <manfred.schlaegl@gmx.at>\n", RVVBMARK_VERSION_STR);
+
+	printf("RISC-V support is ");
+#if RVVBMARK_RV_SUPPORT == 1
+	printf("enabled\n");
+
 	printf("RISC-V RVV support is ");
 #if RVVBMARK_RVV_SUPPORT == 1
 	printf("enabled\n");
-#else
+#else /* RVVBMARK_RVV_SUPPORT */
 	printf("disabled\n");
-#endif
+#endif /* RVVBMARK_RVV_SUPPORT */
 
+#else /* RVVBMARK_RV_SUPPORT */
+	printf("disabled\n");
+#endif /* RVVBMARK_RV_SUPPORT */
 
 	memcpybmarkbmark();
 
