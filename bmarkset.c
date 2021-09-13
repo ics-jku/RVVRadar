@@ -180,6 +180,20 @@ static int subbmark_print_pretty(subbmark_t *subbmark, FILE *out)
 }
 
 
+static int subbmark_print_csv_head(FILE *out)
+{
+	if (out == NULL) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	printf("set;benchmark(parameters);sub;runs;fails;");
+	chrono_print_csv_head(DATAOUT);
+	printf("\n");
+	return 0;
+}
+
+
 static int subbmark_print_csv(subbmark_t *subbmark, FILE *out)
 {
 	if (subbmark == NULL || out == NULL) {
@@ -489,6 +503,8 @@ int bmarkset_run(bmarkset_t *bmarkset, int seed, int iterations, bool verbose)
 		errno = EINVAL;
 		return -1;
 	}
+
+	subbmark_print_csv_head(DATAOUT);
 
 	pinfo(" + set: %s\n", bmarkset->name);
 	for (
