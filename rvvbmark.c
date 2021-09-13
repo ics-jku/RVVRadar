@@ -28,22 +28,17 @@ void dump_field(char *f, int len)
 int memcpybmarkbmark()
 {
 	int ret = 0;
-	//int len = 1024 * 1024 * 10 + 1;
-	int len = 1024 * 1024;
 
 	bmarkset_t *bmarkset = bmarkset_create("rvvbmark");
 	if (bmarkset == NULL)
 		return -1;
 
-	if (bmark_memcpy_add(bmarkset, len) < 0) {
-		goto __ret_bmarkset_destroy;
-		return -1;
-	}
-
-	if (bmark_memcpy_add(bmarkset, len * 2) < 0) {
-		goto __ret_bmarkset_destroy;
-		return -1;
-	}
+	/* 128 byte to 16MiB, doubling the size after every iteration */
+	for (int len = 128; len <= 1024 * 1024 * 16; len <<= 1)
+		if (bmark_memcpy_add(bmarkset, len) < 0) {
+			goto __ret_bmarkset_destroy;
+			return -1;
+		}
 
 	bmarkset_reset(bmarkset);
 
