@@ -25,6 +25,9 @@ void dump_field(char *f, int len)
 	printf("\n");
 }
 
+#define LEN_START	128
+#define LEN_END		1024 * 1024 * 16
+
 int memcpybmarkbmark()
 {
 	int ret = 0;
@@ -34,7 +37,7 @@ int memcpybmarkbmark()
 		return -1;
 
 	/* 128 byte to 16MiB, doubling the size after every iteration */
-	for (int len = 128; len <= 1024 * 1024 * 16; len <<= 1)
+	for (int len = LEN_START; len <= LEN_END; len <<= 1)
 		if (bmark_memcpy_add(bmarkset, len) < 0) {
 			goto __ret_bmarkset_destroy;
 			return -1;
