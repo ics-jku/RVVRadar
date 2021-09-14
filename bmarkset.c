@@ -61,6 +61,8 @@ static void subbmark_destroy(subbmark_t *subbmark)
 	if (subbmark == NULL)
 		return;
 
+	chrono_cleanup(&subbmark->chrono);
+
 	/* free optional data area */
 	if (subbmark->data)
 		free(subbmark->data);
@@ -77,7 +79,7 @@ static void subbmark_reset(subbmark_t *subbmark)
 	subbmark->runs = 0;
 	subbmark->fails = 0;
 
-	chrono_reset(&subbmark->chrono);
+	chrono_init(&subbmark->chrono);
 }
 
 

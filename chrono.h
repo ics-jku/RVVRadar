@@ -8,7 +8,7 @@
  * Usage example
  *
  * chrono_t chrono;
- * chrono_reset(&chrono);
+ * chrono_init(&chrono);
  * loop {
  * 	chrono_start(&chrono);
  * 	<function to measure>
@@ -17,6 +17,7 @@
  * 	chrono_stop(&chrono);
  * }
  * <print statistics from chrono_t>
+ * chrono_cleanup(&chrono);
  *
  * Note:
  * A measurement can be aborted (e.g. fail of function to measure) simply
@@ -24,29 +25,47 @@
  */
 
 
+/*
+ * maximum number of measurements
+ */
+#define CHRONO_MAX_MEASUREMENTS	10000
+
 
 typedef struct chrono {
 	/* last start and end times */
 	struct timespec tstart;
 	struct timespec tend;
 
-	int count;
+	unsigned int max_nmeasure;
+	unsigned int nmeasure;
+	unsigned long long *tdlist;
 
-	/* statistics */
+	/* live statistics (calculated on each chrono_stop) */
 	unsigned long long tdlast;
 	unsigned long long tdmin;
 	unsigned long long tdmax;
 	unsigned long long tdsum;
 	unsigned long long tdavg;
-	/* TODO: var/stdev */
+
+	/* statistics (calculated on demand) */
+	unsigned int nmeasure_on_last_update;
+	unsigned long long tdvar;
+	unsigned long long tdstdev;
 } chrono_t;
 
 
 /*
- * reset chronometer and statistics
+ * init and reset chronometer and statistics
+ *   * max_size .. maximum number of expected measurements
  * return: 0 .. ok; <0 .. error
  */
-int chrono_reset(chrono_t *chrono);
+int chrono_init(chrono_t *chrono);
+
+
+/*
+ * cleanup chrono and free ressources
+ */
+void chrono_cleanup(chrono_t *chrono);
 
 
 /*
@@ -65,7 +84,7 @@ int chrono_stop(chrono_t *chrono);
 
 /*
  * print csv head for chrono statistics
- * (count;td...)
+ * (nmeasure;td...)
  * return: same as for fprintf
  */
 int chrono_print_csv_head(FILE *out);
@@ -73,7 +92,7 @@ int chrono_print_csv_head(FILE *out);
 
 /*
  * print chrono statistics as csv
- * (count;td...)
+ * (nmeasure;td...)
  * return: same as for fprintf
  */
 int chrono_print_csv(chrono_t *chrono, FILE *out);

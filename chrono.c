@@ -1,5 +1,7 @@
+#include <stdlib.h>
 #include <string.h>
 #include <limits.h>
+#include <math.h>
 #include <errno.h>
 
 #include "chrono.h"
@@ -36,6 +38,21 @@ static inline unsigned long long chrono__stop(const struct timespec start)
 }
 
 
+/* update statistics part 2 */
+static void chrono_update_statistics(chrono_t *chrono)
+{
+	/* is already updated? -> nothing to do */
+	if (chrono->nmeasure == chrono->nmeasure_on_last_update)
+		return;
+
+	chrono->nmeasure_on_last_update = chrono->nmeasure;
+
+	/* update variance and standard deviation */
+	chrono->tdvar = 0;
+	for (int i = 0; i < chrono->nmeasure; i++)
+		chrono->tdvar += (chrono->tdlist[i] - chrono->tdvar) ^ 2;
+	chrono->tdstdev = sqrt(chrono->tdvar);
+}
 
 
 
@@ -43,8 +60,7 @@ static inline unsigned long long chrono__stop(const struct timespec start)
  * API
  */
 
-
-int chrono_reset(chrono_t *chrono)
+int chrono_init(chrono_t *chrono)
 {
 	if (chrono == NULL) {
 		errno = EINVAL;
@@ -54,7 +70,20 @@ int chrono_reset(chrono_t *chrono)
 	memset(chrono, 0, sizeof(chrono_t));
 	chrono->tdmin = ULLONG_MAX;
 
+	chrono->max_nmeasure = CHRONO_MAX_MEASUREMENTS;
+	chrono->tdlist = calloc(chrono->max_nmeasure, sizeof(unsigned long long));
+	if (chrono->tdlist == NULL)
+		return -1;
+
 	return 0;
+}
+
+
+void chrono_cleanup(chrono_t *chrono)
+{
+	if (chrono == NULL)
+		return;
+	free(chrono->tdlist);
 }
 
 
@@ -84,15 +113,23 @@ int chrono_stop(chrono_t *chrono)
 	/* stop chronometer */
 	td = chrono__stop(chrono->tstart);
 
-	/* update statistics */
-	chrono->count++;
+	/* abort, if no space */
+	if (chrono->nmeasure > chrono->max_nmeasure) {
+		errno = ENOMEM;
+		return -1;
+	}
+
+	chrono->tdlist[chrono->nmeasure] = td;
+
+	/* update statistics part 1 */
+	chrono->nmeasure++;
 	chrono->tdlast = td;
 	chrono->tdsum += td;
 	if (td > chrono->tdmax)
 		chrono->tdmax = td;
 	if (td < chrono->tdmin)
 		chrono->tdmin = td;
-	chrono->tdavg = chrono->tdsum / chrono->count;
+	chrono->tdavg = chrono->tdsum / chrono->nmeasure;
 
 	return 0;
 }
@@ -105,7 +142,7 @@ int chrono_print_csv_head(FILE *out)
 		return -1;
 	}
 
-	return fprintf(out, "count;tdmin [ns];tdmax [ns];tdavg [ns]");
+	return fprintf(out, "nmeasure;tdmin [ns];tdmax [ns];tdavg [ns];tdvar [ns];tdstdev [ns]");
 }
 
 
@@ -116,11 +153,15 @@ int chrono_print_csv(chrono_t *chrono, FILE *out)
 		return -1;
 	}
 
-	return fprintf(out, "%i;%llu;%llu;%llu",
-		       chrono->count,
+	chrono_update_statistics(chrono);
+
+	return fprintf(out, "%i;%llu;%llu;%llu;%llu;%llu",
+		       chrono->nmeasure,
 		       chrono->tdmin,
 		       chrono->tdmax,
-		       chrono->tdavg);
+		       chrono->tdavg,
+		       chrono->tdvar,
+		       chrono->tdstdev);
 }
 
 
@@ -131,13 +172,19 @@ int chrono_print_pretty(chrono_t *chrono, const char *indent, FILE *out)
 		return -1;
 	}
 
+	chrono_update_statistics(chrono);
+
 	return fprintf(out,
-		       "%scount:    %i\n"
-		       "%smin [ns]: %llu\n"
-		       "%smax [ns]: %llu\n"
-		       "%savg [ns]: %llu\n",
-		       indent, chrono->count,
+		       "%snmeasure:   %u\n"
+		       "%smin [ns]:   %llu\n"
+		       "%smax [ns]:   %llu\n"
+		       "%savg [ns]:   %llu\n"
+		       "%svar [ns]:   %llu\n"
+		       "%sstdev [ns]: %llu\n",
+		       indent, chrono->nmeasure,
 		       indent, chrono->tdmin,
 		       indent, chrono->tdmax,
-		       indent, chrono->tdavg);
+		       indent, chrono->tdavg,
+		       indent, chrono->tdvar,
+		       indent, chrono->tdstdev);
 }
