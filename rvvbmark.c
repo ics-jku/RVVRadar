@@ -11,20 +11,6 @@
 #include "bmark_memcpy.h"
 
 
-
-
-void dump_field(char *f, int len)
-{
-	int i;
-
-	for (i = 0; i < len; i++) {
-		printf("0x%.2X ", f[i]);
-		if ((i + 1) % 16 == 0)
-			printf("\n");
-	}
-	printf("\n");
-}
-
 #define LEN_START	128
 #define LEN_END		1024 * 1024 * 16
 
