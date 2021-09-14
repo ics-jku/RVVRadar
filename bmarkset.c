@@ -302,7 +302,7 @@ void bmark_destroy(bmark_t *bmark)
 }
 
 
-int bmark_add_subbmark(
+subbmark_t *bmark_add_subbmark(
 	bmark_t *bmark,
 	const char *name, bool rv, bool rvv,
 	subbmark_preexec_fp_t preexec,
@@ -315,7 +315,7 @@ int bmark_add_subbmark(
 				       preexec, exec, postexec,
 				       data_len);
 	if (subbmark == NULL)
-		return -1;
+		return NULL;
 
 	/* add to link list */
 	subbmark->index = bmark->subbmarks_len;
@@ -330,7 +330,7 @@ int bmark_add_subbmark(
 	/* link bmark (parent) */
 	subbmark->bmark = bmark;
 
-	return 0;
+	return subbmark;
 }
 
 

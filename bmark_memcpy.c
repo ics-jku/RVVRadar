@@ -116,7 +116,7 @@ static int subbmark_exec_rvv_32(subbmark_t *subbmark)
 
 static int subbmarks_add(bmark_t *bmark)
 {
-	int ret;
+	subbmark_t *ret;
 
 	ret = bmark_add_subbmark(bmark,
 				 "system",
@@ -125,8 +125,8 @@ static int subbmarks_add(bmark_t *bmark)
 				 subbmark_exec_sys,
 				 subbmark_postexec,
 				 0);
-	if (ret < 0)
-		return ret;
+	if (ret == NULL)
+		return -1;
 
 	ret = bmark_add_subbmark(bmark,
 				 "c_noavect_byte",
@@ -135,8 +135,8 @@ static int subbmarks_add(bmark_t *bmark)
 				 subbmark_exec_c_noavect_byte,
 				 subbmark_postexec,
 				 0);
-	if (ret < 0)
-		return ret;
+	if (ret == NULL)
+		return -1;
 
 	ret = bmark_add_subbmark(bmark,
 				 "c_avect_byte",
@@ -145,8 +145,8 @@ static int subbmarks_add(bmark_t *bmark)
 				 subbmark_exec_c_avect_byte,
 				 subbmark_postexec,
 				 0);
-	if (ret < 0)
-		return ret;
+	if (ret == NULL)
+		return -1;
 
 #if RVVBMARK_RV_SUPPORT == 1
 	ret = bmark_add_subbmark(bmark,
@@ -156,8 +156,8 @@ static int subbmarks_add(bmark_t *bmark)
 				 subbmark_exec_rv_wlenx4,
 				 subbmark_postexec,
 				 0);
-	if (ret < 0)
-		return ret;
+	if (ret == NULL)
+		return -1;
 
 #if RVVBMARK_RVV_SUPPORT == 1
 	ret = bmark_add_subbmark(bmark,
@@ -167,8 +167,8 @@ static int subbmarks_add(bmark_t *bmark)
 				 subbmark_exec_rvv_8,
 				 subbmark_postexec,
 				 0);
-	if (ret < 0)
-		return ret;
+	if (ret == NULL)
+		return -1;
 
 	ret = bmark_add_subbmark(bmark,
 				 "rvv 32bit elements",
@@ -177,8 +177,8 @@ static int subbmarks_add(bmark_t *bmark)
 				 subbmark_exec_rvv_32,
 				 subbmark_postexec,
 				 0);
-	if (ret < 0)
-		return ret;
+	if (ret == NULL)
+		return -1;
 #endif /* RVVBMARK_RVV_SUPPORT == 1 */
 #endif /* RVVBMARK_RV_SUPPORT == 1 */
 

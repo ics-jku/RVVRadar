@@ -95,7 +95,7 @@ void bmark_destroy(bmark_t *bmark);
  * allocated and create a new bmark
  * returns NULL on error
  */
-int bmark_add_subbmark(
+subbmark_t *bmark_add_subbmark(
 	bmark_t *bmark,
 	const char *name, bool rv, bool rvv,
 	subbmark_preexec_fp_t preexec,
