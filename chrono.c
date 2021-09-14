@@ -38,6 +38,15 @@ static inline long long chrono__stop(const struct timespec start)
 }
 
 
+/*
+ * comparator function for qsort
+ */
+static int chrono_qsort_td_compare(const void * a, const void * b)
+{
+	return ( *(long long*)a - * (long long*)b );
+}
+
+
 /* update statistics part 2 */
 static void chrono_update_statistics(chrono_t *chrono)
 {
@@ -45,13 +54,22 @@ static void chrono_update_statistics(chrono_t *chrono)
 	if (chrono->nmeasure == chrono->nmeasure_on_last_update)
 		return;
 
-	chrono->nmeasure_on_last_update = chrono->nmeasure;
-
 	/* update variance and standard deviation */
 	chrono->tdvar = 0;
 	for (int i = 0; i < chrono->nmeasure; i++)
 		chrono->tdvar += (chrono->tdlist[i] - chrono->tdvar) ^ 2;
 	chrono->tdstdev = sqrt(chrono->tdvar);
+
+	/* update median */
+	qsort(chrono->tdlist, chrono->nmeasure, sizeof(long long), chrono_qsort_td_compare);
+	chrono->tdmedian = chrono->tdlist[chrono->nmeasure / 2];
+	if ((chrono->nmeasure & 1) == 0) {
+		/* even number of elements -> average of middle two elements */
+		chrono->tdmedian = (chrono->tdmedian + chrono->tdlist[chrono->nmeasure / 2 - 1]) / 2;
+	}
+
+	/* save update point */
+	chrono->nmeasure_on_last_update = chrono->nmeasure;
 }
 
 
@@ -142,7 +160,7 @@ int chrono_print_csv_head(FILE *out)
 		return -1;
 	}
 
-	return fprintf(out, "nmeasure;tdmin [ns];tdmax [ns];tdavg [ns];tdvar [ns];tdstdev [ns]");
+	return fprintf(out, "nmeasure;tdmin [ns];tdmax [ns];tdavg [ns];tdvar [ns];tdstdev [ns];tdmedian [ns]");
 }
 
 
@@ -155,13 +173,14 @@ int chrono_print_csv(chrono_t *chrono, FILE *out)
 
 	chrono_update_statistics(chrono);
 
-	return fprintf(out, "%i;%lli;%lli;%lli;%lli;%lli",
+	return fprintf(out, "%i;%lli;%lli;%lli;%lli;%lli;%lli",
 		       chrono->nmeasure,
 		       chrono->tdmin,
 		       chrono->tdmax,
 		       chrono->tdavg,
 		       chrono->tdvar,
-		       chrono->tdstdev);
+		       chrono->tdstdev,
+		       chrono->tdmedian);
 }
 
 
@@ -175,16 +194,18 @@ int chrono_print_pretty(chrono_t *chrono, const char *indent, FILE *out)
 	chrono_update_statistics(chrono);
 
 	return fprintf(out,
-		       "%snmeasure:   %u\n"
-		       "%smin [ns]:   %lli\n"
-		       "%smax [ns]:   %lli\n"
-		       "%savg [ns]:   %lli\n"
-		       "%svar [ns]:   %lli\n"
-		       "%sstdev [ns]: %lli\n",
+		       "%snmeasure:    %u\n"
+		       "%smin [ns]:    %lli\n"
+		       "%smax [ns]:    %lli\n"
+		       "%savg [ns]:    %lli\n"
+		       "%svar [ns]:    %lli\n"
+		       "%sstdev [ns]:  %lli\n"
+		       "%smedian [ns]: %lli\n",
 		       indent, chrono->nmeasure,
 		       indent, chrono->tdmin,
 		       indent, chrono->tdmax,
 		       indent, chrono->tdavg,
 		       indent, chrono->tdvar,
-		       indent, chrono->tdstdev);
+		       indent, chrono->tdstdev,
+		       indent, chrono->tdmedian);
 }

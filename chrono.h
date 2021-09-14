@@ -51,6 +51,7 @@ typedef struct chrono {
 	unsigned int nmeasure_on_last_update;
 	long long tdvar;
 	long long tdstdev;
+	long long tdmedian;
 } chrono_t;
 
 
