@@ -44,7 +44,7 @@ static void dump_field(char *f, int len)
 
 
 /* reset dest array before benchmark run */
-static int subbmark_init(subbmark_t *subbmark, int iteration)
+static int subbmark_preexec(subbmark_t *subbmark, int iteration)
 {
 	struct data *d = (struct data*)subbmark->bmark->data;
 	memset(d->dest, 0, d->len);
@@ -52,7 +52,7 @@ static int subbmark_init(subbmark_t *subbmark, int iteration)
 }
 
 
-static int subbmark_cleanup(subbmark_t *subbmark)
+static int subbmark_postexec(subbmark_t *subbmark)
 {
 	struct data *d = (struct data*)subbmark->bmark->data;
 	int ret = memcmp(d->dest, d->src, d->len);
@@ -62,7 +62,7 @@ static int subbmark_cleanup(subbmark_t *subbmark)
 }
 
 
-static int subbmark_run_sys(subbmark_t *subbmark)
+static int subbmark_exec_sys(subbmark_t *subbmark)
 {
 	struct data *d = (struct data*)subbmark->bmark->data;
 	memcpy(d->dest, d->src, d->len);
@@ -70,7 +70,7 @@ static int subbmark_run_sys(subbmark_t *subbmark)
 }
 
 
-static int subbmark_run_c_noavect_byte(subbmark_t *subbmark)
+static int subbmark_exec_c_noavect_byte(subbmark_t *subbmark)
 {
 	struct data *d = (struct data*)subbmark->bmark->data;
 	memcpy_c_noavect_byte(d->dest, d->src, d->len);
@@ -78,7 +78,7 @@ static int subbmark_run_c_noavect_byte(subbmark_t *subbmark)
 }
 
 
-static int subbmark_run_c_avect_byte(subbmark_t *subbmark)
+static int subbmark_exec_c_avect_byte(subbmark_t *subbmark)
 {
 	struct data *d = (struct data*)subbmark->bmark->data;
 	memcpy_c_avect_byte(d->dest, d->src, d->len);
@@ -87,7 +87,7 @@ static int subbmark_run_c_avect_byte(subbmark_t *subbmark)
 
 
 #if RVVBMARK_RV_SUPPORT == 1
-static int subbmark_run_rv_wlenx4(subbmark_t *subbmark)
+static int subbmark_exec_rv_wlenx4(subbmark_t *subbmark)
 {
 	struct data *d = (struct data*)subbmark->bmark->data;
 	memcpy_rv_wlenx4(d->dest, d->src, d->len);
@@ -96,7 +96,7 @@ static int subbmark_run_rv_wlenx4(subbmark_t *subbmark)
 
 
 #if RVVBMARK_RVV_SUPPORT == 1
-static int subbmark_run_rvv_8(subbmark_t *subbmark)
+static int subbmark_exec_rvv_8(subbmark_t *subbmark)
 {
 	struct data *d = (struct data*)subbmark->bmark->data;
 	memcpy_rvv_8(d->dest, d->src, d->len);
@@ -104,7 +104,7 @@ static int subbmark_run_rvv_8(subbmark_t *subbmark)
 }
 
 
-static int subbmark_run_rvv_32(subbmark_t *subbmark)
+static int subbmark_exec_rvv_32(subbmark_t *subbmark)
 {
 	struct data *d = (struct data*)subbmark->bmark->data;
 	memcpy_rvv_32(d->dest, d->src, d->len);
@@ -121,9 +121,9 @@ static int subbmarks_add(bmark_t *bmark)
 	ret = bmark_add_subbmark(bmark,
 				 "system",
 				 false, false,
-				 subbmark_init,
-				 subbmark_run_sys,
-				 subbmark_cleanup,
+				 subbmark_preexec,
+				 subbmark_exec_sys,
+				 subbmark_postexec,
 				 0);
 	if (ret < 0)
 		return ret;
@@ -131,9 +131,9 @@ static int subbmarks_add(bmark_t *bmark)
 	ret = bmark_add_subbmark(bmark,
 				 "c_noavect_byte",
 				 false, false,
-				 subbmark_init,
-				 subbmark_run_c_noavect_byte,
-				 subbmark_cleanup,
+				 subbmark_preexec,
+				 subbmark_exec_c_noavect_byte,
+				 subbmark_postexec,
 				 0);
 	if (ret < 0)
 		return ret;
@@ -141,9 +141,9 @@ static int subbmarks_add(bmark_t *bmark)
 	ret = bmark_add_subbmark(bmark,
 				 "c_avect_byte",
 				 false, false,
-				 subbmark_init,
-				 subbmark_run_c_avect_byte,
-				 subbmark_cleanup,
+				 subbmark_preexec,
+				 subbmark_exec_c_avect_byte,
+				 subbmark_postexec,
 				 0);
 	if (ret < 0)
 		return ret;
@@ -152,9 +152,9 @@ static int subbmarks_add(bmark_t *bmark)
 	ret = bmark_add_subbmark(bmark,
 				 "4 int regs",
 				 true, false,
-				 subbmark_init,
-				 subbmark_run_rv_wlenx4,
-				 subbmark_cleanup,
+				 subbmark_preexec,
+				 subbmark_exec_rv_wlenx4,
+				 subbmark_postexec,
 				 0);
 	if (ret < 0)
 		return ret;
@@ -163,9 +163,9 @@ static int subbmarks_add(bmark_t *bmark)
 	ret = bmark_add_subbmark(bmark,
 				 "rvv 8bit elements",
 				 true, true,
-				 subbmark_init,
-				 subbmark_run_rvv_8,
-				 subbmark_cleanup,
+				 subbmark_preexec,
+				 subbmark_exec_rvv_8,
+				 subbmark_postexec,
 				 0);
 	if (ret < 0)
 		return ret;
@@ -173,9 +173,9 @@ static int subbmarks_add(bmark_t *bmark)
 	ret = bmark_add_subbmark(bmark,
 				 "rvv 32bit elements",
 				 true, true,
-				 subbmark_init,
-				 subbmark_run_rvv_32,
-				 subbmark_cleanup,
+				 subbmark_preexec,
+				 subbmark_exec_rvv_32,
+				 subbmark_postexec,
 				 0);
 	if (ret < 0)
 		return ret;
@@ -186,7 +186,7 @@ static int subbmarks_add(bmark_t *bmark)
 }
 
 
-static int init(struct bmark *bmark, int seed)
+static int bmark_preexec(struct bmark *bmark, int seed)
 {
 	struct data *d = (struct data*)bmark->data;
 	int ret = 0;
@@ -221,7 +221,7 @@ __err_src:
 }
 
 
-static int cleanup(struct bmark *bmark)
+static int bmark_postexec(struct bmark *bmark)
 {
 	struct data *d = (struct data*)bmark->data;
 	if (d == NULL)
@@ -254,8 +254,8 @@ int bmark_memcpy_add(bmarkset_t *bmarkset, unsigned int len)
 	bmark_t *bmark = bmark_create(
 				 "memcpy",
 				 parastr,
-				 init,
-				 cleanup,
+				 bmark_preexec,
+				 bmark_postexec,
 				 sizeof(struct data));
 	if (bmark == NULL)
 		return -1;
