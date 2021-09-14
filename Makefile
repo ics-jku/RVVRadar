@@ -18,7 +18,7 @@ STRIP ?= strip
 ifeq ($(debug),1)
 	# make debug=1
 	# no optimization, with debug symbols install unstripped
-	CFLAGS+=	-O0 -g
+	CFLAGS+=	-Og -g
 	INSTALLFLAGS=
 else
 	# Benchmarks are built explicitly with/without autovectorization
