@@ -145,16 +145,13 @@ static int bmark_preexec(struct bmark *bmark, int seed)
 		goto __err_dest;
 	}
 
-	/* init (TODO deterministic with seed !!! */
-	if (getrandom(d->src, d->len, 0) != d->len) {
-		ret = -1;
-		goto __err_random;
-	}
+	/* init with random */
+	srandom(seed);
+	for (int i = 0; i < d->len; i++)
+		((unsigned char*)d->src)[i] = random();
 
 	return 0;
 
-__err_random:
-	free(d->dest);
 __err_dest:
 	free(d->src);
 __err_src:
