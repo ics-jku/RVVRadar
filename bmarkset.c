@@ -229,7 +229,7 @@ static int subbmark_run(subbmark_t *subbmark, int iterations, bool verbose)
 			pinfo("FAIL!");
 			continue;
 		}
-		pinfo("OK! (%lluns)", subbmark->chrono.tdavg);
+		pinfo("OK! (%llins)", subbmark->chrono.tdavg);
 	}
 	pinfo("\r                                                              \r");
 	if (verbose)

@@ -38,19 +38,19 @@ typedef struct chrono {
 
 	unsigned int max_nmeasure;
 	unsigned int nmeasure;
-	unsigned long long *tdlist;
+	long long *tdlist;
 
 	/* live statistics (calculated on each chrono_stop) */
-	unsigned long long tdlast;
-	unsigned long long tdmin;
-	unsigned long long tdmax;
-	unsigned long long tdsum;
-	unsigned long long tdavg;
+	long long tdlast;
+	long long tdmin;
+	long long tdmax;
+	long long tdsum;
+	long long tdavg;
 
 	/* statistics (calculated on demand) */
 	unsigned int nmeasure_on_last_update;
-	unsigned long long tdvar;
-	unsigned long long tdstdev;
+	long long tdvar;
+	long long tdstdev;
 } chrono_t;
 
 

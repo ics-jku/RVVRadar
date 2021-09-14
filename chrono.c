@@ -8,7 +8,7 @@
 
 
 /* time difference in ns */
-static unsigned long long timespec_diff(const struct timespec start, const struct timespec end)
+static long long timespec_diff(const struct timespec start, const struct timespec end)
 {
 	struct timespec diff;
 
@@ -30,7 +30,7 @@ static inline void chrono__start(struct timespec *start)
 }
 
 
-static inline unsigned long long chrono__stop(const struct timespec start)
+static inline long long chrono__stop(const struct timespec start)
 {
 	struct timespec end;
 	clock_gettime(CLOCK_MONOTONIC, &end);
@@ -68,10 +68,10 @@ int chrono_init(chrono_t *chrono)
 	}
 
 	memset(chrono, 0, sizeof(chrono_t));
-	chrono->tdmin = ULLONG_MAX;
+	chrono->tdmin = LLONG_MAX;
 
 	chrono->max_nmeasure = CHRONO_MAX_MEASUREMENTS;
-	chrono->tdlist = calloc(chrono->max_nmeasure, sizeof(unsigned long long));
+	chrono->tdlist = calloc(chrono->max_nmeasure, sizeof(long long));
 	if (chrono->tdlist == NULL)
 		return -1;
 
@@ -103,7 +103,7 @@ int chrono_start(chrono_t *chrono)
 
 int chrono_stop(chrono_t *chrono)
 {
-	unsigned long long td = 0;
+	long long td = 0;
 
 	if (chrono == NULL) {
 		errno = EINVAL;
@@ -155,7 +155,7 @@ int chrono_print_csv(chrono_t *chrono, FILE *out)
 
 	chrono_update_statistics(chrono);
 
-	return fprintf(out, "%i;%llu;%llu;%llu;%llu;%llu",
+	return fprintf(out, "%i;%lli;%lli;%lli;%lli;%lli",
 		       chrono->nmeasure,
 		       chrono->tdmin,
 		       chrono->tdmax,
@@ -176,11 +176,11 @@ int chrono_print_pretty(chrono_t *chrono, const char *indent, FILE *out)
 
 	return fprintf(out,
 		       "%snmeasure:   %u\n"
-		       "%smin [ns]:   %llu\n"
-		       "%smax [ns]:   %llu\n"
-		       "%savg [ns]:   %llu\n"
-		       "%svar [ns]:   %llu\n"
-		       "%sstdev [ns]: %llu\n",
+		       "%smin [ns]:   %lli\n"
+		       "%smax [ns]:   %lli\n"
+		       "%savg [ns]:   %lli\n"
+		       "%svar [ns]:   %lli\n"
+		       "%sstdev [ns]: %lli\n",
 		       indent, chrono->nmeasure,
 		       indent, chrono->tdmin,
 		       indent, chrono->tdmax,
