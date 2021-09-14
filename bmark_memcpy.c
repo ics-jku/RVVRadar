@@ -28,16 +28,14 @@ struct subdata {
 };
 
 
-static void dump_field(char *f, int len)
+static void diff_fields(char *dest, char *src, int len)
 {
-	int i;
-
-	for (i = 0; i < len; i++) {
-		printf("0x%.2X ", f[i]);
-		if ((i + 1) % 16 == 0)
-			printf("\n");
-	}
-	printf("\n");
+	fprintf(stderr, "\n");
+	for (int i = 0; i < len; i++)
+		if (dest[i] != src[i])
+			fprintf(stderr, "%s: ERROR: diff on idx=%i: dest=%i != src=%i\n",
+				__FILE__, i, dest[i], src[i]);
+	fprintf(stderr, "\n");
 }
 
 
@@ -62,10 +60,15 @@ static int subbmark_exec_wrapper(subbmark_t *subbmark)
 static int subbmark_postexec(subbmark_t *subbmark)
 {
 	struct data *d = (struct data*)subbmark->bmark->data;
+
+	/* use memcpy for speed -> use diff only if error was detected */
 	int ret = memcmp(d->dest, d->src, d->len);
-	if (!ret)
-		return 0;
-	return -1;
+	if (ret) {
+		diff_fields(d->dest, d->src, d->len);
+		return -1;
+	}
+
+	return 0;
 }
 
 
