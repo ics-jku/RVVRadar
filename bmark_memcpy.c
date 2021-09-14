@@ -12,7 +12,8 @@
 
 #include "bmark_memcpy.h"
 
-extern void memcpy_c_byte(char *src, char *dest, unsigned int len);
+extern void memcpy_c_noavect_byte(char *src, char *dest, unsigned int len);
+extern void memcpy_c_avect_byte(char *src, char *dest, unsigned int len);
 #if RVVBMARK_RV_SUPPORT == 1
 extern void memcpy_rv_wlenx4(void *src, void *dest, unsigned int len);
 #if RVVBMARK_RVV_SUPPORT == 1
@@ -69,10 +70,18 @@ static int subbmark_run_sys(subbmark_t *subbmark)
 }
 
 
-static int subbmark_run_c_byte(subbmark_t *subbmark)
+static int subbmark_run_c_noavect_byte(subbmark_t *subbmark)
 {
 	struct data *d = (struct data*)subbmark->bmark->data;
-	memcpy_c_byte(d->dest, d->src, d->len);
+	memcpy_c_noavect_byte(d->dest, d->src, d->len);
+	return 0;
+}
+
+
+static int subbmark_run_c_avect_byte(subbmark_t *subbmark)
+{
+	struct data *d = (struct data*)subbmark->bmark->data;
+	memcpy_c_avect_byte(d->dest, d->src, d->len);
 	return 0;
 }
 
@@ -120,10 +129,20 @@ static int subbmarks_add(bmark_t *bmark)
 		return ret;
 
 	ret = bmark_add_subbmark(bmark,
-				 "c_byte",
+				 "c_noavect_byte",
 				 false, false,
 				 subbmark_init,
-				 subbmark_run_c_byte,
+				 subbmark_run_c_noavect_byte,
+				 subbmark_cleanup,
+				 0);
+	if (ret < 0)
+		return ret;
+
+	ret = bmark_add_subbmark(bmark,
+				 "c_avect_byte",
+				 false, false,
+				 subbmark_init,
+				 subbmark_run_c_avect_byte,
 				 subbmark_cleanup,
 				 0);
 	if (ret < 0)

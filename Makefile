@@ -21,7 +21,8 @@ ifeq ($(debug),1)
 	CFLAGS+=	-O0 -g
 	INSTALLFLAGS=
 else
-	# TODO: measure different settings
+	# Benchmarks are built explicitly with/without autovectorization
+	# independent of the settings here (see below)
 	CFLAGS+=	-O2
 	INSTALLFLAGS=	-s --strip-program=$(STRIP)
 endif
@@ -60,6 +61,21 @@ all: $(BIN_NAME)
 # generic rule
 %.o: %.c %.h $(HEADERS)
 		$(CC) $(CFLAGS) -c $<
+
+# generic rule for disabled autovectorization
+# verbose info of vectorization is print on compilation (there should be no output!)
+%_c_noavect.o: %_c_noavect.c
+		@echo "BUILD $@ WITHOUT VECTORIZATION"
+		$(CC) $(CFLAGS) -O3 -fno-tree-vectorize -fopt-info-vec-all -c $<
+
+# generic rule for enabled autovectorization
+# -O3 enables autovectorization (-ftree-vectorize) on x86(debian 10) and risc-v (risc-v foundation toolchain)
+# verbose info of vectorization is print on compilation
+%_c_avect.o: %_c_avect.c
+		@echo "BUILD $@ WITH VECTORIZER"
+		$(CC) $(CFLAGS) -O3 -ftree-vectorize -fopt-info-vec-all -c $<
+
+
 
 $(BIN_NAME): $(OBJS) $(HEADERS)
 		$(CC) $(OBJS) $(CFLAGS) $(LDFLAGS) $(LIBS) -o $@
