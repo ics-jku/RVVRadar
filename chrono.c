@@ -68,6 +68,22 @@ static void chrono_update_statistics(chrono_t *chrono)
 		chrono->tdmedian = (chrono->tdmedian + chrono->tdlist[chrono->nmeasure / 2 - 1]) / 2;
 	}
 
+	/* update histogram buckets */
+	memset(chrono->hist_buckets, 0, CHRONO_HIST_BUCKETS * sizeof(chrono->hist_buckets[0]));
+	long long range = chrono->tdmax - chrono->tdmin;
+	for (int i = 0; i < chrono->nmeasure; i++) {
+		int bidx = ((CHRONO_HIST_BUCKETS - 1) * (chrono->tdlist[i] - chrono->tdmin)) / range;
+		/* paranoia checks */
+		if (bidx < 0) {
+			fprintf(stderr, "INTERNAL ERROR: histogram idx %i < 0 -> ABORT!\n", bidx);
+			exit(1);
+		} else if (bidx >= CHRONO_HIST_BUCKETS) {
+			fprintf(stderr, "INTERNAL ERROR: histogram idx %i >= %i -> ABORT!\n", bidx, CHRONO_HIST_BUCKETS);
+			exit(1);
+		} else
+			chrono->hist_buckets[bidx]++;
+	}
+
 	/* save update point */
 	chrono->nmeasure_on_last_update = chrono->nmeasure;
 }
@@ -155,17 +171,30 @@ int chrono_stop(chrono_t *chrono)
 
 int chrono_print_csv_head(FILE *out)
 {
+	int ret = 0;
+
 	if (out == NULL) {
 		errno = EINVAL;
 		return -1;
 	}
 
-	return fprintf(out, "nmeasure;tdmin [ns];tdmax [ns];tdavg [ns];tdvar [ns];tdstdev [ns];tdmedian [ns]");
+	ret = fprintf(out, "nmeasure;tdmin [ns];tdmax [ns];tdavg [ns];tdvar [ns];tdstdev [ns];tdmedian [ns];nbuckets");
+	if (ret < 0)
+		return ret;
+
+	for (int i = 0; i < CHRONO_HIST_BUCKETS; i++) {
+		ret = fprintf(out, ";hist_bucket[%i]", i);
+		if (ret < 0)
+			return ret;
+	}
+
+	return 0;
 }
 
 
 int chrono_print_csv(chrono_t *chrono, FILE *out)
 {
+	int ret = 0;
 	if (chrono == NULL || out == NULL) {
 		errno = EINVAL;
 		return -1;
@@ -173,19 +202,33 @@ int chrono_print_csv(chrono_t *chrono, FILE *out)
 
 	chrono_update_statistics(chrono);
 
-	return fprintf(out, "%i;%lli;%lli;%lli;%lli;%lli;%lli",
-		       chrono->nmeasure,
-		       chrono->tdmin,
-		       chrono->tdmax,
-		       chrono->tdavg,
-		       chrono->tdvar,
-		       chrono->tdstdev,
-		       chrono->tdmedian);
+	ret = fprintf(out, "%i;%lli;%lli;%lli;%lli;%lli;%lli;%i",
+		      chrono->nmeasure,
+		      chrono->tdmin,
+		      chrono->tdmax,
+		      chrono->tdavg,
+		      chrono->tdvar,
+		      chrono->tdstdev,
+		      chrono->tdmedian,
+		      CHRONO_HIST_BUCKETS);
+	if (ret < 0)
+		return ret;
+
+
+	for (int i = 0; i < CHRONO_HIST_BUCKETS; i++) {
+		ret = fprintf(out, ";%u", chrono->hist_buckets[i]);
+		if (ret < 0)
+			return ret;
+	}
+
+	return 0;
 }
 
 
 int chrono_print_pretty(chrono_t *chrono, const char *indent, FILE *out)
 {
+	int ret = 0;
+
 	if (chrono == NULL || out == NULL) {
 		errno = EINVAL;
 		return -1;
@@ -193,19 +236,34 @@ int chrono_print_pretty(chrono_t *chrono, const char *indent, FILE *out)
 
 	chrono_update_statistics(chrono);
 
-	return fprintf(out,
-		       "%snmeasure:    %u\n"
-		       "%smin [ns]:    %lli\n"
-		       "%smax [ns]:    %lli\n"
-		       "%savg [ns]:    %lli\n"
-		       "%svar [ns]:    %lli\n"
-		       "%sstdev [ns]:  %lli\n"
-		       "%smedian [ns]: %lli\n",
-		       indent, chrono->nmeasure,
-		       indent, chrono->tdmin,
-		       indent, chrono->tdmax,
-		       indent, chrono->tdavg,
-		       indent, chrono->tdvar,
-		       indent, chrono->tdstdev,
-		       indent, chrono->tdmedian);
+	ret = fprintf(out,
+		      "%snmeasure:    %u\n"
+		      "%smin [ns]:    %lli\n"
+		      "%smax [ns]:    %lli\n"
+		      "%savg [ns]:    %lli\n"
+		      "%svar [ns]:    %lli\n"
+		      "%sstdev [ns]:  %lli\n"
+		      "%smedian [ns]: %lli\n",
+		      indent, chrono->nmeasure,
+		      indent, chrono->tdmin,
+		      indent, chrono->tdmax,
+		      indent, chrono->tdavg,
+		      indent, chrono->tdvar,
+		      indent, chrono->tdstdev,
+		      indent, chrono->tdmedian);
+	if (ret < 0)
+		return ret;
+
+	long long range = chrono->tdmax - chrono->tdmin;
+	for (int i = 0; i < CHRONO_HIST_BUCKETS; i++) {
+		long long start = (i * range) / CHRONO_HIST_BUCKETS + chrono->tdmin;
+		long long end = ((i + 1) * range) / CHRONO_HIST_BUCKETS + chrono->tdmin;
+		ret = fprintf(out,
+			      "%shist[%.3i]:   %5.1u [%lli, %lli]\n",
+			      indent, i, chrono->hist_buckets[i], start, end);
+		if (ret < 0)
+			return ret;
+	}
+
+	return 0;
 }

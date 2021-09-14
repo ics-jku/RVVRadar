@@ -30,6 +30,11 @@
  */
 #define CHRONO_MAX_MEASUREMENTS	10000
 
+/*
+ * number of buckets for histogram
+ */
+#define CHRONO_HIST_BUCKETS	20
+
 
 typedef struct chrono {
 	/* last start and end times */
@@ -52,6 +57,7 @@ typedef struct chrono {
 	long long tdvar;
 	long long tdstdev;
 	long long tdmedian;
+	unsigned int hist_buckets[CHRONO_HIST_BUCKETS];
 } chrono_t;
 
 
@@ -94,14 +100,14 @@ int chrono_print_csv_head(FILE *out);
 /*
  * print chrono statistics as csv
  * (nmeasure;td...)
- * return: same as for fprintf
+ * return: <0 .. error (errno)
  */
 int chrono_print_csv(chrono_t *chrono, FILE *out);
 
 
 /*
  * print chrono statistics human readable
- * return: same as for fprintf
+ * return: <0 .. error (errno)
  */
 int chrono_print_pretty(chrono_t *chrono, const char *indent, FILE *out);
 
