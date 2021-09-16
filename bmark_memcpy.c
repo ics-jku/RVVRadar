@@ -113,8 +113,8 @@ static int subbmarks_add(bmark_t *bmark)
 	int ret = 0;
 
 	ret |= subbmark_add(bmark, "system",		 false, false, (memcpy_fp_t)memcpy);
-	ret |= subbmark_add(bmark, "c noavect byte",	 false, false, (memcpy_fp_t)memcpy_c_byte_noavect);
-	ret |= subbmark_add(bmark, "c avect byte",	 false, false, (memcpy_fp_t)memcpy_c_byte_avect);
+	ret |= subbmark_add(bmark, "c byte noavect",	 false, false, (memcpy_fp_t)memcpy_c_byte_noavect);
+	ret |= subbmark_add(bmark, "c byte avect",	 false, false, (memcpy_fp_t)memcpy_c_byte_avect);
 #if RVVBMARK_RV_SUPPORT == 1
 	ret |= subbmark_add(bmark, "4 int regs",	 true,  false, (memcpy_fp_t)memcpy_rv_wlenx4);
 #if RVVBMARK_RVV_SUPPORT == 1
