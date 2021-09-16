@@ -86,7 +86,7 @@ all: $(BIN_NAME)
 # verbose info of vectorization is print on compilation
 %_c_avect.o: %_c.c.in $(HEADERS)
 		@echo "BUILD $< WITH VECTORIZER"
-		sed $< -e s/@OPTIMIZATION@/avect/g | $(CC) $(CFLAGS) -O3 -fno-tree-vectorize -fopt-info-vec-all -c -o $@ -xc -
+		sed $< -e s/@OPTIMIZATION@/avect/g | $(CC) $(CFLAGS) -O3 -ftree-vectorize -fopt-info-vec-all -c -o $@ -xc -
 
 
 
