@@ -1,0 +1,6 @@
+
+void memcpy_c_byte_@OPTIMIZATION@(char *dest, char *src, unsigned int len)
+{
+	for (int i = 0; i < len; i++)
+		dest[i] = src[i];
+}

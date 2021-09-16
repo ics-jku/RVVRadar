@@ -35,12 +35,20 @@ CFLAGS+=	-Wall -std=c11 -D_GNU_SOURCE \
 LIBS+=		-lm
 LDFLAGS+=
 
-HEADERS := $(wildcard *.h)
-
 # Generally all C code is platform independent. Special cases are handled
 # by ifdefs (RVVBMARK_RVV_SUPPORT) in code.
+
+# All *.h files
+HEADERS := $(wildcard *.h)
+
+# All *.c files
 C_SOURCES := $(wildcard *.c)
 
+# All *.c.in files
+# Will be compiled to multiple object files with different optimizations
+C_SOURCES_OPT_IN := $(wildcard *_c.c.in)
+
+# All .s files
 ifeq ($(RVVBMARK_RV_SUPPORT),1)
   # All files ending with *_rv.s is for RISC-V
   ASM_SOURCES := $(wildcard *_rv.s)
@@ -53,7 +61,12 @@ else
 ASM_SOURCES :=
 endif
 
-OBJS := $(patsubst %.c,%.o,$(C_SOURCES)) $(patsubst %.s,%.o,$(ASM_SOURCES))
+# build %.o from %.c and %.s
+OBJS := $(patsubst %.c,%.o,$(C_SOURCES))
+OBJS += $(patsubst %.s,%.o,$(ASM_SOURCES))
+# build multiple %.o with different optimizations from %.c.in
+OBJS += $(patsubst %.c.in,%_avect.o,$(C_SOURCES_OPT_IN))
+OBJS += $(patsubst %.c.in,%_noavect.o,$(C_SOURCES_OPT_IN))
 
 
 all: $(BIN_NAME)
@@ -64,16 +77,16 @@ all: $(BIN_NAME)
 
 # generic rule for disabled autovectorization
 # verbose info of vectorization is print on compilation (there should be no output!)
-%_c_noavect.o: %_c_noavect.c
-		@echo "BUILD $@ WITHOUT VECTORIZATION"
-		$(CC) $(CFLAGS) -O3 -fno-tree-vectorize -fopt-info-vec-all -c $<
+%_c_noavect.o: %_c.c.in $(HEADERS)
+		@echo "BUILD $< WITHOUT VECTORIZATION"
+		sed $< -e s/@OPTIMIZATION@/noavect/g | $(CC) $(CFLAGS) -O3 -fno-tree-vectorize -fopt-info-vec-all -c -o $@ -xc -
 
 # generic rule for enabled autovectorization
 # -O3 enables autovectorization (-ftree-vectorize) on x86(debian 10) and risc-v (risc-v foundation toolchain)
 # verbose info of vectorization is print on compilation
-%_c_avect.o: %_c_avect.c
-		@echo "BUILD $@ WITH VECTORIZER"
-		$(CC) $(CFLAGS) -O3 -ftree-vectorize -fopt-info-vec-all -c $<
+%_c_avect.o: %_c.c.in $(HEADERS)
+		@echo "BUILD $< WITH VECTORIZER"
+		sed $< -e s/@OPTIMIZATION@/avect/g | $(CC) $(CFLAGS) -O3 -fno-tree-vectorize -fopt-info-vec-all -c -o $@ -xc -
 
 
 
@@ -81,10 +94,10 @@ $(BIN_NAME): $(OBJS) $(HEADERS)
 		$(CC) $(OBJS) $(CFLAGS) $(LDFLAGS) $(LIBS) -o $@
 
 check:
-		cppcheck -q -f . ${C_SOURCES} ${HEADERS}
+		cppcheck -q -f . ${C_SOURCES} ${C_SOURCES_OPT_IN} ${HEADERS}
 
 style:
-		(PWD=`pwd`; astyle $(ASTYLE_ARGS) $(C_SOURCES) $(HEADERS);)
+		(PWD=`pwd`; astyle $(ASTYLE_ARGS) $(C_SOURCES) ${C_SOURCES_OPT_IN} $(HEADERS);)
 
 clean:
 		- rm $(BIN_NAME)
