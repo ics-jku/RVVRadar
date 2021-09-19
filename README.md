@@ -3,6 +3,9 @@
 Benchmark tool for RISC-V vector extension (RVV)
 (C) 2021 Manfred Schlaegl <manfred.schlaegl@gmx.at>
 
+rvvbmark is released under the terms of the GNU General Public License
+version 3.0; see the file COPYING for details.
+
 
 ## Configuration, Build & Install
 

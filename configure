@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Copyright (C) 2021 Manfred Schlaegl <manfred.schlaegl@gmx.at>
+# All rights reserved.
+#
+# SPDX-License-Identifier: GPL-3.0-only
+
 RVVBMARK_INSTALL_PREFIX="/usr/local"
 RVVBMARK_RV_SUPPORT=0
 RVVBMARK_RVV_SUPPORT=0

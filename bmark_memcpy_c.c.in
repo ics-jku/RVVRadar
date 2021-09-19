@@ -1,3 +1,9 @@
+/*
+ * Copyright (C) 2021 Manfred Schlaegl <manfred.schlaegl@gmx.at>
+ * All rights reserved.
+ *
+ * SPDX-License-Identifier: GPL-3.0-only
+ */
 
 void memcpy_c_byte_@OPTIMIZATION@(char *dest, char *src, unsigned int len)
 {
