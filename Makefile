@@ -69,6 +69,10 @@ OBJS += $(patsubst %.c.in,%_avect.o,$(C_SOURCES_OPT_IN))
 OBJS += $(patsubst %.c.in,%_noavect.o,$(C_SOURCES_OPT_IN))
 
 
+
+.PHONY: all check style clean distclean install
+
+
 all: $(BIN_NAME)
 
 # generic rule
@@ -109,10 +113,3 @@ distclean: clean
 install: all
 		-@mkdir -p $(INSTALL_BIN_DIR)
 		$(INSTALL) -m 755 $(INSTALLFLAGS) $(BIN_NAME) $(INSTALL_BIN_DIR)
-
-install_target: install
-
-uninstall:
-		-rm -f $(INSTALL_BIN_DIR)/$(BIN_NAME)
-		
-uninstall_target: uninstall
