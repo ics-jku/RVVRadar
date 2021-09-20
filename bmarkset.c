@@ -235,7 +235,10 @@ static int subbmark_run(subbmark_t *subbmark, int iterations, bool verbose)
 		}
 		pinfo("OK! (%llins)", subbmark->chrono.tdavg);
 	}
-	pinfo("\r                                                              \r");
+	pinfo("\r");
+	for (int i = 0; i < 10; i++)
+		pinfo("          ");
+	pinfo("\r");
 	if (verbose)
 		subbmark_print_pretty(subbmark, INFOOUT);
 
