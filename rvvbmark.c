@@ -20,7 +20,7 @@
 #define ENABLE_MEMCPY		1
 #define ENABLE_MAC_16_32_32	1
 #define ENABLE_MAC_8_16_32	1
-#define ITERATIONS		100
+#define ITERATIONS		10000
 #define LEN_START		128
 #define LEN_END			1024 * 1024 * 16
 
