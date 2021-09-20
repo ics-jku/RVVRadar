@@ -89,9 +89,12 @@ static void chrono_update_statistics(chrono_t *chrono)
 	chrono->nmeasure_on_last_update = chrono->nmeasure;
 
 	/* update variance and standard deviation */
-	chrono->tdvar = 0;
-	for (int i = 0; i < chrono->nmeasure; i++)
-		chrono->tdvar += (chrono->tdlist[i] - chrono->tdvar) ^ 2;
+	long long varsum = 0;
+	for (int i = 0; i < chrono->nmeasure; i++) {
+		long long diff = chrono->tdlist[i] - chrono->tdavg;
+		varsum += diff * diff;
+	}
+	chrono->tdvar = varsum / chrono->nmeasure;
 	chrono->tdstdev = sqrt(chrono->tdvar);
 
 	/* update median */
