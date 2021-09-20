@@ -12,11 +12,13 @@
 
 #include "bmarkset.h"
 #include "bmark_memcpy.h"
+#include "bmark_mac_16_32_32.h"
 #include "bmark_mac_8_16_32.h"
 
 
 /* TODO: implement programm parameters for this */
 #define ENABLE_MEMCPY		1
+#define ENABLE_MAC_16_32_32	1
 #define ENABLE_MAC_8_16_32	1
 #define ITERATIONS		100
 #define LEN_START		128
@@ -58,6 +60,13 @@ int main(int argc, char **argv)
 			goto __ret_bmarkset_destroy;
 		}
 #endif /* ENABLE_MEMCPY */
+
+#if ENABLE_MAC_16_32_32
+		if (bmark_mac_16_32_32_add(bmarkset, len) < 0) {
+			goto __ret_bmarkset_destroy;
+			return -1;
+		}
+#endif /* ENABLE_MAC_16_32_32 */
 
 #if ENABLE_MAC_8_16_32
 		if (bmark_mac_8_16_32_add(bmarkset, len) < 0) {
