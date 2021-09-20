@@ -54,12 +54,39 @@ static int chrono_qsort_td_compare(const void * a, const void * b)
 }
 
 
-/* update statistics part 2 */
+/* update statistics - histogram buckets */
+static void chrono_update_statistics_hist_buckets(chrono_t *chrono)
+{
+	/* histogram for a single sample does not make sense */
+	if (chrono->nmeasure < 2)
+		return;
+
+	memset(chrono->hist_buckets, 0, CHRONO_HIST_BUCKETS * sizeof(chrono->hist_buckets[0]));
+	long long range = chrono->tdmax - chrono->tdmin;
+	for (int i = 0; i < chrono->nmeasure; i++) {
+		int bidx = ((CHRONO_HIST_BUCKETS - 1) * (chrono->tdlist[i] - chrono->tdmin)) / range;
+		/* paranoia checks */
+		if (bidx < 0) {
+			fprintf(stderr, "INTERNAL ERROR: histogram idx %i < 0 -> ABORT!\n", bidx);
+			exit(1);
+		} else if (bidx >= CHRONO_HIST_BUCKETS) {
+			fprintf(stderr, "INTERNAL ERROR: histogram idx %i >= %i -> ABORT!\n", bidx, CHRONO_HIST_BUCKETS);
+			exit(1);
+		} else
+			chrono->hist_buckets[bidx]++;
+	}
+}
+
+
+/* update statistics */
 static void chrono_update_statistics(chrono_t *chrono)
 {
 	/* is already updated? -> nothing to do */
 	if (chrono->nmeasure == chrono->nmeasure_on_last_update)
 		return;
+
+	/* save update point */
+	chrono->nmeasure_on_last_update = chrono->nmeasure;
 
 	/* update variance and standard deviation */
 	chrono->tdvar = 0;
@@ -76,23 +103,7 @@ static void chrono_update_statistics(chrono_t *chrono)
 	}
 
 	/* update histogram buckets */
-	memset(chrono->hist_buckets, 0, CHRONO_HIST_BUCKETS * sizeof(chrono->hist_buckets[0]));
-	long long range = chrono->tdmax - chrono->tdmin;
-	for (int i = 0; i < chrono->nmeasure; i++) {
-		int bidx = ((CHRONO_HIST_BUCKETS - 1) * (chrono->tdlist[i] - chrono->tdmin)) / range;
-		/* paranoia checks */
-		if (bidx < 0) {
-			fprintf(stderr, "INTERNAL ERROR: histogram idx %i < 0 -> ABORT!\n", bidx);
-			exit(1);
-		} else if (bidx >= CHRONO_HIST_BUCKETS) {
-			fprintf(stderr, "INTERNAL ERROR: histogram idx %i >= %i -> ABORT!\n", bidx, CHRONO_HIST_BUCKETS);
-			exit(1);
-		} else
-			chrono->hist_buckets[bidx]++;
-	}
-
-	/* save update point */
-	chrono->nmeasure_on_last_update = chrono->nmeasure;
+	chrono_update_statistics_hist_buckets(chrono);
 }
 
 
@@ -162,7 +173,7 @@ int chrono_stop(chrono_t *chrono)
 
 	chrono->tdlist[chrono->nmeasure] = td;
 
-	/* update statistics part 1 */
+	/* update live statistics */
 	chrono->nmeasure++;
 	chrono->tdlast = td;
 	chrono->tdsum += td;
