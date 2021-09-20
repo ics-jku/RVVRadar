@@ -22,8 +22,6 @@ typedef int (*subbmark_postexec_fp_t)(struct subbmark *subbmark);
 typedef struct subbmark {
 	const char *name;			// name of the subbmark
 	unsigned int index;			// index in subbmark list
-	bool rv;				// is a RISC-V bmark
-	bool rvv;				// is a RISC-V vector bmark
 
 	subbmark_preexec_fp_t preexec;		// called before subbmark
 	subbmark_exec_fp_t exec;		// subbmark function (measured)
@@ -104,7 +102,7 @@ void bmark_destroy(bmark_t *bmark);
  */
 subbmark_t *bmark_add_subbmark(
 	bmark_t *bmark,
-	const char *name, bool rv, bool rvv,
+	const char *name,
 	subbmark_preexec_fp_t preexec,
 	subbmark_exec_fp_t exec,
 	subbmark_postexec_fp_t postexec,

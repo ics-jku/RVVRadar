@@ -33,7 +33,7 @@
  */
 
 static subbmark_t *subbmark_create(
-	const char *name, bool rv, bool rvv,
+	const char *name,
 	subbmark_preexec_fp_t preexec,
 	subbmark_exec_fp_t exec,
 	subbmark_postexec_fp_t postexec,
@@ -44,8 +44,6 @@ static subbmark_t *subbmark_create(
 		return NULL;
 
 	subbmark->name = name;
-	subbmark->rv = rv;
-	subbmark->rvv = rvv;
 	subbmark->preexec = preexec;
 	subbmark->exec = exec;
 	subbmark->postexec = postexec;
@@ -310,14 +308,14 @@ void bmark_destroy(bmark_t *bmark)
 
 subbmark_t *bmark_add_subbmark(
 	bmark_t *bmark,
-	const char *name, bool rv, bool rvv,
+	const char *name,
 	subbmark_preexec_fp_t preexec,
 	subbmark_exec_fp_t exec,
 	subbmark_postexec_fp_t postexec,
 	unsigned int data_len)
 {
 	subbmark_t *subbmark = subbmark_create(
-				       name, rv, rvv,
+				       name,
 				       preexec, exec, postexec,
 				       data_len);
 	if (subbmark == NULL)

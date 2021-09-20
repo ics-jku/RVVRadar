@@ -82,14 +82,12 @@ static int subbmark_postexec(subbmark_t *subbmark)
 static int subbmark_add(
 	bmark_t *bmark,
 	const char *name,
-	bool rv,
-	bool rvv,
 	mac_16_32_32_fp_t mac_16_32_32)
 {
 	subbmark_t *subbmark;
 
 	subbmark = bmark_add_subbmark(bmark,
-				      name, rv, rvv,
+				      name,
 				      subbmark_preexec,
 				      subbmark_exec_wrapper,
 				      subbmark_postexec,
@@ -116,11 +114,11 @@ static int subbmarks_add(bmark_t *bmark)
 {
 	int ret = 0;
 
-	ret |= subbmark_add(bmark, "c byte noavect",				false, false, (mac_16_32_32_fp_t)mac_16_32_32_c_byte_noavect);
-	ret |= subbmark_add(bmark, "c byte avect",				false, false, (mac_16_32_32_fp_t)mac_16_32_32_c_byte_avect);
+	ret |= subbmark_add(bmark, "c byte noavect",				(mac_16_32_32_fp_t)mac_16_32_32_c_byte_noavect);
+	ret |= subbmark_add(bmark, "c byte avect",				(mac_16_32_32_fp_t)mac_16_32_32_c_byte_avect);
 #if RVVBMARK_RVV_SUPPORT == 1
-	ret |= subbmark_add(bmark, "rvv 32bit elements",			true,  true,  (mac_16_32_32_fp_t)mac_16_32_32_rvv_e32);
-	ret |= subbmark_add(bmark, "rvv 16bit elements with widening",		true,  true,  (mac_16_32_32_fp_t)mac_16_32_32_rvv_e16_widening);
+	ret |= subbmark_add(bmark, "rvv 32bit elements",			(mac_16_32_32_fp_t)mac_16_32_32_rvv_e32);
+	ret |= subbmark_add(bmark, "rvv 16bit elements with widening",		(mac_16_32_32_fp_t)mac_16_32_32_rvv_e16_widening);
 #endif /* RVVBMARK_RVV_SUPPORT == 1 */
 
 	if (ret)
