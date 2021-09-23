@@ -46,6 +46,48 @@ static inline long long chrono__stop(const struct timespec start)
 
 
 /*
+ * update size of histogram buckets in chrono structure
+ *
+ * ensures non-overlapping buckets with equal, whole-number sizes
+ */
+static void chrono_hist_update_bucketsize(chrono_t *chrono)
+{
+	chrono->hist_bucketsize =
+		((chrono->tdmax - chrono->tdmin) + CHRONO_HIST_BUCKETS) / CHRONO_HIST_BUCKETS;
+}
+
+
+/*
+ * get bucket index from value
+ * (chrono_hist_update_bucketsize needed once before)
+ */
+static inline unsigned int chrono_hist_bucket_idx_by_value(chrono_t *chrono, long long value)
+{
+	return (value - chrono->tdmin) / chrono->hist_bucketsize;
+}
+
+
+/*
+ * get start of bucket by index
+ * (chrono_hist_update_bucketsize needed once before)
+ */
+static inline long long chrono_hist_get_bucket_start_by_idx(chrono_t *chrono, unsigned int bucket_idx)
+{
+	return chrono->tdmin + chrono->hist_bucketsize * bucket_idx;
+}
+
+
+/*
+ * get start of bucket by index
+ * (chrono_hist_update_bucketsize needed once before)
+ */
+static inline long long chrono_hist_get_bucket_end_by_idx(chrono_t *chrono, unsigned int bucket_idx)
+{
+	return chrono_hist_get_bucket_start_by_idx(chrono, bucket_idx + 1) - 1;
+}
+
+
+/*
  * comparator function for qsort
  */
 static int chrono_qsort_td_compare(const void * a, const void * b)
@@ -57,15 +99,12 @@ static int chrono_qsort_td_compare(const void * a, const void * b)
 /* update statistics - histogram buckets */
 static void chrono_update_statistics_hist_buckets(chrono_t *chrono)
 {
-	/* histogram for a single sample does not make sense */
-	if (chrono->nmeasure < 2)
-		return;
+	chrono_hist_update_bucketsize(chrono);
 
 	memset(chrono->hist_buckets, 0, CHRONO_HIST_BUCKETS * sizeof(chrono->hist_buckets[0]));
-	long long range = chrono->tdmax - chrono->tdmin;
 	for (int i = 0; i < chrono->nmeasure; i++) {
-		int bidx = ((CHRONO_HIST_BUCKETS - 1) * (chrono->tdlist[i] - chrono->tdmin)) / range;
-		/* paranoia checks */
+		int bidx = chrono_hist_bucket_idx_by_value(chrono, chrono->tdlist[i]);
+		/* paranoia checks - TODO: remove? */
 		if (bidx < 0) {
 			fprintf(stderr, "INTERNAL ERROR: histogram idx %i < 0 -> ABORT!\n", bidx);
 			exit(1);
@@ -74,6 +113,20 @@ static void chrono_update_statistics_hist_buckets(chrono_t *chrono)
 			exit(1);
 		} else
 			chrono->hist_buckets[bidx]++;
+	}
+
+	/* paranoia checks - TODO: remove? */
+	long long hist_start = chrono_hist_get_bucket_start_by_idx(chrono, 0);
+	long long hist_end = chrono_hist_get_bucket_end_by_idx(chrono, CHRONO_HIST_BUCKETS - 1);
+	if (hist_start < chrono->tdmin) {
+		fprintf(stderr, "INTERNAL ERROR: minimum below histogram start %lli < %lli < 0 -> ABORT!\n",
+			hist_start, chrono->tdmin);
+		exit(1);
+	}
+	if (chrono->tdmax > hist_end) {
+		fprintf(stderr, "INTERNAL ERROR: maximum above histogram end %lli < %lli < 0 -> ABORT!\n",
+			hist_end, chrono->tdmax);
+		exit(1);
 	}
 }
 
@@ -275,13 +328,12 @@ int chrono_print_pretty(chrono_t *chrono, const char *indent, FILE *out)
 	if (ret < 0)
 		return ret;
 
-	long long range = chrono->tdmax - chrono->tdmin;
 	for (int i = 0; i < CHRONO_HIST_BUCKETS; i++) {
-		long long start = (i * range) / CHRONO_HIST_BUCKETS + chrono->tdmin;
-		long long end = ((i + 1) * range) / CHRONO_HIST_BUCKETS + chrono->tdmin;
 		ret = fprintf(out,
 			      "%shist[%.3i]:   %5.1u [%lli, %lli]\n",
-			      indent, i, chrono->hist_buckets[i], start, end);
+			      indent, i, chrono->hist_buckets[i],
+			      chrono_hist_get_bucket_start_by_idx(chrono, i),
+			      chrono_hist_get_bucket_end_by_idx(chrono, i));
 		if (ret < 0)
 			return ret;
 	}

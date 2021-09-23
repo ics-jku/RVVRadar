@@ -65,6 +65,7 @@ typedef struct chrono {
 	long long tdstdev;
 	long long tdmedian;
 	unsigned int hist_buckets[CHRONO_HIST_BUCKETS];
+	long long hist_bucketsize;
 } chrono_t;
 
 
