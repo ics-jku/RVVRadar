@@ -81,7 +81,7 @@ OBJS += $(patsubst %.c.in,%_noavect.o,$(C_SOURCES_OPT_IN))
 all: $(BIN_NAME)
 
 # generic rule
-%.o: %.c %.h $(HEADERS) config.mk
+%.o: %.c $(HEADERS) config.mk
 		$(CC) $(CFLAGS) -c $<
 
 # generic rule for disabled autovectorization
