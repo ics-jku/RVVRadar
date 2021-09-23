@@ -81,25 +81,25 @@ OBJS += $(patsubst %.c.in,%_noavect.o,$(C_SOURCES_OPT_IN))
 all: $(BIN_NAME)
 
 # generic rule
-%.o: %.c %.h $(HEADERS)
+%.o: %.c %.h $(HEADERS) config.mk
 		$(CC) $(CFLAGS) -c $<
 
 # generic rule for disabled autovectorization
 # verbose info of vectorization is print on compilation (there should be no output!)
-%_c_noavect.o: %_c.c.in $(HEADERS)
+%_c_noavect.o: %_c.c.in $(HEADERS) config.mk
 		@echo "BUILD $< WITHOUT VECTORIZATION"
 		sed $< -e s/@OPTIMIZATION@/noavect/g | $(CC) $(CFLAGS) -O3 -fno-tree-vectorize -fopt-info-vec-all -c -o $@ -xc -
 
 # generic rule for enabled autovectorization
 # -O3 enables autovectorization (-ftree-vectorize) on x86(debian 10) and risc-v (risc-v foundation toolchain)
 # verbose info of vectorization is print on compilation
-%_c_avect.o: %_c.c.in $(HEADERS)
+%_c_avect.o: %_c.c.in $(HEADERS) config.mk
 		@echo "BUILD $< WITH VECTORIZER"
 		sed $< -e s/@OPTIMIZATION@/avect/g | $(CC) $(CFLAGS) -O3 -ftree-vectorize -fopt-info-vec-all -c -o $@ -xc -
 
 
 
-$(BIN_NAME): $(OBJS) $(HEADERS)
+$(BIN_NAME): $(OBJS) $(HEADERS) config.mk
 		$(CC) $(OBJS) $(CFLAGS) $(LDFLAGS) $(LIBS) -o $@
 
 check:
