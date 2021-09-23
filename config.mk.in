@@ -14,5 +14,10 @@ RVVBMARK_RV_SUPPORT=@RVVBMARK_RV_SUPPORT@
 # (can be built for non-rvv when set to zero)
 RVVBMARK_RVV_SUPPORT=@RVVBMARK_RV_SUPPORT@
 
+# extra flags
+# (mainly used to add -march + vector -> see configure)
+RVVBMARK_EXTRA_ASFLAGS=@RVVBMARK_EXTRA_ASFLAGS@
+RVVBMARK_EXTRA_CFLAGS=@RVVBMARK_EXTRA_CFLAGS@
 
+# install prefix
 RVVBMARK_INSTALL_PREFIX=@RVVBMARK_INSTALL_PREFIX@

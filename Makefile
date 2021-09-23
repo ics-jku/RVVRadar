@@ -32,7 +32,9 @@ else
 	INSTALLFLAGS=	-s --strip-program=$(STRIP)
 endif
 
-CFLAGS+=	-Wall -std=c11 -D_GNU_SOURCE \
+ASFLAGS+= 	$(RVVBMARK_EXTRA_ASFLAGS)
+CFLAGS+=	$(RVVBMARK_EXTRA_CFLAGS) \
+		-Wall -std=c11 -D_GNU_SOURCE \
 		-I. \
 		-DRVVBMARK_VERSION_STR="\"$(VERSION_STR)\"" \
 		-DRVVBMARK_RV_SUPPORT=$(RVVBMARK_RV_SUPPORT) \
@@ -58,7 +60,6 @@ ifeq ($(RVVBMARK_RV_SUPPORT),1)
   # All files ending with *_rv.s is for RISC-V
   ASM_SOURCES := $(wildcard *_rv.s)
   ifeq ($(RVVBMARK_RVV_SUPPORT),1)
-    ASFLAGS += -march=rv64imafdcv
     # All files ending with *_rvv.s is for RISC-V Vector extension
     ASM_SOURCES += $(wildcard *_rvv.s)
   endif
