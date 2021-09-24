@@ -84,9 +84,11 @@ static int subbmark_add(
 
 	subbmark = bmark_add_subbmark(bmark,
 				      name,
+				      NULL,
 				      subbmark_preexec,
 				      subbmark_exec_wrapper,
 				      subbmark_postexec,
+				      NULL,
 				      sizeof(struct subdata));
 	if (subbmark == NULL)
 		return -1;

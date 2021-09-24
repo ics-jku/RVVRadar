@@ -34,9 +34,11 @@
 
 static subbmark_t *subbmark_create(
 	const char *name,
+	subbmark_init_fp_t init,
 	subbmark_preexec_fp_t preexec,
 	subbmark_exec_fp_t exec,
 	subbmark_postexec_fp_t postexec,
+	subbmark_cleanup_fp_t cleanup,
 	int data_len)
 {
 	subbmark_t *subbmark = calloc(1, sizeof(subbmark_t));
@@ -44,9 +46,11 @@ static subbmark_t *subbmark_create(
 		return NULL;
 
 	subbmark->name = name;
+	subbmark->init = init;
 	subbmark->preexec = preexec;
 	subbmark->exec = exec;
 	subbmark->postexec = postexec;
+	subbmark->cleanup = cleanup;
 
 	/* alloc optional data area */
 	if (data_len == 0)
@@ -84,6 +88,21 @@ static void subbmark_reset(subbmark_t *subbmark)
 	subbmark->fails = 0;
 
 	chrono_init(&subbmark->chrono);
+}
+
+
+static int subbmark_call_init(subbmark_t *subbmark)
+{
+	if (subbmark == NULL) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	/* nothing todo? */
+	if (subbmark->init == NULL)
+		return 0;
+
+	return subbmark->init(subbmark);
 }
 
 
@@ -130,6 +149,21 @@ static int subbmark_call_postexec(subbmark_t *subbmark)
 		return 0;
 
 	return subbmark->postexec(subbmark);
+}
+
+
+static int subbmark_call_cleanup(subbmark_t *subbmark)
+{
+	if (subbmark == NULL) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	/* nothing todo? */
+	if (subbmark->cleanup == NULL)
+		return 0;
+
+	return subbmark->cleanup(subbmark);
 }
 
 
@@ -312,14 +346,16 @@ void bmark_destroy(bmark_t *bmark)
 subbmark_t *bmark_add_subbmark(
 	bmark_t *bmark,
 	const char *name,
+	subbmark_init_fp_t init,
 	subbmark_preexec_fp_t preexec,
 	subbmark_exec_fp_t exec,
 	subbmark_postexec_fp_t postexec,
+	subbmark_cleanup_fp_t cleanup,
 	unsigned int data_len)
 {
 	subbmark_t *subbmark = subbmark_create(
 				       name,
-				       preexec, exec, postexec,
+				       init, preexec, exec, postexec, cleanup,
 				       data_len);
 	if (subbmark == NULL)
 		return NULL;
@@ -428,7 +464,15 @@ static int bmark_run(bmark_t *bmark, int seed, int iterations, bool verbose)
 		s != NULL;
 		s = s->next
 	) {
+		ret = subbmark_call_init(s);
+		if (ret < 0)
+			return -1;
+
 		ret = subbmark_run(s, iterations, verbose);
+		if (ret < 0)
+			return -1;
+
+		ret = subbmark_call_cleanup(s);
 		if (ret < 0)
 			return -1;
 	}

@@ -14,18 +14,22 @@
 
 
 struct subbmark;
+typedef int (*subbmark_init_fp_t)(struct subbmark *subbmark);
 typedef int (*subbmark_preexec_fp_t)(struct subbmark *subbmark, int iteration);
 typedef int (*subbmark_exec_fp_t)(struct subbmark *subbmark);
 typedef int (*subbmark_postexec_fp_t)(struct subbmark *subbmark);
+typedef int (*subbmark_cleanup_fp_t)(struct subbmark *subbmark);
 
 
 typedef struct subbmark {
 	const char *name;			// name of the subbmark
 	unsigned int index;			// index in subbmark list
 
-	subbmark_preexec_fp_t preexec;		// called before subbmark
+	subbmark_init_fp_t init;		// called before iteration over subbmarks
+	subbmark_preexec_fp_t preexec;		// called before each subbmark
 	subbmark_exec_fp_t exec;		// subbmark function (measured)
-	subbmark_postexec_fp_t postexec;	// called after subbmark
+	subbmark_postexec_fp_t postexec;	// called after each subbmark
+	subbmark_cleanup_fp_t cleanup;		// called after iteration over subbmarks
 
 	struct bmark *bmark;			// parent bmark
 	struct subbmark *next;			// next in subbmark list
@@ -103,9 +107,11 @@ void bmark_destroy(bmark_t *bmark);
 subbmark_t *bmark_add_subbmark(
 	bmark_t *bmark,
 	const char *name,
+	subbmark_init_fp_t init,
 	subbmark_preexec_fp_t preexec,
 	subbmark_exec_fp_t exec,
 	subbmark_postexec_fp_t postexec,
+	subbmark_cleanup_fp_t cleanup,
 	unsigned int data_len);
 
 
