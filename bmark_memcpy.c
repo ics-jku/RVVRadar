@@ -101,13 +101,13 @@ static int subbmark_add(
 
 
 
-extern void memcpy_c_byte_avect(char *src, char *dest, unsigned int len);
-extern void memcpy_c_byte_noavect(char *src, char *dest, unsigned int len);
+extern void memcpy_c_byte_avect(char *dest, char *src, unsigned int len);
+extern void memcpy_c_byte_noavect(char *dest, char *src, unsigned int len);
 #if RVVBMARK_RV_SUPPORT == 1
-extern void memcpy_rv_wlenx4(void *src, void *dest, unsigned int len);
+extern void memcpy_rv_wlenx4(void *dest, void *src, unsigned int len);
 #if RVVBMARK_RVV_SUPPORT == 1
-extern void memcpy_rvv_8(void *src, void *dest, unsigned int len);
-extern void memcpy_rvv_32(void *src, void *dest, unsigned int len);
+extern void memcpy_rvv_8(void *dest, void *src, unsigned int len);
+extern void memcpy_rvv_32(void *dest, void *src, unsigned int len);
 #endif /* RVVBMARK_RVV_SUPPORT == 1 */
 #endif /* RVVBMARK_RV_SUPPORT == 1 */
 
