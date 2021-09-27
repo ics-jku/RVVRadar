@@ -1,0 +1,58 @@
+/*
+ * Copyright (C) 2021 Manfred Schlaegl <manfred.schlaegl@gmx.at>
+ * All rights reserved.
+ *
+ * SPDX-License-Identifier: GPL-3.0-only
+ *
+ * The implementation based on libpngs
+ * png_read_filter_row_paeth_multibyte_pixel
+ * (pngrutil.c - utilities to read a PNG file)
+ * by
+ * Copyright (c) 2018 Cosmin Truta
+ * Copyright (c) 1998-2002,2004,2006-2018 Glenn Randers-Pehrson
+ * Copyright (c) 1996-1997 Andreas Dilger
+ * Copyright (c) 1995-1996 Guy Eric Schalnat, Group 42, Inc.
+ */
+
+#include <stdlib.h>
+#include <stdint.h>
+
+void png_filter_paeth_c_byte_@OPTIMIZATION@(unsigned int bpp, unsigned int rowbytes, uint8_t *row, uint8_t *prev_row)
+{
+	uint8_t *rp_end = row + bpp;
+
+	while (row < rp_end) {
+		int a = *row + *prev_row++;
+		*row++ = (uint8_t)a;
+	}
+
+	rp_end = rp_end + (rowbytes - bpp);
+
+	while (row < rp_end) {
+		int a, b, c, pa, pb, pc, p;
+
+		c = *(prev_row - bpp);
+		a = *(row - bpp);
+		b = *prev_row;
+
+		p = b - c;
+		pc = a - c;
+
+		pa = abs(p);
+		pb = abs(pc);
+		pc = abs(p + pc);
+
+		if (pb < pa) {
+			pa = pb;
+			a = b;
+		}
+		if (pc < pa)
+			a = c;
+
+		a += *row;
+		*row = (uint8_t)a;
+
+		prev_row++;
+		row++;
+	}
+}

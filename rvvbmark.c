@@ -12,12 +12,15 @@
 #include "bmark_memcpy.h"
 #include "bmark_mac_16_32_32.h"
 #include "bmark_mac_8_16_32.h"
+#include "bmark_png_filter_paeth.h"
 
 
 /* ids of benchmarks */
 #define BMARK_ID_MEMCPY			0
 #define BMARK_ID_MAC_16_32_32		1
 #define BMARK_ID_MAC_8_16_32		2
+#define BMARK_ID_PNG_FILTER_PAETH3	3
+#define BMARK_ID_PNG_FILTER_PAETH4	4
 
 /* bmark mask helpers */
 #define bmark_mask(id)			(1 << id)
@@ -30,9 +33,11 @@
 #define DEFAULT_LEN_START		32
 #define DEFAULT_LEN_END			1024 * 1024 * 16
 #define DEFAULT_BMARK_ENA_MASK	( \
-				  bmark_mask(BMARK_ID_MEMCPY)		| \
-				  bmark_mask(BMARK_ID_MAC_16_32_32)	| \
-				  bmark_mask(BMARK_ID_MAC_8_16_32))
+				  bmark_mask(BMARK_ID_MEMCPY)			| \
+				  bmark_mask(BMARK_ID_MAC_16_32_32)		| \
+				  bmark_mask(BMARK_ID_MAC_8_16_32)		| \
+				  bmark_mask(BMARK_ID_PNG_FILTER_PAETH3)	| \
+				  bmark_mask(BMARK_ID_PNG_FILTER_PAETH4))
 
 
 void print_version(void)
@@ -95,6 +100,8 @@ void print_usage(const char *name)
 		"         0             memcpy\n"
 		"         1             mac_16_32_32\n"
 		"         2             mac_8_16_32\n"
+		"         3             png_filter_paeth3\n"
+		"         4             png_filter_paeth4\n"
 		"     (Default: 0x%X)\n"
 		"\n\n"
 		"Output:\n"
@@ -220,6 +227,20 @@ int main(int argc, char **argv)
 		if (bmark_enabled(bmark_ena_mask, BMARK_ID_MAC_8_16_32))
 			if (bmark_mac_8_16_32_add(bmarkset, len) < 0) {
 				perror("Error adding mac_8_16_32");
+				ret = -1;
+				goto __ret_bmarkset_destroy;
+			}
+
+		if (bmark_enabled(bmark_ena_mask, BMARK_ID_PNG_FILTER_PAETH3))
+			if (bmark_png_filter_paeth_add(bmarkset, paeth3, len) < 0) {
+				perror("Error adding png_filter_paeth3");
+				ret = -1;
+				goto __ret_bmarkset_destroy;
+			}
+
+		if (bmark_enabled(bmark_ena_mask, BMARK_ID_PNG_FILTER_PAETH4))
+			if (bmark_png_filter_paeth_add(bmarkset, paeth4, len) < 0) {
+				perror("Error adding png_filter_paeth4");
 				ret = -1;
 				goto __ret_bmarkset_destroy;
 			}
