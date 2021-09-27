@@ -6,9 +6,6 @@
  */
 
 #include <stdlib.h>
-#include <stdio.h>
-#include <errno.h>
-#include <sys/random.h>
 
 #include "bmarkset.h"
 #include "bmark_memcpy.h"

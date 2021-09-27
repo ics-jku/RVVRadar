@@ -6,13 +6,7 @@
  */
 
 #include <stdlib.h>
-#include <stdint.h>
-#include <stdio.h>
 #include <string.h>
-#include <limits.h>
-#include <errno.h>
-#include <sys/random.h>
-#include <time.h>
 
 #include "bmark_mac_8_16_32.h"
 

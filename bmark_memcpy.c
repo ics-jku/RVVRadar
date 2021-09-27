@@ -6,12 +6,7 @@
  */
 
 #include <stdlib.h>
-#include <stdio.h>
 #include <string.h>
-#include <limits.h>
-#include <errno.h>
-#include <sys/random.h>
-#include <time.h>
 
 #include "bmark_memcpy.h"
 

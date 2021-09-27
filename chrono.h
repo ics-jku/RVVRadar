@@ -8,7 +8,6 @@
 #ifndef CHRONO_H
 #define CHRONO_H
 
-#include <time.h>
 #include <stdio.h>
 
 /*
