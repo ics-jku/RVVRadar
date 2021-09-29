@@ -14,6 +14,15 @@
 
 
 struct subbmark;
+/*
+ * all functions have to return:
+ * >=0 .. if everything was ok
+ * <0 .. on error -> errno has to be set!
+ * EXCEPTION: subbmark_postexec_fp_t (check function):
+ * 0 .. if everything was ok
+ * >0 .. on data error (e.g. incorrect benchmark results)
+ * <0 .. on error -> errno has to be set!
+ */
 typedef int (*subbmark_init_fp_t)(struct subbmark *subbmark);
 typedef int (*subbmark_preexec_fp_t)(struct subbmark *subbmark, int iteration);
 typedef int (*subbmark_exec_fp_t)(struct subbmark *subbmark);

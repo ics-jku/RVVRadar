@@ -189,14 +189,15 @@ static int subbmark_run_single(subbmark_t *subbmark, int iteration)
 	chrono_stop(&subbmark->chrono);
 
 	ret = subbmark_call_postexec(subbmark);
-	if (ret < 0)
-		goto __err;
+	if (ret)
+		goto __data_err;
 
 	ret = 0;
 	goto __ret;
 
 __err:
 	ret = -1;
+__data_err:
 	subbmark->fails++;
 __ret:
 	return ret;
@@ -262,7 +263,11 @@ static int subbmark_run(subbmark_t *subbmark, int iterations, bool verbose)
 
 	for (int iteration = 0; iteration < iterations; iteration++) {
 		pinfo("\r%s: %i/%i -> ", subbmark->name, iteration + 1, iterations);
-		if (subbmark_run_single(subbmark, iteration) < 0) {
+		int ret = subbmark_run_single(subbmark, iteration);
+		if (ret < 0)
+			return -1;
+		else if (ret > 0) {
+			/* data error */
 			pinfo("FAIL!");
 			continue;
 		}

@@ -63,7 +63,7 @@ static int subbmark_postexec(subbmark_t *subbmark)
 	int ret = memcmp(d->dest, d->src, d->len);
 	if (ret) {
 		diff_fields(d->dest, d->src, d->len);
-		return -1;
+		return 1;	/* data error */
 	}
 
 	return 0;
