@@ -179,15 +179,9 @@ int bmark_memcpy_add(bmarkset_t *bmarkset, unsigned int len)
 	 * some implementations only allow muliples of x bytes
 	 * multiples of 4*64 bit will work for every test
 	 * -> ensure len is a multiple of 4*64 bits (= 32 bytes)
-	 *
-	 * Caution: implementation works only for powers of two!
 	 */
 	unsigned int multiple = 4 * 64 / 8;
-	// cut down to prev multiple
-	len &= ~(multiple - 1);
-	// ensure at least multiple
-	if (len < multiple)
-		len = multiple;
+	len = ((len + multiple - 1) / multiple) * multiple;
 
 	/* build parameter string */
 	char parastr[256] = "\0";
