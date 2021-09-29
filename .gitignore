@@ -1,0 +1,9 @@
+# asm/c project build artefacts
+*.o
+
+# vim
+*~
+
+# project specific
+config.mk
+rvvbmark
