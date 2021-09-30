@@ -31,7 +31,7 @@ typedef int (*subbmark_cleanup_fp_t)(struct subbmark *subbmark);
 
 
 typedef struct subbmark {
-	const char *name;			// name of the subbmark
+	char *name;				// name of the subbmark
 	unsigned int index;			// index in subbmark list
 
 	subbmark_init_fp_t init;		// called before iteration over subbmarks
@@ -56,7 +56,7 @@ typedef int (*bmark_preexec_fp_t)(struct bmark *bmark, int seed);
 typedef int (*bmark_postexec_fp_t)(struct bmark *bmark);
 
 typedef struct bmark {
-	const char *name;			// name of the bmark
+	char *name;				// name of the bmark
 	char *parastr;				// string containing parameters as string
 	unsigned int index;			// index in bmark list
 
@@ -76,7 +76,7 @@ typedef struct bmark {
 
 
 typedef struct bmarkset {
-	const char *name;
+	char *name;
 
 	// linked list of subbmarks
 	struct bmark *bmarks_head;
@@ -92,11 +92,12 @@ typedef struct bmarkset {
 /*
  * create a bmark
  * handling of optional given data (free) is handled by bmark!
- * parastr will be duplicated and handled by bmark -> heap allocated paramers are valid!
+ * name and parastr will be duplicated and handled by bmark (e.g. heap
+ * allocated parameters are valid)
  */
 bmark_t *bmark_create(
 	const char *name,
-	char *parastr,
+	const char *parastr,
 	bmark_preexec_fp_t preexec,
 	bmark_postexec_fp_t postexec,
 	unsigned int data_len);
@@ -111,6 +112,8 @@ void bmark_destroy(bmark_t *bmark);
 
 /*
  * allocated and create a new bmark
+ * name will be duplicated and handled by bmark (e.g. heap allocated
+ * parameters are valid)
  * returns NULL on error
  */
 subbmark_t *bmark_add_subbmark(
@@ -130,6 +133,8 @@ subbmark_t *bmark_add_subbmark(
 
 /*
  * allocated and create a new bmarkset
+ * name will be duplicated and handled by bmark (e.g. heap allocated
+ * parameters are valid)
  */
 bmarkset_t *bmarkset_create(const char *name);
 

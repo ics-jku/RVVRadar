@@ -40,11 +40,21 @@ static subbmark_t *subbmark_create(
 	subbmark_cleanup_fp_t cleanup,
 	int data_len)
 {
+	/* name must be given */
+	if (name == NULL || strlen(name) == 0) {
+		errno = EINVAL;
+		return NULL;
+	}
+
 	subbmark_t *subbmark = calloc(1, sizeof(subbmark_t));
 	if (subbmark == NULL)
 		return NULL;
 
-	subbmark->name = name;
+	subbmark->name = strdup(name);
+	if (subbmark->name == NULL) {
+		free(subbmark);
+		return NULL;
+	}
 	subbmark->init = init;
 	subbmark->preexec = preexec;
 	subbmark->exec = exec;
@@ -56,6 +66,7 @@ static subbmark_t *subbmark_create(
 		return subbmark;
 	subbmark->data = calloc(1, data_len);
 	if (subbmark->data == NULL) {
+		free(subbmark->name);
 		free(subbmark);
 		return NULL;
 	}
@@ -70,6 +81,8 @@ static void subbmark_destroy(subbmark_t *subbmark)
 		return;
 
 	chrono_cleanup(&subbmark->chrono);
+
+	free(subbmark->name);
 
 	/* free optional data area */
 	free(subbmark->data);
@@ -293,16 +306,26 @@ static int subbmark_run(subbmark_t *subbmark, int iterations, bool verbose)
 
 bmark_t *bmark_create(
 	const char *name,
-	char *parastr,
+	const char *parastr,
 	bmark_preexec_fp_t preexec,
 	bmark_postexec_fp_t postexec,
 	unsigned int data_len)
 {
+	/* name must be given */
+	if (name == NULL || strlen(name) == 0) {
+		errno = EINVAL;
+		return NULL;
+	}
+
 	bmark_t *bmark = calloc(1, sizeof(bmark_t));
 	if (bmark == NULL)
 		return NULL;
 
-	bmark->name = name;
+	bmark->name = strdup(name);
+	if (bmark->name == NULL) {
+		free(bmark);
+		return NULL;
+	}
 	if (parastr == NULL)
 		parastr = "";
 	bmark->parastr = strdup(parastr);
@@ -318,8 +341,9 @@ bmark_t *bmark_create(
 		return bmark;
 	bmark->data = calloc(1, data_len);
 	if (bmark->data == NULL) {
-		free(bmark);
 		free(bmark->parastr);
+		free(bmark->name);
+		free(bmark);
 		return NULL;
 	}
 
@@ -338,6 +362,7 @@ void bmark_destroy(bmark_t *bmark)
 		s = n;
 	}
 
+	free(bmark->name);
 	free(bmark->parastr);
 
 	/* free optional data area */
@@ -496,11 +521,21 @@ static int bmark_run(bmark_t *bmark, int seed, int iterations, bool verbose)
 
 bmarkset_t *bmarkset_create(const char *name)
 {
+	/* name must be given */
+	if (name == NULL || strlen(name) == 0) {
+		errno = EINVAL;
+		return NULL;
+	}
+
 	bmarkset_t *bmarkset = calloc(1, sizeof(bmarkset_t));
 	if (bmarkset == NULL)
 		return NULL;
 
-	bmarkset->name = name;
+	bmarkset->name = strdup(name);
+	if (bmarkset->name == NULL) {
+		free(bmarkset);
+		return NULL;
+	}
 
 	return bmarkset;
 }
@@ -516,6 +551,8 @@ void bmarkset_destroy(bmarkset_t *bmarkset)
 		bmark_destroy(t);
 		t = n;
 	}
+
+	free(bmarkset->name);
 	free(bmarkset);
 }
 
