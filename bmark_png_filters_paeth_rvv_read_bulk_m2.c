@@ -15,7 +15,7 @@
  * read as much as possible in e8/m2
  * process and save single pixels (using vslidedown)
  */
-void png_filter_paeth_rvv_read_bulk_m2(unsigned int bpp, unsigned int rowbytes, uint8_t *row, uint8_t *prev_row)
+void png_filters_paeth_rvv_read_bulk_m2(unsigned int bpp, unsigned int rowbytes, uint8_t *row, uint8_t *prev_row)
 {
 	unsigned int vl = 0;
 

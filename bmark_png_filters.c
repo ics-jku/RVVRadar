@@ -10,11 +10,12 @@
 #include <stdint.h>
 #include <errno.h>
 
-#include "bmark_png_filter_paeth.h"
+#include "bmark_png_filters.h"
 
 
 /* data for bmark */
 struct data {
+	enum bmark_png_filters_filter filter;
 	unsigned int len;
 	unsigned int bpp;	// bytes per pixel
 	uint8_t *prev_row;	// input last row
@@ -25,9 +26,9 @@ struct data {
 
 
 /* data for subbmark */
-typedef int (*png_filter_paeth_fp_t)(unsigned int bpp, unsigned int rowbytes, uint8_t *row, uint8_t *prev_row);
+typedef int (*png_filters_fp_t)(unsigned int bpp, unsigned int rowbytes, uint8_t *row, uint8_t *prev_row);
 struct subdata {
-	png_filter_paeth_fp_t png_filter_paeth;	// png_filter_paeth to be called by wrapper
+	png_filters_fp_t png_filters;	// png_filters to be called by wrapper
 };
 
 
@@ -55,7 +56,7 @@ static int subbmark_exec_wrapper(subbmark_t *subbmark)
 {
 	struct data *d = (struct data*)subbmark->bmark->data;
 	struct subdata *sd = (struct subdata*)subbmark->data;
-	sd->png_filter_paeth(d->bpp, d->len, d->row, d->prev_row);
+	sd->png_filters(d->bpp, d->len, d->row, d->prev_row);
 	return 0;
 }
 
@@ -78,7 +79,7 @@ static int subbmark_postexec(subbmark_t *subbmark)
 static int subbmark_add(
 	bmark_t *bmark,
 	const char *name,
-	png_filter_paeth_fp_t png_filter_paeth)
+	png_filters_fp_t png_filters)
 {
 	subbmark_t *subbmark;
 
@@ -94,33 +95,34 @@ static int subbmark_add(
 		return -1;
 
 	struct subdata *sd = (struct subdata*)subbmark->data;
-	sd->png_filter_paeth = png_filter_paeth;
+	sd->png_filters = png_filters;
 
 	return 0;
 }
 
 
+/* paeth sub benchmarks */
 
-extern void png_filter_paeth_c_byte_avect(unsigned int bpp, unsigned int rowbytes, uint8_t *row, uint8_t *prev_row);
-extern void png_filter_paeth_c_byte_noavect(unsigned int bpp, unsigned int rowbytes, uint8_t *row, uint8_t *prev_row);
+extern void png_filters_paeth_c_byte_avect(unsigned int bpp, unsigned int rowbytes, uint8_t *row, uint8_t *prev_row);
+extern void png_filters_paeth_c_byte_noavect(unsigned int bpp, unsigned int rowbytes, uint8_t *row, uint8_t *prev_row);
 #if RVVBMARK_RVV_SUPPORT == 1
-extern void png_filter_paeth_rvv_read_bulk_m1(unsigned int bpp, unsigned int rowbytes, uint8_t *row, uint8_t *prev_row);
-extern void png_filter_paeth_rvv_read_bulk_m2(unsigned int bpp, unsigned int rowbytes, uint8_t *row, uint8_t *prev_row);
-extern void png_filter_paeth_rvv_m2(unsigned int bpp, unsigned int rowbytes, uint8_t *row, uint8_t *prev_row);
-extern void png_filter_paeth_rvv_m1(unsigned int bpp, unsigned int rowbytes, uint8_t *row, uint8_t *prev_row);
+extern void png_filters_paeth_rvv_read_bulk_m1(unsigned int bpp, unsigned int rowbytes, uint8_t *row, uint8_t *prev_row);
+extern void png_filters_paeth_rvv_read_bulk_m2(unsigned int bpp, unsigned int rowbytes, uint8_t *row, uint8_t *prev_row);
+extern void png_filters_paeth_rvv_m2(unsigned int bpp, unsigned int rowbytes, uint8_t *row, uint8_t *prev_row);
+extern void png_filters_paeth_rvv_m1(unsigned int bpp, unsigned int rowbytes, uint8_t *row, uint8_t *prev_row);
 #endif /* RVVBMARK_RVV_SUPPORT == 1 */
 
-static int subbmarks_add(bmark_t *bmark)
+static int subbmarks_add_paeth(bmark_t *bmark)
 {
 	int ret = 0;
 
-	ret |= subbmark_add(bmark, "c byte noavect",	(png_filter_paeth_fp_t)png_filter_paeth_c_byte_noavect);
-	ret |= subbmark_add(bmark, "c byte avect",	(png_filter_paeth_fp_t)png_filter_paeth_c_byte_avect);
+	ret |= subbmark_add(bmark, "c byte noavect",	(png_filters_fp_t)png_filters_paeth_c_byte_noavect);
+	ret |= subbmark_add(bmark, "c byte avect",	(png_filters_fp_t)png_filters_paeth_c_byte_avect);
 #if RVVBMARK_RVV_SUPPORT == 1
-	ret |= subbmark_add(bmark, "rvv_read_bulk_m1",	(png_filter_paeth_fp_t)png_filter_paeth_rvv_read_bulk_m1);
-	ret |= subbmark_add(bmark, "rvv_read_bulk_m2",	(png_filter_paeth_fp_t)png_filter_paeth_rvv_read_bulk_m2);
-	ret |= subbmark_add(bmark, "rvv_m1",		(png_filter_paeth_fp_t)png_filter_paeth_rvv_m1);
-	ret |= subbmark_add(bmark, "rvv_m2",		(png_filter_paeth_fp_t)png_filter_paeth_rvv_m2);
+	ret |= subbmark_add(bmark, "rvv_read_bulk_m1",	(png_filters_fp_t)png_filters_paeth_rvv_read_bulk_m1);
+	ret |= subbmark_add(bmark, "rvv_read_bulk_m2",	(png_filters_fp_t)png_filters_paeth_rvv_read_bulk_m2);
+	ret |= subbmark_add(bmark, "rvv_m1",		(png_filters_fp_t)png_filters_paeth_rvv_m1);
+	ret |= subbmark_add(bmark, "rvv_m2",		(png_filters_fp_t)png_filters_paeth_rvv_m2);
 #endif /* RVVBMARK_RVV_SUPPORT == 1 */
 
 	if (ret)
@@ -137,16 +139,16 @@ static int bmark_preexec(struct bmark *bmark, int seed)
 	/* alloc */
 	d->prev_row = malloc(d->len * sizeof(*d->prev_row));
 	if (d->prev_row == NULL)
-		goto __err_prev_row;
+		goto __err_alloc_prev_row;
 	d->row_orig = malloc(d->len * sizeof(*d->row_orig));
 	if (d->row_orig == NULL)
-		goto __err_row_orig;
+		goto __err_alloc_row_orig;
 	d->row = malloc(d->len * sizeof(*d->row));
 	if (d->row == NULL)
-		goto __err_row;
+		goto __err_alloc_row;
 	d->row_compare = malloc(d->len * sizeof(*d->row_compare));
 	if (d->row_compare == NULL)
-		goto __err_row_compare;
+		goto __err_alloc_row_compare;
 
 	/* init */
 	srandom(seed);
@@ -157,18 +159,25 @@ static int bmark_preexec(struct bmark *bmark, int seed)
 	memcpy(d->row, d->row_orig, d->len * sizeof(*d->row));
 
 	/* calculate compare */
-	png_filter_paeth_c_byte_avect(d->bpp, d->len, d->row, d->prev_row);
+	switch (d->filter) {
+	case paeth:
+		png_filters_paeth_c_byte_avect(d->bpp, d->len, d->row, d->prev_row);
+		break;
+	default:
+		goto __err_calc_row_compare;
+	}
 	memcpy(d->row_compare, d->row, d->len * sizeof(*d->row_compare));
 
 	return 0;
 
-__err_row_compare:
+__err_calc_row_compare:
+__err_alloc_row_compare:
 	free(d->row);
-__err_row:
+__err_alloc_row:
 	free(d->row_orig);
-__err_row_orig:
+__err_alloc_row_orig:
 	free(d->prev_row);
-__err_prev_row:
+__err_alloc_prev_row:
 	return -1;
 }
 
@@ -186,37 +195,49 @@ static int bmark_postexec(struct bmark *bmark)
 }
 
 
-int bmark_png_filter_paeth_add(bmarkset_t *bmarkset, enum bmark_png_filter_paeth_type type, unsigned int len)
+int bmark_png_filters_add(
+	bmarkset_t *bmarkset,
+	enum bmark_png_filters_filter filter,
+	enum bmark_png_filters_bpp bpp,
+	unsigned int len)
 {
-	unsigned int bpp;
-	const char *name;
+	int ret = 0;
+	unsigned int bppval;
 
-	/* parse type */
-	switch (type) {
-	case paeth3:
-		bpp = 3;
-		name = "png_filter_paeth3";
+	/* parse parameter bpp */
+	switch (bpp) {
+	case bpp3:
+		bppval = 3;
 		break;
-	case paeth4:
-		bpp = 4;
-		name = "png_filter_paeth4";
+	case bpp4:
+		bppval = 4;
 		break;
 	default:
 		errno = EINVAL;
 		return -1;
 	}
 
-	/* ensure, that len is a multiple of bpp */
-	len = ((len + bpp - 1) / bpp) * bpp;
+	/* parse parameter filter and build name string */
+	char namestr[256] = "\0";
+	switch (filter) {
+	case paeth:
+		sprintf(namestr, "png_filters_paeth%i", bppval);
+		break;
+	default:
+		errno = EINVAL;
+		return -1;
+	}
+
+	/* ensure, that parameter len is a multiple of bpp */
+	len = ((len + bppval - 1) / bppval) * bppval;
 
 	/* build parameter string */
 	char parastr[256] = "\0";
 	snprintf(parastr, 256, "len=%u", len);
 
-
 	/* create benchmark */
 	bmark_t *bmark = bmark_create(
-				 name,
+				 namestr,
 				 parastr,
 				 bmark_preexec,
 				 bmark_postexec,
@@ -226,10 +247,20 @@ int bmark_png_filter_paeth_add(bmarkset_t *bmarkset, enum bmark_png_filter_paeth
 
 	/* set private data and add sub benchmarks */
 	struct data *d = (struct data*)bmark->data;
+	d->filter = filter;
 	d->len = len;
-	d->bpp = bpp;
+	d->bpp = bppval;
 
-	if (subbmarks_add(bmark) < 0) {
+	/* add sub benchmarks according to parameter filter */
+	switch (filter) {
+	case paeth:
+		ret = subbmarks_add_paeth(bmark);
+		break;
+	default:
+		errno = EINVAL;
+		ret = -1;
+	}
+	if (ret < 0) {
 		bmark_destroy(bmark);
 		return -1;
 	}

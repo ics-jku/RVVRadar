@@ -17,7 +17,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-void png_filter_paeth_c_byte_@OPTIMIZATION@(unsigned int bpp, unsigned int rowbytes, uint8_t *row, uint8_t *prev_row)
+void png_filters_paeth_c_byte_@OPTIMIZATION@(unsigned int bpp, unsigned int rowbytes, uint8_t *row, uint8_t *prev_row)
 {
 	uint8_t *rp_end = row + bpp;
 

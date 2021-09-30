@@ -12,7 +12,7 @@
 #include "bmark_memcpy.h"
 #include "bmark_mac_16_32_32.h"
 #include "bmark_mac_8_16_32.h"
-#include "bmark_png_filter_paeth.h"
+#include "bmark_png_filters.h"
 
 
 /* ids of benchmarks */
@@ -232,14 +232,14 @@ int main(int argc, char **argv)
 			}
 
 		if (bmark_enabled(bmark_ena_mask, BMARK_ID_PNG_FILTER_PAETH3))
-			if (bmark_png_filter_paeth_add(bmarkset, paeth3, len) < 0) {
+			if (bmark_png_filters_add(bmarkset, paeth, bpp3, len) < 0) {
 				perror("Error adding png_filter_paeth3");
 				ret = -1;
 				goto __ret_bmarkset_destroy;
 			}
 
 		if (bmark_enabled(bmark_ena_mask, BMARK_ID_PNG_FILTER_PAETH4))
-			if (bmark_png_filter_paeth_add(bmarkset, paeth4, len) < 0) {
+			if (bmark_png_filters_add(bmarkset, paeth, bpp4, len) < 0) {
 				perror("Error adding png_filter_paeth4");
 				ret = -1;
 				goto __ret_bmarkset_destroy;

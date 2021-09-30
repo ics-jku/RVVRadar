@@ -12,7 +12,7 @@
 /*
  * read, process and save single pixels using e8/m1
  */
-void png_filter_paeth_rvv_m1(unsigned int bpp, unsigned int rowbytes, uint8_t *row, uint8_t *prev_row)
+void png_filters_paeth_rvv_m1(unsigned int bpp, unsigned int rowbytes, uint8_t *row, uint8_t *prev_row)
 {
 	unsigned int vl = 0;
 
