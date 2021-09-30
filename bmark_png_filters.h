@@ -10,7 +10,10 @@
 
 #include "bmarkset.h"
 
-enum bmark_png_filters_filter {paeth};
+enum bmark_png_filters_filter {
+	up,		// bpp is irrelevant/ignored
+	paeth
+};
 enum bmark_png_filters_bpp {bpp3, bpp4};
 
 int bmark_png_filters_add(
