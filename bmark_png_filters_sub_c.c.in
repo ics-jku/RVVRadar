@@ -1,0 +1,29 @@
+/*
+ * Copyright (C) 2021 Manfred Schlaegl <manfred.schlaegl@gmx.at>
+ * All rights reserved.
+ *
+ * SPDX-License-Identifier: GPL-3.0-only
+ *
+ * The implementation based on libpngs
+ * png_read_filter_row_sub
+ * (pngrutil.c - utilities to read a PNG file)
+ * by
+ * Copyright (c) 2018 Cosmin Truta
+ * Copyright (c) 1998-2002,2004,2006-2018 Glenn Randers-Pehrson
+ * Copyright (c) 1996-1997 Andreas Dilger
+ * Copyright (c) 1995-1996 Guy Eric Schalnat, Group 42, Inc.
+ */
+
+#include <stdlib.h>
+#include <stdint.h>
+
+void png_filters_sub_c_byte_@OPTIMIZATION@(unsigned int bpp, unsigned int rowbytes, uint8_t *row, uint8_t *prev_row)
+{
+	unsigned int istop = rowbytes;
+	uint8_t *rp = row + bpp;
+
+	for (int i = bpp; i < istop; i++) {
+		*rp = (uint8_t)(((int)(*rp) + (int)(*(rp - bpp))) & 0xff);
+		rp++;
+	}
+}
