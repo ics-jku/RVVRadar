@@ -9,6 +9,9 @@
 
 #if RVVBMARK_RVV_SUPPORT == 1
 
+/*
+ * read, process and save single pixels using e8/m1
+ */
 void png_filter_paeth_rvv_m1(unsigned int bpp, unsigned int rowbytes, uint8_t *row, uint8_t *prev_row)
 {
 	unsigned int vl = 0;
@@ -23,10 +26,10 @@ void png_filter_paeth_rvv_m1(unsigned int bpp, unsigned int rowbytes, uint8_t *r
 	 * b ..		[v4](e8)
 	 * c ..		[v6](e8)
 	 * x ..		[v8](e8)
-	 * p .. 	[v12-v9](e16)
-	 * pa ..	[v16-v13](e16)
-	 * pb ..	[v20-v17](e16)
-	 * pc ..	[v24-v21](e16)
+	 * p .. 	[v12-v13](e16)
+	 * pa ..	[v16-v17](e16)
+	 * pb ..	[v20-v21](e16)
+	 * pc ..	[v24-v25](e16)
 	 * tmpmask ..	[v31]
 	 */
 
@@ -44,8 +47,8 @@ void png_filter_paeth_rvv_m1(unsigned int bpp, unsigned int rowbytes, uint8_t *r
 		/* *row = (uint8_t)a; */
 		asm volatile ("vsb.v		v2, (%0)" : : "r" (row));	/* save a */
 
-		prev_row += bpp;
-		row += bpp;
+		prev_row += vl;
+		row += vl;
 	}
 
 	/* remaining pixels */
