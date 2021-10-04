@@ -14,11 +14,13 @@
 /*
  * read as much as possible in e8/m1
  * process and save single pixels (using vslidedown)
+ *
+ * implicitly assumes VLEN >= 32bit(bpp=4) which is valid according to
+ *  * riscv-v-spec-0.7.1/0.8.1/0.9 -- Chapter 2 ("VLEN >= SLEN >= 32")
+ *  * riscv-v-spec-1.0 -- Chapter 18
  */
-void png_filters_paeth_rvv_read_bulk_m1(unsigned int bpp, unsigned int rowbytes, uint8_t *row, uint8_t *prev_row)
+void png_filters_paeth_rvv_read_bulk(unsigned int bpp, unsigned int rowbytes, uint8_t *row, uint8_t *prev_row)
 {
-	unsigned int vl = 0;
-
 	/*
 	 * row:      | a | x |
 	 * prev_row: | c | b |
@@ -36,26 +38,26 @@ void png_filters_paeth_rvv_read_bulk_m1(unsigned int bpp, unsigned int rowbytes,
 	 * tmpmask ..	[v31]
 	 */
 
+
 	/* first pixel */
-	uint8_t *rp_end = row + bpp;
-	while (row < rp_end) {
 
-		asm volatile ("vsetvli		%0, %1, e8, m1" : "=r" (vl) : "r" (bpp));
+	asm volatile ("vsetvli		zero, %0, e8, m1" : : "r" (bpp));
 
-		/* a = *row + *prev_row; */
-		asm volatile ("vlbu.v		v2, (%0)" : : "r" (row));	/* load *row */
-		asm volatile ("vlbu.v		v6, (%0)" : : "r" (prev_row));	/* load *prev_row */
-		asm volatile ("vadd.vv		v2, v2, v6");
+	/* a = *row + *prev_row; */
+	asm volatile ("vlbu.v		v2, (%0)" : : "r" (row));	/* load *row */
+	asm volatile ("vlbu.v		v6, (%0)" : : "r" (prev_row));	/* load *prev_row */
+	asm volatile ("vadd.vv		v2, v2, v6");
 
-		/* *row = (uint8_t)a; */
-		asm volatile ("vsb.v		v2, (%0)" : : "r" (row));	/* save a */
+	/* *row = (uint8_t)a; */
+	asm volatile ("vsb.v		v2, (%0)" : : "r" (row));	/* save a */
 
-		prev_row += vl;
-		row += vl;
-		rowbytes -= vl;
-	}
+	prev_row += bpp;
+	row += bpp;
+	rowbytes -= bpp;
+
 
 	/* remaining pixels */
+
 	while (rowbytes) {
 
 		unsigned int readbytes;
@@ -71,7 +73,7 @@ void png_filters_paeth_rvv_read_bulk_m1(unsigned int bpp, unsigned int rowbytes,
 
 
 		/* iterate over read pixels (bpp) */
-		asm volatile ("vsetvli		%0, %1, e8, m1" : "=r" (vl) : "r" (bpp));
+		asm volatile ("vsetvli		zero, %0, e8, m1" : : "r" (bpp));
 		while (1) {
 
 			/* sub (widening to 16bit) */
@@ -143,20 +145,19 @@ void png_filters_paeth_rvv_read_bulk_m1(unsigned int bpp, unsigned int rowbytes,
 			/* prepare next iteration (prev_row is already in a) */
 			/* c = b */
 			asm volatile ("vmv.v.v		v6, v4");
-			row += vl;
-			readbytes -= vl;
-			rowbytes -= vl;
-			prev_row += vl;
+			row += bpp;
+			prev_row += bpp;
+			readbytes -= bpp;
+			rowbytes -= bpp;
 
-
-			if (readbytes < vl)
+			if (readbytes < bpp)
 				break; /* no more data in vector reg -> load next */
 
 			/* still data in vector reg -> slide down */
 			asm volatile ("vsetvli		zero, %0, e8, m1" : : "r" (rowbytes));
-			asm volatile ("vslidedown.vx	v4, v4, %0" : : "r" (vl));
-			asm volatile ("vslidedown.vx	v8, v8, %0" : : "r" (vl));
-			asm volatile ("vsetvli		zero, %0, e8, m1" : : "r" (vl));
+			asm volatile ("vslidedown.vx	v4, v4, %0" : : "r" (bpp));
+			asm volatile ("vslidedown.vx	v8, v8, %0" : : "r" (bpp));
+			asm volatile ("vsetvli		zero, %0, e8, m1" : : "r" (bpp));
 		}
 	}
 }

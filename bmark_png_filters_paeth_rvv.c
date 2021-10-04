@@ -11,10 +11,14 @@
 
 /*
  * read, process and save single pixels using e8/m1
+ *
+ * implicitly assumes VLEN >= 32bit(bpp=4) which is valid according to
+ *  * riscv-v-spec-0.7.1/0.8.1/0.9 -- Chapter 2 ("VLEN >= SLEN >= 32")
+ *  * riscv-v-spec-1.0 -- Chapter 18
  */
-void png_filters_paeth_rvv_m1(unsigned int bpp, unsigned int rowbytes, uint8_t *row, uint8_t *prev_row)
+void png_filters_paeth_rvv(unsigned int bpp, unsigned int rowbytes, uint8_t *row, uint8_t *prev_row)
 {
-	unsigned int vl = 0;
+	uint8_t *rp_end = row + rowbytes;
 
 	/*
 	 * row:      | a | x |
@@ -33,28 +37,25 @@ void png_filters_paeth_rvv_m1(unsigned int bpp, unsigned int rowbytes, uint8_t *
 	 * tmpmask ..	[v31]
 	 */
 
-	/* TODO: DOES NOT WORK WITH VECTORREGISTERS < 32bit !!! -> cleanup or simplify */
 
 	/* first pixel */
-	uint8_t *rp_end = row + bpp;
-	while (row < rp_end) {
 
-		asm volatile ("vsetvli		%0, %1, e8, m1" : "=r" (vl) : "r" (bpp));
+	asm volatile ("vsetvli		zero, %0, e8, m1" : : "r" (bpp));
 
-		/* a = *row + *prev_row; */
-		asm volatile ("vlbu.v		v2, (%0)" : : "r" (row));	/* load *row */
-		asm volatile ("vlbu.v		v6, (%0)" : : "r" (prev_row));	/* load *prev_row */
-		asm volatile ("vadd.vv		v2, v2, v6");
+	/* a = *row + *prev_row; */
+	asm volatile ("vlbu.v		v2, (%0)" : : "r" (row));	/* load *row */
+	asm volatile ("vlbu.v		v6, (%0)" : : "r" (prev_row));	/* load *prev_row */
+	asm volatile ("vadd.vv		v2, v2, v6");
 
-		/* *row = (uint8_t)a; */
-		asm volatile ("vsb.v		v2, (%0)" : : "r" (row));	/* save a */
+	/* *row = (uint8_t)a; */
+	asm volatile ("vsb.v		v2, (%0)" : : "r" (row));	/* save a */
 
-		prev_row += vl;
-		row += vl;
-	}
+	prev_row += bpp;
+	row += bpp;
+
 
 	/* remaining pixels */
-	rp_end = rp_end + (rowbytes - bpp);
+
 	while (row < rp_end) {
 
 		/* b = *prev_row; */
@@ -132,8 +133,8 @@ void png_filters_paeth_rvv_m1(unsigned int bpp, unsigned int rowbytes, uint8_t *
 		/* prepare next iteration (prev_row is already in a) */
 		/* c = b */
 		asm volatile ("vmv.v.v		v6, v4");
-		prev_row += vl;
-		row += vl;
+		prev_row += bpp;
+		row += bpp;
 	}
 }
 
