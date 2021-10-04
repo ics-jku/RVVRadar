@@ -76,6 +76,8 @@ void print_version(void)
 
 void print_usage(const char *name)
 {
+	print_version();
+	fprintf(stderr, "\n");
 	fprintf(stderr,
 		"Usage: %s [options]"
 		"\n\n"
@@ -224,6 +226,8 @@ int main(int argc, char **argv)
 	}
 
 	if (!quiet) {
+		print_version();
+		fprintf(stderr, "\n");
 		fprintf(stderr, " + parameters:\n");
 		fprintf(stderr, "   + randseed:       %u\n", randseed);
 		fprintf(stderr, "   + check:          %s\n", check ? "true" : "false");
