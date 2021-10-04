@@ -284,7 +284,7 @@ static int subbmark_run(subbmark_t *subbmark, int iterations, bool verbose)
 			pinfo("FAIL!");
 			continue;
 		}
-		pinfo("OK! (%llins)", subbmark->chrono.tdavg);
+		pinfo("OK!");
 	}
 	pinfo("\r");
 	for (int i = 0; i < 10; i++)

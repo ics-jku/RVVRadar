@@ -142,6 +142,9 @@ static void chrono_update_statistics(chrono_t *chrono)
 	/* save update point */
 	chrono->nmeasure_on_last_update = chrono->nmeasure;
 
+	/* update average */
+	chrono->tdavg = chrono->tdsum / chrono->nmeasure;
+
 	/* update variance and standard deviation */
 	long long varsum = 0;
 	for (int i = 0; i < chrono->nmeasure; i++) {
@@ -238,7 +241,6 @@ int chrono_stop(chrono_t *chrono)
 		chrono->tdmax = td;
 	if (td < chrono->tdmin)
 		chrono->tdmin = td;
-	chrono->tdavg = chrono->tdsum / chrono->nmeasure;
 
 	return 0;
 }
