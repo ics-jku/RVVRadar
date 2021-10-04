@@ -22,8 +22,10 @@
 #define BMARK_ID_PNG_FILTER_UP		3
 #define BMARK_ID_PNG_FILTER_SUB3	4
 #define BMARK_ID_PNG_FILTER_SUB4	5
-#define BMARK_ID_PNG_FILTER_PAETH3	6
-#define BMARK_ID_PNG_FILTER_PAETH4	7
+#define BMARK_ID_PNG_FILTER_AVG3	6
+#define BMARK_ID_PNG_FILTER_AVG4	7
+#define BMARK_ID_PNG_FILTER_PAETH3	8
+#define BMARK_ID_PNG_FILTER_PAETH4	9
 
 /* bmark mask helpers */
 #define bmark_mask(id)			(1 << id)
@@ -43,6 +45,8 @@
 				  bmark_mask(BMARK_ID_PNG_FILTER_UP)		| \
 				  bmark_mask(BMARK_ID_PNG_FILTER_SUB3)		| \
 				  bmark_mask(BMARK_ID_PNG_FILTER_SUB4)		| \
+				  bmark_mask(BMARK_ID_PNG_FILTER_AVG3)		| \
+				  bmark_mask(BMARK_ID_PNG_FILTER_AVG4)		| \
 				  bmark_mask(BMARK_ID_PNG_FILTER_PAETH3)	| \
 				  bmark_mask(BMARK_ID_PNG_FILTER_PAETH4))
 
@@ -119,8 +123,10 @@ void print_usage(const char *name)
 		"         3             png_filter_up\n"
 		"         4             png_filter_sub3\n"
 		"         5             png_filter_sub4\n"
-		"         6             png_filter_paeth3\n"
-		"         7             png_filter_paeth4\n"
+		"         6             png_filter_avg3\n"
+		"         7             png_filter_avg4\n"
+		"         8             png_filter_paeth3\n"
+		"         9             png_filter_paeth4\n"
 		"     (Default: 0x%X)\n"
 		"\n\n"
 		"Output:\n"
@@ -275,6 +281,20 @@ int main(int argc, char **argv)
 		if (bmark_enabled(bmark_ena_mask, BMARK_ID_PNG_FILTER_SUB4))
 			if (bmark_png_filters_add(bmarkset, sub, bpp4, len) < 0) {
 				perror("Error adding png_filter_sub4");
+				ret = -1;
+				goto __ret_bmarkset_destroy;
+			}
+
+		if (bmark_enabled(bmark_ena_mask, BMARK_ID_PNG_FILTER_AVG3))
+			if (bmark_png_filters_add(bmarkset, avg, bpp3, len) < 0) {
+				perror("Error adding png_filter_avg3");
+				ret = -1;
+				goto __ret_bmarkset_destroy;
+			}
+
+		if (bmark_enabled(bmark_ena_mask, BMARK_ID_PNG_FILTER_AVG4))
+			if (bmark_png_filters_add(bmarkset, avg, bpp4, len) < 0) {
+				perror("Error adding png_filter_avg4");
 				ret = -1;
 				goto __ret_bmarkset_destroy;
 			}

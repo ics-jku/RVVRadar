@@ -166,6 +166,32 @@ static int subbmarks_add_sub(bmark_t *bmark)
 
 
 
+/* avg sub benchmarks */
+
+extern void png_filters_avg_c_byte_avect(unsigned int bpp, unsigned int rowbytes, uint8_t *row, uint8_t *prev_row);
+extern void png_filters_avg_c_byte_noavect(unsigned int bpp, unsigned int rowbytes, uint8_t *row, uint8_t *prev_row);
+#if RVVBMARK_RVV_SUPPORT == 1
+extern void png_filters_avg_rvv(unsigned int bpp, unsigned int rowbytes, uint8_t *row, uint8_t *prev_row);
+#endif /* RVVBMARK_RVV_SUPPORT == 1 */
+
+static int subbmarks_add_avg(bmark_t *bmark)
+{
+	int ret = 0;
+
+	ret |= subbmark_add(bmark, "c byte noavect",	(png_filters_fp_t)png_filters_avg_c_byte_noavect);
+	ret |= subbmark_add(bmark, "c byte avect",	(png_filters_fp_t)png_filters_avg_c_byte_avect);
+#if RVVBMARK_RVV_SUPPORT == 1
+	ret |= subbmark_add(bmark, "rvv",		(png_filters_fp_t)png_filters_avg_rvv);
+#endif /* RVVBMARK_RVV_SUPPORT == 1 */
+
+	if (ret)
+		return -1;
+
+	return 0;
+}
+
+
+
 /* paeth sub benchmarks */
 
 extern void png_filters_paeth_c_byte_avect(unsigned int bpp, unsigned int rowbytes, uint8_t *row, uint8_t *prev_row);
@@ -231,6 +257,9 @@ static int bmark_preexec(struct bmark *bmark, int seed)
 		break;
 	case sub:
 		png_filters_sub_c_byte_avect(d->bpp, d->len, d->row, d->prev_row);
+		break;
+	case avg:
+		png_filters_avg_c_byte_avect(d->bpp, d->len, d->row, d->prev_row);
 		break;
 	case paeth:
 		png_filters_paeth_c_byte_avect(d->bpp, d->len, d->row, d->prev_row);
@@ -298,6 +327,9 @@ int bmark_png_filters_add(
 	case sub:
 		sprintf(namestr, "png_filters_sub%i", bppval);
 		break;
+	case avg:
+		sprintf(namestr, "png_filters_avg%i", bppval);
+		break;
 	case paeth:
 		sprintf(namestr, "png_filters_paeth%i", bppval);
 		break;
@@ -336,6 +368,9 @@ int bmark_png_filters_add(
 		break;
 	case sub:
 		ret = subbmarks_add_sub(bmark);
+		break;
+	case avg:
+		ret = subbmarks_add_avg(bmark);
 		break;
 	case paeth:
 		ret = subbmarks_add_paeth(bmark);

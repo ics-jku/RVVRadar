@@ -33,6 +33,8 @@ void png_filters_paeth_rvv_m1(unsigned int bpp, unsigned int rowbytes, uint8_t *
 	 * tmpmask ..	[v31]
 	 */
 
+	/* TODO: DOES NOT WORK WITH VECTORREGISTERS < 32bit !!! -> cleanup or simplify */
+
 	/* first pixel */
 	uint8_t *rp_end = row + bpp;
 	while (row < rp_end) {

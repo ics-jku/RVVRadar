@@ -13,6 +13,7 @@
 enum bmark_png_filters_filter {
 	up,		// bpp is irrelevant/ignored
 	sub,
+	avg,
 	paeth
 };
 enum bmark_png_filters_bpp {bpp3, bpp4};
