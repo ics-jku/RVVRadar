@@ -40,8 +40,12 @@ static void diff_fields(int32_t *dest, int32_t *src, int len)
 }
 
 
-static int subbmark_preexec(subbmark_t *subbmark, int iteration)
+static int subbmark_preexec(subbmark_t *subbmark, int iteration, bool check)
 {
+	/* result-check disabled -> nothing to do */
+	if (!check)
+		return 0;
+
 	struct data *d = (struct data*)subbmark->bmark->data;
 	/* reset result array before benchmark run */
 	memset(d->res, 0, d->len * sizeof(*d->res));
@@ -49,7 +53,7 @@ static int subbmark_preexec(subbmark_t *subbmark, int iteration)
 }
 
 
-static int subbmark_exec_wrapper(subbmark_t *subbmark)
+static int subbmark_exec_wrapper(subbmark_t *subbmark, bool check)
 {
 	struct data *d = (struct data*)subbmark->bmark->data;
 	struct subdata *sd = (struct subdata*)subbmark->data;
@@ -58,8 +62,12 @@ static int subbmark_exec_wrapper(subbmark_t *subbmark)
 }
 
 
-static int subbmark_postexec(subbmark_t *subbmark)
+static int subbmark_postexec(subbmark_t *subbmark, bool check)
 {
+	/* result-check disabled -> nothing to do */
+	if (!check)
+		return 0;
+
 	struct data *d = (struct data*)subbmark->bmark->data;
 
 	/* use mac for speed -> use diff only if error was detected */

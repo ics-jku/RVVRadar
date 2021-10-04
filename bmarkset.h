@@ -24,9 +24,9 @@ struct subbmark;
  * <0 .. on error -> errno has to be set!
  */
 typedef int (*subbmark_init_fp_t)(struct subbmark *subbmark);
-typedef int (*subbmark_preexec_fp_t)(struct subbmark *subbmark, int iteration);
-typedef int (*subbmark_exec_fp_t)(struct subbmark *subbmark);
-typedef int (*subbmark_postexec_fp_t)(struct subbmark *subbmark);
+typedef int (*subbmark_preexec_fp_t)(struct subbmark *subbmark, int iteration, bool check);
+typedef int (*subbmark_exec_fp_t)(struct subbmark *subbmark, bool check);
+typedef int (*subbmark_postexec_fp_t)(struct subbmark *subbmark, bool check);
 typedef int (*subbmark_cleanup_fp_t)(struct subbmark *subbmark);
 
 
@@ -160,7 +160,7 @@ void bmarkset_reset(bmarkset_t *bmarkset);
 /*
  * run the benchmark set
  */
-int bmarkset_run(bmarkset_t *bmark, int seed, int iterations, bool verbose);
+int bmarkset_run(bmarkset_t *bmark, int seed, int iterations, bool check, bool verbose);
 
 
 #endif /* BMARKSET_H */

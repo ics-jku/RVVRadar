@@ -43,7 +43,7 @@ static void diff_row(uint8_t *output, uint8_t *original, int len)
 }
 
 
-static int subbmark_preexec(subbmark_t *subbmark, int iteration)
+static int subbmark_preexec(subbmark_t *subbmark, int iteration, bool check)
 {
 	struct data *d = (struct data*)subbmark->bmark->data;
 	/* restore row before benchmark run */
@@ -52,7 +52,7 @@ static int subbmark_preexec(subbmark_t *subbmark, int iteration)
 }
 
 
-static int subbmark_exec_wrapper(subbmark_t *subbmark)
+static int subbmark_exec_wrapper(subbmark_t *subbmark, bool check)
 {
 	struct data *d = (struct data*)subbmark->bmark->data;
 	struct subdata *sd = (struct subdata*)subbmark->data;
@@ -61,8 +61,12 @@ static int subbmark_exec_wrapper(subbmark_t *subbmark)
 }
 
 
-static int subbmark_postexec(subbmark_t *subbmark)
+static int subbmark_postexec(subbmark_t *subbmark, bool check)
 {
+	/* result-check disabled -> nothing to do */
+	if (!check)
+		return 0;
+
 	struct data *d = (struct data*)subbmark->bmark->data;
 
 	/* use memcpy for speed -> use diff only if error was detected */
