@@ -12,7 +12,7 @@
 #if RVVBMARK_RVV_SUPPORT == 1
 
 /*
- * read as much as possible in e8/m2
+ * read as much as possible in e8/m2 (slower than m1)
  * process and save single pixels (using vslidedown)
  */
 void png_filters_paeth_rvv_read_bulk_m2(unsigned int bpp, unsigned int rowbytes, uint8_t *row, uint8_t *prev_row)
@@ -20,8 +20,8 @@ void png_filters_paeth_rvv_read_bulk_m2(unsigned int bpp, unsigned int rowbytes,
 	unsigned int vl = 0;
 
 	/*
-	 * row:      | c | x |
-	 * prev_row: | b | a |
+	 * row:      | a | x |
+	 * prev_row: | c | b |
 	 *
 	 * v0-v31
 	 * mask .. 	[v0]

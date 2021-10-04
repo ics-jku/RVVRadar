@@ -20,8 +20,8 @@ void png_filters_paeth_rvv_read_bulk_m1(unsigned int bpp, unsigned int rowbytes,
 	unsigned int vl = 0;
 
 	/*
-	 * row:      | c | x |
-	 * prev_row: | b | a |
+	 * row:      | a | x |
+	 * prev_row: | c | b |
 	 *
 	 * v0-v31
 	 * mask .. 	[v0]

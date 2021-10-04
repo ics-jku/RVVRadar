@@ -10,15 +10,15 @@
 #if RVVBMARK_RVV_SUPPORT == 1
 
 /*
- * read, process and save single pixels using e8/m2 (slower)
+ * read, process and save single pixels using e8/m2 (slower than m1)
  */
 void png_filters_paeth_rvv_m2(unsigned int bpp, unsigned int rowbytes, uint8_t *row, uint8_t *prev_row)
 {
 	unsigned int vl = 0;
 
 	/*
-	 * row:      | c | x |
-	 * prev_row: | b | a |
+	 * row:      | a | x |
+	 * prev_row: | c | b |
 	 *
 	 * v0-v31
 	 * mask .. 	[v0]
