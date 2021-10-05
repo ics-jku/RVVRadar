@@ -14,7 +14,6 @@ RVVBMARK_EXTRA_CFLAGS=""
 
 # set defaults if not set
 [[ -z $CC ]] && CC=gcc
-[[ -z $AS ]] && AS=as
 
 
 usage()
@@ -88,7 +87,12 @@ else
 fi
 
 echo -en "Check toolchain RISC-V support .. "
-if ! $AS bmark_memcpy_rv.s -o /dev/null > /dev/null 2>&1 ; then
+if ! $CC				\
+	-DRVVBMARK_RV_SUPPORT=1		\
+	-DRVVBMARK_RVV_SUPPORT=0	\
+	-c bmark_memcpy_rv.c		\
+	-o /dev/null > /dev/null 2>&1 ;
+then
 	echo "no"
 
 else
@@ -106,13 +110,18 @@ else
 		[[ $march != rv*v* ]] && march_tmp+=v
 
 		# try build
-		if $AS -march=$march_tmp bmark_memcpy_rvv.s -o /dev/null > /dev/null 2>&1 ; then
+		if $CC					\
+			-march=$march_tmp		\
+			-DRVVBMARK_RV_SUPPORT=1		\
+			-DRVVBMARK_RVV_SUPPORT=1	\
+			-c bmark_memcpy_rvv.c		\
+			-o /dev/null > /dev/null 2>&1 ;
+		then
 			RVVBMARK_RVV_SUPPORT=1
 
 			# override march in flags, if v was added above
 			if [[ $march != $march_tmp ]] ; then
 				echo "yes (added v to -march=($march_tmp))"
-				RVVBMARK_EXTRA_ASFLAGS+="-march=$march_tmp"
 				RVVBMARK_EXTRA_CFLAGS+="-march=$march_tmp"
 			else
 				echo "yes"
@@ -130,12 +139,11 @@ sed config.mk.in							\
 	-e s#\@RVVBMARK_RV_SUPPORT\@#$RVVBMARK_RV_SUPPORT#g		\
 	-e s#\@RVVBMARK_RVV_SUPPORT\@#$RVVBMARK_RVV_SUPPORT#g		\
 	-e s#\@RVVBMARK_INSTALL_PREFIX\@#$RVVBMARK_INSTALL_PREFIX#g	\
-	-e s#\@RVVBMARK_EXTRA_ASFLAGS\@#$RVVBMARK_EXTRA_ASFLAGS#g	\
 	-e s#\@RVVBMARK_EXTRA_CFLAGS\@#$RVVBMARK_EXTRA_CFLAGS#g		\
 	> config.mk
 
 echo "done."
-echo 
+echo
 echo "Next steps:"
 echo "make"
 echo "make install"

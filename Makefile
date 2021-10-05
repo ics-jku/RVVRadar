@@ -32,7 +32,6 @@ else
 	INSTALLFLAGS=	-s --strip-program=$(STRIP)
 endif
 
-ASFLAGS+= 	$(RVVBMARK_EXTRA_ASFLAGS)
 CFLAGS+=	$(RVVBMARK_EXTRA_CFLAGS) \
 		-Wall -D_GNU_SOURCE \
 		-I. \
@@ -55,21 +54,8 @@ C_SOURCES := $(wildcard *.c)
 # Will be compiled to multiple object files with different optimizations
 C_SOURCES_OPT_IN := $(wildcard *_c.c.in)
 
-# All .s files
-ifeq ($(RVVBMARK_RV_SUPPORT),1)
-  # All files ending with *_rv.s is for RISC-V
-  ASM_SOURCES := $(wildcard *_rv.s)
-  ifeq ($(RVVBMARK_RVV_SUPPORT),1)
-    # All files ending with *_rvv.s is for RISC-V Vector extension
-    ASM_SOURCES += $(wildcard *_rvv.s)
-  endif
-else
-ASM_SOURCES :=
-endif
-
 # build %.o from %.c and %.s
 OBJS := $(patsubst %.c,%.o,$(C_SOURCES))
-OBJS += $(patsubst %.s,%.o,$(ASM_SOURCES))
 # build multiple %.o with different optimizations from %.c.in
 OBJS += $(patsubst %.c.in,%_avect.o,$(C_SOURCES_OPT_IN))
 OBJS += $(patsubst %.c.in,%_noavect.o,$(C_SOURCES_OPT_IN))
