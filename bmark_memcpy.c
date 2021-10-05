@@ -118,16 +118,16 @@ static int subbmarks_add(bmark_t *bmark)
 {
 	int ret = 0;
 
-	ret |= subbmark_add(bmark, "system",		 (memcpy_fp_t)memcpy);
 	ret |= subbmark_add(bmark, "c byte noavect",	 (memcpy_fp_t)memcpy_c_byte_noavect);
-	ret |= subbmark_add(bmark, "c byte avect",	 (memcpy_fp_t)memcpy_c_byte_avect);
 #if RVVBMARK_RV_SUPPORT == 1
 	ret |= subbmark_add(bmark, "4 int regs",	 (memcpy_fp_t)memcpy_rv_wlenx4);
-#if RVVBMARK_RVV_SUPPORT == 1
-	ret |= subbmark_add(bmark, "rvv 8bit elements",  (memcpy_fp_t)memcpy_rvv_8);
-	ret |= subbmark_add(bmark, "rvv 32bit elements", (memcpy_fp_t)memcpy_rvv_32);
-#endif /* RVVBMARK_RVV_SUPPORT == 1 */
 #endif /* RVVBMARK_RV_SUPPORT == 1 */
+	ret |= subbmark_add(bmark, "c byte avect",	 (memcpy_fp_t)memcpy_c_byte_avect);
+	ret |= subbmark_add(bmark, "system",		 (memcpy_fp_t)memcpy);
+#if RVVBMARK_RVV_SUPPORT == 1
+	ret |= subbmark_add(bmark, "rvv 32bit elements", (memcpy_fp_t)memcpy_rvv_32);
+	ret |= subbmark_add(bmark, "rvv 8bit elements",  (memcpy_fp_t)memcpy_rvv_8);
+#endif /* RVVBMARK_RVV_SUPPORT == 1 */
 
 	if (ret)
 		return -1;
