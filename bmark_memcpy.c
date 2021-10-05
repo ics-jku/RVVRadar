@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "rvv_helpers.h"
 #include "bmark_memcpy.h"
 
 
@@ -106,28 +107,28 @@ static int subbmark_add(
 
 extern void memcpy_c_byte_avect(char *dest, char *src, unsigned int len);
 extern void memcpy_c_byte_noavect(char *dest, char *src, unsigned int len);
-#if RVVBMARK_RV_SUPPORT == 1
+#if RVVBMARK_RV_SUPPORT
 extern void memcpy_rv_wlenx4(void *dest, void *src, unsigned int len);
-#if RVVBMARK_RVV_SUPPORT == 1
+#if RVVBMARK_RVV_SUPPORT
 extern void memcpy_rvv_8(void *dest, void *src, unsigned int len);
 extern void memcpy_rvv_32(void *dest, void *src, unsigned int len);
-#endif /* RVVBMARK_RVV_SUPPORT == 1 */
-#endif /* RVVBMARK_RV_SUPPORT == 1 */
+#endif /* RVVBMARK_RVV_SUPPORT */
+#endif /* RVVBMARK_RV_SUPPORT */
 
 static int subbmarks_add(bmark_t *bmark)
 {
 	int ret = 0;
 
 	ret |= subbmark_add(bmark, "c byte noavect",	 (memcpy_fp_t)memcpy_c_byte_noavect);
-#if RVVBMARK_RV_SUPPORT == 1
+#if RVVBMARK_RV_SUPPORT
 	ret |= subbmark_add(bmark, "4 int regs",	 (memcpy_fp_t)memcpy_rv_wlenx4);
-#endif /* RVVBMARK_RV_SUPPORT == 1 */
+#endif /* RVVBMARK_RV_SUPPORT */
 	ret |= subbmark_add(bmark, "c byte avect",	 (memcpy_fp_t)memcpy_c_byte_avect);
 	ret |= subbmark_add(bmark, "system",		 (memcpy_fp_t)memcpy);
-#if RVVBMARK_RVV_SUPPORT == 1
+#if RVVBMARK_RVV_SUPPORT
 	ret |= subbmark_add(bmark, "rvv 32bit elements", (memcpy_fp_t)memcpy_rvv_32);
 	ret |= subbmark_add(bmark, "rvv 8bit elements",  (memcpy_fp_t)memcpy_rvv_8);
-#endif /* RVVBMARK_RVV_SUPPORT == 1 */
+#endif /* RVVBMARK_RVV_SUPPORT */
 
 	if (ret)
 		return -1;

@@ -5,11 +5,12 @@
  * SPDX-License-Identifier: GPL-3.0-only
  */
 
-#include <stdlib.h>
 #include <stdint.h>
-#include <stdio.h>
 
-#if RVVBMARK_RVV_SUPPORT == 1
+#include "rvv_helpers.h"
+
+
+#if RVVBMARK_RVV_SUPPORT
 
 /*
  * read as much as possible in e8/m1
@@ -44,12 +45,12 @@ void png_filters_paeth_rvv_read_bulk(unsigned int bpp, unsigned int rowbytes, ui
 	asm volatile ("vsetvli		zero, %0, e8, m1" : : "r" (bpp));
 
 	/* a = *row + *prev_row; */
-	asm volatile ("vlbu.v		v2, (%0)" : : "r" (row));	/* load *row */
-	asm volatile ("vlbu.v		v6, (%0)" : : "r" (prev_row));	/* load *prev_row */
+	asm volatile (VLE8_V"		v2, (%0)" : : "r" (row));	/* load *row */
+	asm volatile (VLE8_V"		v6, (%0)" : : "r" (prev_row));	/* load *prev_row */
 	asm volatile ("vadd.vv		v2, v2, v6");
 
 	/* *row = (uint8_t)a; */
-	asm volatile ("vsb.v		v2, (%0)" : : "r" (row));	/* save a */
+	asm volatile (VSE8_V"		v2, (%0)" : : "r" (row));	/* save a */
 
 	prev_row += bpp;
 	row += bpp;
@@ -67,9 +68,9 @@ void png_filters_paeth_rvv_read_bulk(unsigned int bpp, unsigned int rowbytes, ui
 		asm volatile ("vsetvli		%0, %1, e8, m1" : "=r" (readbytes) : "r" (rowbytes));
 
 		/* b = *prev_row; */
-		asm volatile ("vlbu.v		v4, (%0)" : : "r" (prev_row));
+		asm volatile (VLE8_V"		v4, (%0)" : : "r" (prev_row));
 		/* x = *row */
-		asm volatile ("vlbu.v		v8, (%0)" : : "r" (row));
+		asm volatile (VLE8_V"		v8, (%0)" : : "r" (row));
 
 
 		/* iterate over read pixels (bpp) */
@@ -140,7 +141,7 @@ void png_filters_paeth_rvv_read_bulk(unsigned int bpp, unsigned int rowbytes, ui
 			asm volatile ("vadd.vv		v2, v2, v8");
 
 			/* *row = a */
-			asm volatile ("vsb.v		v2, (%0)" : : "r" (row));
+			asm volatile (VSE8_V"		v2, (%0)" : : "r" (row));
 
 			/* prepare next iteration (prev_row is already in a) */
 			/* c = b */

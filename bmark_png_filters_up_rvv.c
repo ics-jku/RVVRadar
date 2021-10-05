@@ -7,7 +7,10 @@
 
 #include <stdint.h>
 
-#if RVVBMARK_RVV_SUPPORT == 1
+#include "rvv_helpers.h"
+
+
+#if RVVBMARK_RVV_SUPPORT
 
 /*
  * add two vectors and save result back
@@ -34,13 +37,13 @@ void png_filters_up_rvv_m1(unsigned int bpp, unsigned int rowbytes, uint8_t *row
 		asm volatile ("vsetvli		%0, %1, e8, m1" : "=r" (vl) : "r" (rowbytes));
 
 		/* b = *row + *prev_row; */
-		asm volatile ("vlbu.v		v0, (%0)" : : "r" (row));	/* load *row */
-		asm volatile ("vlbu.v		v8, (%0)" : : "r" (prev_row));	/* load *prev_row */
+		asm volatile (VLE8_V"		v0, (%0)" : : "r" (row));	/* load *row */
+		asm volatile (VLE8_V"		v8, (%0)" : : "r" (prev_row));	/* load *prev_row */
 		prev_row += vl;
 		asm volatile ("vadd.vv		v0, v0, v8");
 
 		/* *row = (uint8_t)b; */
-		asm volatile ("vsb.v		v0, (%0)" : : "r" (row));	/* save a */
+		asm volatile (VSE8_V"		v0, (%0)" : : "r" (row));	/* save a */
 		row += vl;
 
 		rowbytes -= vl;
@@ -68,13 +71,13 @@ void png_filters_up_rvv_m2(unsigned int bpp, unsigned int rowbytes, uint8_t *row
 		asm volatile ("vsetvli		%0, %1, e8, m2" : "=r" (vl) : "r" (rowbytes));
 
 		/* b = *row + *prev_row; */
-		asm volatile ("vlbu.v		v0, (%0)" : : "r" (row));	/* load *row */
-		asm volatile ("vlbu.v		v8, (%0)" : : "r" (prev_row));	/* load *prev_row */
+		asm volatile (VLE8_V"		v0, (%0)" : : "r" (row));	/* load *row */
+		asm volatile (VLE8_V"		v8, (%0)" : : "r" (prev_row));	/* load *prev_row */
 		prev_row += vl;
 		asm volatile ("vadd.vv		v0, v0, v8");
 
 		/* *row = (uint8_t)b; */
-		asm volatile ("vsb.v		v0, (%0)" : : "r" (row));	/* save a */
+		asm volatile (VSE8_V"		v0, (%0)" : : "r" (row));	/* save a */
 		row += vl;
 
 		rowbytes -= vl;
@@ -102,13 +105,13 @@ void png_filters_up_rvv_m4(unsigned int bpp, unsigned int rowbytes, uint8_t *row
 		asm volatile ("vsetvli		%0, %1, e8, m4" : "=r" (vl) : "r" (rowbytes));
 
 		/* b = *row + *prev_row; */
-		asm volatile ("vlbu.v		v0, (%0)" : : "r" (row));	/* load *row */
-		asm volatile ("vlbu.v		v8, (%0)" : : "r" (prev_row));	/* load *prev_row */
+		asm volatile (VLE8_V"		v0, (%0)" : : "r" (row));	/* load *row */
+		asm volatile (VLE8_V"		v8, (%0)" : : "r" (prev_row));	/* load *prev_row */
 		prev_row += vl;
 		asm volatile ("vadd.vv		v0, v0, v8");
 
 		/* *row = (uint8_t)b; */
-		asm volatile ("vsb.v		v0, (%0)" : : "r" (row));	/* save a */
+		asm volatile (VSE8_V"		v0, (%0)" : : "r" (row));	/* save a */
 		row += vl;
 
 		rowbytes -= vl;
@@ -136,13 +139,13 @@ void png_filters_up_rvv_m8(unsigned int bpp, unsigned int rowbytes, uint8_t *row
 		asm volatile ("vsetvli		%0, %1, e8, m8" : "=r" (vl) : "r" (rowbytes));
 
 		/* b = *row + *prev_row; */
-		asm volatile ("vlbu.v		v0, (%0)" : : "r" (row));	/* load *row */
-		asm volatile ("vlbu.v		v8, (%0)" : : "r" (prev_row));	/* load *prev_row */
+		asm volatile (VLE8_V"		v0, (%0)" : : "r" (row));	/* load *row */
+		asm volatile (VLE8_V"		v8, (%0)" : : "r" (prev_row));	/* load *prev_row */
 		prev_row += vl;
 		asm volatile ("vadd.vv		v0, v0, v8");
 
 		/* *row = (uint8_t)b; */
-		asm volatile ("vsb.v		v0, (%0)" : : "r" (row));	/* save a */
+		asm volatile (VSE8_V"		v0, (%0)" : : "r" (row));	/* save a */
 		row += vl;
 
 		rowbytes -= vl;

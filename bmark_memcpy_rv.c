@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-#if RVVBMARK_RV_SUPPORT == 1
+#if RVVBMARK_RV_SUPPORT
 
 /* use 4 32bit integer registers
  * (len must be a multiple of 16 bytes)
@@ -40,4 +40,4 @@ void memcpy_rv_wlenx4(uint8_t *dest, uint8_t *src, unsigned int len)
 	}
 }
 
-#endif /* RVVBMARK_RVV_SUPPORT */
+#endif /* RVVBMARK_RV_SUPPORT */

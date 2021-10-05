@@ -7,7 +7,10 @@
 
 #include <stdint.h>
 
-#if RVVBMARK_RVV_SUPPORT == 1
+#include "rvv_helpers.h"
+
+
+#if RVVBMARK_RVV_SUPPORT
 
 /*
  * sub neighbors in vectors and save result back
@@ -38,12 +41,12 @@ void png_filters_sub_rvv_dload(unsigned int bpp, unsigned int rowbytes, uint8_t 
 		asm volatile ("vsetvli		zero, %0, e8, m1" : : "r" (bpp));
 
 		/* a = *row + *prev_row; */
-		asm volatile ("vlbu.v		v0, (%0)" : : "r" (row));
-		asm volatile ("vlbu.v		v8, (%0)" : : "r" (row_next));
+		asm volatile (VLE8_V"		v0, (%0)" : : "r" (row));
+		asm volatile (VLE8_V"		v8, (%0)" : : "r" (row_next));
 		asm volatile ("vadd.vv		v0, v0, v8");
 
 		/* *row = (uint8_t)a; */
-		asm volatile ("vsb.v		v0, (%0)" : : "r" (row_next));	/* save a */
+		asm volatile (VSE8_V"		v0, (%0)" : : "r" (row_next));	/* save a */
 
 		row += bpp;
 		row_next += bpp;
@@ -77,18 +80,18 @@ void png_filters_sub_rvv_reuse(unsigned int bpp, unsigned int rowbytes, uint8_t 
 	asm volatile ("vsetvli		zero, %0, e8, m1" : : "r" (bpp));
 
 	/* c = *row++ */
-	asm volatile ("vlbu.v		v0, (%0)" : : "r" (row));
+	asm volatile (VLE8_V"		v0, (%0)" : : "r" (row));
 	row += bpp;
 
 	while (row < rp_end) {
 
 		/* x = *row */
-		asm volatile ("vlbu.v		v8, (%0)" : : "r" (row));
+		asm volatile (VLE8_V"		v8, (%0)" : : "r" (row));
 		/* c = c + x */
 		asm volatile ("vadd.vv		v0, v0, v8");
 
 		/* *row++ = c; */
-		asm volatile ("vsb.v		v0, (%0)" : : "r" (row));
+		asm volatile (VSE8_V"		v0, (%0)" : : "r" (row));
 		row += bpp;
 	}
 }

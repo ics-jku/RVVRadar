@@ -7,7 +7,10 @@
 
 #include <stdint.h>
 
-#if RVVBMARK_RVV_SUPPORT == 1
+#include "rvv_helpers.h"
+
+
+#if RVVBMARK_RVV_SUPPORT
 
 /* use e8 elements */
 void memcpy_rvv_8(uint8_t *dest, uint8_t *src, unsigned int len)
@@ -20,10 +23,10 @@ void memcpy_rvv_8(uint8_t *dest, uint8_t *src, unsigned int len)
 
 		asm volatile ("vsetvli		%0, %1, e8, m8" : "=r" (vl) : "r" (len));
 
-		asm volatile ("vlbu.v		v0, (%0)" : : "r" (src));
+		asm volatile (VLE8_V"		v0, (%0)" : : "r" (src));
 		src += vl;
 
-		asm volatile ("vsb.v		v0, (%0)" : : "r" (dest));
+		asm volatile (VSE8_V"		v0, (%0)" : : "r" (dest));
 		dest += vl;
 
 		len -= vl;
@@ -45,11 +48,11 @@ void memcpy_rvv_32(uint8_t *dest, uint8_t *src, unsigned int len)
 		asm volatile ("vsetvli		%0, %1, e32, m8" : "=r" (vl) : "r" (len));
 		len -= vl;
 
-		asm volatile ("vlwu.v		v0, (%0)" : : "r" (src));
+		asm volatile (VLE32_V"		v0, (%0)" : : "r" (src));
 		vl <<= 2;
 		src += vl;
 
-		asm volatile ("vsw.v		v0, (%0)" : : "r" (dest));
+		asm volatile (VSE32_V"		v0, (%0)" : : "r" (dest));
 		dest += vl;
 	}
 }

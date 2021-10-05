@@ -5,9 +5,15 @@
 #
 # SPDX-License-Identifier: GPL-3.0-only
 
+# possible values for RVVBMARK_RVV_SUPPORT
+RVVBMARK_RVV_SUPPORT_NO=0
+RVVBMARK_RVV_SUPPORT_VER_07_08=1
+RVVBMARK_RVV_SUPPORT_VER_09_10_100=2
+
+# initial values
 RVVBMARK_INSTALL_PREFIX="/usr/local"
 RVVBMARK_RV_SUPPORT=0
-RVVBMARK_RVV_SUPPORT=0
+RVVBMARK_RVV_SUPPORT=$RVVBMARK_RVV_SUPPORT_NO
 RVVBMARK_EXTRA_ASFLAGS=""
 RVVBMARK_EXTRA_CFLAGS=""
 
@@ -109,22 +115,33 @@ else
 		march_tmp=$march
 		[[ $march != rv*v* ]] && march_tmp+=v
 
-		# try build
-		if $CC					\
-			-march=$march_tmp		\
-			-DRVVBMARK_RV_SUPPORT=1		\
-			-DRVVBMARK_RVV_SUPPORT=1	\
-			-c bmark_memcpy_rvv.c		\
-			-o /dev/null > /dev/null 2>&1 ;
-		then
-			RVVBMARK_RVV_SUPPORT=1
+		RVVBMARK_RVV_SUPPORT=$RVVBMARK_RVV_SUPPORT_NO
+		for rvv_support in $RVVBMARK_RVV_SUPPORT_VER_07_08 $RVVBMARK_RVV_SUPPORT_VER_09_10_100 ; do
+			if $CC								\
+				-march=$march_tmp					\
+				-DRVVBMARK_RV_SUPPORT=1					\
+				-DRVVBMARK_RVV_SUPPORT=$rvv_support			\
+				-c bmark_memcpy_rvv.c					\
+				-o /dev/null > /dev/null 2>&1 ;
+			then
+				RVVBMARK_RVV_SUPPORT=$rvv_support
+			fi
+		done
 
+		if [[ $RVVBMARK_RVV_SUPPORT != $RVVBMARK_RVV_SUPPORT_NO ]] ; then
+			if [[ $RVVBMARK_RVV_SUPPORT == $RVVBMARK_RVV_SUPPORT_VER_07_08 ]] ; then
+				echo "yes (rvv v0.7/v0.8)"
+			else
+				echo "yes (rvv v0.9/v0.10/v1.0) -- UNTESTED!"
+			fi
+			
 			# override march in flags, if v was added above
+			echo -en "Check if 'v' needs to be added to march .. "
 			if [[ $march != $march_tmp ]] ; then
-				echo "yes (added v to -march=($march_tmp))"
+				echo "yes (-march=($march_tmp))"
 				RVVBMARK_EXTRA_CFLAGS+="-march=$march_tmp"
 			else
-				echo "yes"
+				echo "no"
 			fi
 		else
 			echo "no (unable to build)"

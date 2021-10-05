@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <getopt.h>
 
+#include "rvv_helpers.h"
 #include "bmarkset.h"
 #include "bmark_memcpy.h"
 #include "bmark_mac_16_32_32.h"
@@ -58,14 +59,16 @@ void print_version(void)
 		RVVBMARK_VERSION_STR);
 
 	fprintf(stderr, "RISC-V support is ");
-#if RVVBMARK_RV_SUPPORT == 1
+#if RVVBMARK_RV_SUPPORT
 	fprintf(stderr, "enabled\n");
 
 	fprintf(stderr, "RISC-V RVV support is ");
-#if RVVBMARK_RVV_SUPPORT == 1
-	fprintf(stderr, "enabled\n");
-#else /* RVVBMARK_RVV_SUPPORT */
+#if RVVBMARK_RVV_SUPPORT == RVVBMARK_RVV_SUPPORT_NO
 	fprintf(stderr, "disabled\n");
+#elif RVVBMARK_RVV_SUPPORT == RVVBMARK_RVV_SUPPORT_VER_07_08
+	fprintf(stderr, "enabled (v0.7/v0.8)\n");
+#elif RVVBMARK_RVV_SUPPORT == RVVBMARK_RVV_SUPPORT_VER_09_10_100
+	fprintf(stderr, "enabled (v0.9/v0.10/v1.0)\n");
 #endif /* RVVBMARK_RVV_SUPPORT */
 
 #else /* RVVBMARK_RV_SUPPORT */

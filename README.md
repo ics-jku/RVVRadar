@@ -6,6 +6,13 @@ Benchmark tool for RISC-V vector extension (RVV)
 rvvbmark is released under the terms of the GNU General Public License
 version 3.0; see the file COPYING for details.
 
+Supported RVV Drafts (autodetected by configure):
+ * v0.7/v0.8
+   * implemented
+   * tested on allwinner d1
+ * v0.9/v0.10/v1.0
+   * implemented
+   * untested
 
 ## Configuration, Build & Install
 

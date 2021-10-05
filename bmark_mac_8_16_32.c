@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "rvv_helpers.h"
 #include "bmark_mac_8_16_32.h"
 
 
@@ -109,11 +110,20 @@ static int subbmark_add(
 
 extern void mac_8_16_32_c_byte_noavect(int32_t *res, int16_t *add, int8_t *mul1, int8_t *mul2, unsigned int len);
 extern void mac_8_16_32_c_byte_avect(int32_t *res, int16_t *add, int8_t *mul1, int8_t *mul2, unsigned int len);
-#if RVVBMARK_RVV_SUPPORT == 1
+#if RVVBMARK_RVV_SUPPORT
+#if RVVBMARK_RVV_SUPPORT == RVVBMARK_RVV_SUPPORT_VER_07_08
+/*
+ * These implementations only make sense for rvv v0.7 and v0.8
+ * In newer specs, there are no signed loads. Instead a unsigned load
+ * must be combined with vsext, which adds an additional penalty.
+ * Since these implementations generally are known to be less performant
+ * it was decided to drop them completely for newer rvv drafts.
+ */
 extern void mac_8_16_32_rvv_e32(int32_t *res, int16_t *add, int8_t *mul1, int8_t *mul2, unsigned int len);
 extern void mac_8_16_32_rvv_e16_widening(int32_t *res, int16_t *add, int8_t *mul1, int8_t *mul2, unsigned int len);
+#endif /* RVVBMARK_RVV_SUPPORT_VER_07_08 */
 extern void mac_8_16_32_rvv_e8_widening(int32_t *res, int16_t *add, int8_t *mul1, int8_t *mul2, unsigned int len);
-#endif /* RVVBMARK_RVV_SUPPORT == 1 */
+#endif /* RVVBMARK_RVV_SUPPORT */
 
 static int subbmarks_add(bmark_t *bmark)
 {
@@ -121,11 +131,13 @@ static int subbmarks_add(bmark_t *bmark)
 
 	ret |= subbmark_add(bmark, "c byte noavect",				(mac_8_16_32_fp_t)mac_8_16_32_c_byte_noavect);
 	ret |= subbmark_add(bmark, "c byte avect",				(mac_8_16_32_fp_t)mac_8_16_32_c_byte_avect);
-#if RVVBMARK_RVV_SUPPORT == 1
+#if RVVBMARK_RVV_SUPPORT
+#if RVVBMARK_RVV_SUPPORT == RVVBMARK_RVV_SUPPORT_VER_07_08
 	ret |= subbmark_add(bmark, "rvv 32bit elements",			(mac_8_16_32_fp_t)mac_8_16_32_rvv_e32);
 	ret |= subbmark_add(bmark, "rvv 16bit elements with widening",		(mac_8_16_32_fp_t)mac_8_16_32_rvv_e16_widening);
+#endif /* RVVBMARK_RVV_SUPPORT_VER_07_08 */
 	ret |= subbmark_add(bmark, "rvv 8bit elements with double widening",	(mac_8_16_32_fp_t)mac_8_16_32_rvv_e8_widening);
-#endif /* RVVBMARK_RVV_SUPPORT == 1 */
+#endif /* RVVBMARK_RVV_SUPPORT */
 
 	if (ret)
 		return -1;

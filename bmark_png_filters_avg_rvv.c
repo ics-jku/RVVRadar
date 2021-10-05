@@ -7,7 +7,10 @@
 
 #include <stdint.h>
 
-#if RVVBMARK_RVV_SUPPORT == 1
+#include "rvv_helpers.h"
+
+
+#if RVVBMARK_RVV_SUPPORT
 
 /*
  * read, process and save single pixels using e8/m1
@@ -37,9 +40,9 @@ void png_filters_avg_rvv(unsigned int bpp, unsigned int rowbytes, uint8_t *row, 
 	asm volatile ("vsetvli		zero, %0, e8, m1" : : "r" (bpp));
 
 	/* b = *prev_row; */
-	asm volatile ("vlbu.v		v4, (%0)" : : "r" (prev_row));
+	asm volatile (VLE8_V"		v4, (%0)" : : "r" (prev_row));
 	/* x = *row */
-	asm volatile ("vlbu.v		v8, (%0)" : : "r" (row));
+	asm volatile (VLE8_V"		v8, (%0)" : : "r" (row));
 
 	/* b = b / 2 */
 	asm volatile ("vsrl.vi		v4, v4, 1");
@@ -47,7 +50,7 @@ void png_filters_avg_rvv(unsigned int bpp, unsigned int rowbytes, uint8_t *row, 
 	asm volatile ("vadd.vv		v2, v4, v8");
 
 	/* *row = a */
-	asm volatile ("vsb.v		v2, (%0)" : : "r" (row));
+	asm volatile (VSE8_V"		v2, (%0)" : : "r" (row));
 
 	prev_row += bpp;
 	row += bpp;
@@ -58,19 +61,19 @@ void png_filters_avg_rvv(unsigned int bpp, unsigned int rowbytes, uint8_t *row, 
 	while (row < rp_end) {
 
 		/* b = *prev_row; */
-		asm volatile ("vlbu.v		v4, (%0)" : : "r" (prev_row));
+		asm volatile (VLE8_V"		v4, (%0)" : : "r" (prev_row));
 		/* x = *row */
-		asm volatile ("vlbu.v		v8, (%0)" : : "r" (row));
+		asm volatile (VLE8_V"		v8, (%0)" : : "r" (row));
 
 		/* tmp = a + b */
 		asm volatile ("vwaddu.vv	v12, v2, v4");		/* add with widening */
 		/* a = tmp/2 */
-		asm volatile ("vnsrl.vi		v2, v12, 1");		/* divide/shift with narrowing */
+		asm volatile (VNSRL_WI"		v2, v12, 1");		/* divide/shift with narrowing */
 		/* a += x */
 		asm volatile ("vadd.vv		v2, v2, v8");
 
 		/* *row = a */
-		asm volatile ("vsb.v		v2, (%0)" : : "r" (row));
+		asm volatile (VSE8_V"		v2, (%0)" : : "r" (row));
 
 		prev_row += bpp;
 		row += bpp;

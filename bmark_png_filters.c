@@ -10,6 +10,7 @@
 #include <stdint.h>
 #include <errno.h>
 
+#include "rvv_helpers.h"
 #include "bmark_png_filters.h"
 
 
@@ -110,12 +111,12 @@ static int subbmark_add(
 
 extern void png_filters_up_c_byte_avect(unsigned int bpp, unsigned int rowbytes, uint8_t *row, uint8_t *prev_row);
 extern void png_filters_up_c_byte_noavect(unsigned int bpp, unsigned int rowbytes, uint8_t *row, uint8_t *prev_row);
-#if RVVBMARK_RVV_SUPPORT == 1
+#if RVVBMARK_RVV_SUPPORT
 extern void png_filters_up_rvv_m1(unsigned int bpp, unsigned int rowbytes, uint8_t *row, uint8_t *prev_row);
 extern void png_filters_up_rvv_m2(unsigned int bpp, unsigned int rowbytes, uint8_t *row, uint8_t *prev_row);
 extern void png_filters_up_rvv_m4(unsigned int bpp, unsigned int rowbytes, uint8_t *row, uint8_t *prev_row);
 extern void png_filters_up_rvv_m8(unsigned int bpp, unsigned int rowbytes, uint8_t *row, uint8_t *prev_row);
-#endif /* RVVBMARK_RVV_SUPPORT == 1 */
+#endif /* RVVBMARK_RVV_SUPPORT */
 
 static int subbmarks_add_up(bmark_t *bmark)
 {
@@ -123,12 +124,12 @@ static int subbmarks_add_up(bmark_t *bmark)
 
 	ret |= subbmark_add(bmark, "c byte noavect",	(png_filters_fp_t)png_filters_up_c_byte_noavect);
 	ret |= subbmark_add(bmark, "c byte avect",	(png_filters_fp_t)png_filters_up_c_byte_avect);
-#if RVVBMARK_RVV_SUPPORT == 1
+#if RVVBMARK_RVV_SUPPORT
 	ret |= subbmark_add(bmark, "rvv_m1",		(png_filters_fp_t)png_filters_up_rvv_m1);
 	ret |= subbmark_add(bmark, "rvv_m2",		(png_filters_fp_t)png_filters_up_rvv_m2);
 	ret |= subbmark_add(bmark, "rvv_m4",		(png_filters_fp_t)png_filters_up_rvv_m4);
 	ret |= subbmark_add(bmark, "rvv_m8",		(png_filters_fp_t)png_filters_up_rvv_m8);
-#endif /* RVVBMARK_RVV_SUPPORT == 1 */
+#endif /* RVVBMARK_RVV_SUPPORT */
 
 	if (ret)
 		return -1;
@@ -142,10 +143,10 @@ static int subbmarks_add_up(bmark_t *bmark)
 
 extern void png_filters_sub_c_byte_avect(unsigned int bpp, unsigned int rowbytes, uint8_t *row, uint8_t *prev_row);
 extern void png_filters_sub_c_byte_noavect(unsigned int bpp, unsigned int rowbytes, uint8_t *row, uint8_t *prev_row);
-#if RVVBMARK_RVV_SUPPORT == 1
+#if RVVBMARK_RVV_SUPPORT
 extern void png_filters_sub_rvv_dload(unsigned int bpp, unsigned int rowbytes, uint8_t *row, uint8_t *prev_row);
 extern void png_filters_sub_rvv_reuse(unsigned int bpp, unsigned int rowbytes, uint8_t *row, uint8_t *prev_row);
-#endif /* RVVBMARK_RVV_SUPPORT == 1 */
+#endif /* RVVBMARK_RVV_SUPPORT */
 
 static int subbmarks_add_sub(bmark_t *bmark)
 {
@@ -153,10 +154,10 @@ static int subbmarks_add_sub(bmark_t *bmark)
 
 	ret |= subbmark_add(bmark, "c byte noavect",	(png_filters_fp_t)png_filters_sub_c_byte_noavect);
 	ret |= subbmark_add(bmark, "c byte avect",	(png_filters_fp_t)png_filters_sub_c_byte_avect);
-#if RVVBMARK_RVV_SUPPORT == 1
+#if RVVBMARK_RVV_SUPPORT
 	ret |= subbmark_add(bmark, "rvv_dload",		(png_filters_fp_t)png_filters_sub_rvv_dload);
 	ret |= subbmark_add(bmark, "rvv_reuse",		(png_filters_fp_t)png_filters_sub_rvv_reuse);
-#endif /* RVVBMARK_RVV_SUPPORT == 1 */
+#endif /* RVVBMARK_RVV_SUPPORT */
 
 	if (ret)
 		return -1;
@@ -170,9 +171,9 @@ static int subbmarks_add_sub(bmark_t *bmark)
 
 extern void png_filters_avg_c_byte_avect(unsigned int bpp, unsigned int rowbytes, uint8_t *row, uint8_t *prev_row);
 extern void png_filters_avg_c_byte_noavect(unsigned int bpp, unsigned int rowbytes, uint8_t *row, uint8_t *prev_row);
-#if RVVBMARK_RVV_SUPPORT == 1
+#if RVVBMARK_RVV_SUPPORT
 extern void png_filters_avg_rvv(unsigned int bpp, unsigned int rowbytes, uint8_t *row, uint8_t *prev_row);
-#endif /* RVVBMARK_RVV_SUPPORT == 1 */
+#endif /* RVVBMARK_RVV_SUPPORT */
 
 static int subbmarks_add_avg(bmark_t *bmark)
 {
@@ -180,9 +181,9 @@ static int subbmarks_add_avg(bmark_t *bmark)
 
 	ret |= subbmark_add(bmark, "c byte noavect",	(png_filters_fp_t)png_filters_avg_c_byte_noavect);
 	ret |= subbmark_add(bmark, "c byte avect",	(png_filters_fp_t)png_filters_avg_c_byte_avect);
-#if RVVBMARK_RVV_SUPPORT == 1
+#if RVVBMARK_RVV_SUPPORT
 	ret |= subbmark_add(bmark, "rvv",		(png_filters_fp_t)png_filters_avg_rvv);
-#endif /* RVVBMARK_RVV_SUPPORT == 1 */
+#endif /* RVVBMARK_RVV_SUPPORT */
 
 	if (ret)
 		return -1;
@@ -196,10 +197,10 @@ static int subbmarks_add_avg(bmark_t *bmark)
 
 extern void png_filters_paeth_c_byte_avect(unsigned int bpp, unsigned int rowbytes, uint8_t *row, uint8_t *prev_row);
 extern void png_filters_paeth_c_byte_noavect(unsigned int bpp, unsigned int rowbytes, uint8_t *row, uint8_t *prev_row);
-#if RVVBMARK_RVV_SUPPORT == 1
+#if RVVBMARK_RVV_SUPPORT
 extern void png_filters_paeth_rvv_read_bulk(unsigned int bpp, unsigned int rowbytes, uint8_t *row, uint8_t *prev_row);
 extern void png_filters_paeth_rvv(unsigned int bpp, unsigned int rowbytes, uint8_t *row, uint8_t *prev_row);
-#endif /* RVVBMARK_RVV_SUPPORT == 1 */
+#endif /* RVVBMARK_RVV_SUPPORT */
 
 static int subbmarks_add_paeth(bmark_t *bmark)
 {
@@ -207,10 +208,10 @@ static int subbmarks_add_paeth(bmark_t *bmark)
 
 	ret |= subbmark_add(bmark, "c byte noavect",	(png_filters_fp_t)png_filters_paeth_c_byte_noavect);
 	ret |= subbmark_add(bmark, "c byte avect",	(png_filters_fp_t)png_filters_paeth_c_byte_avect);
-#if RVVBMARK_RVV_SUPPORT == 1
+#if RVVBMARK_RVV_SUPPORT
 	ret |= subbmark_add(bmark, "rvv_read_bulk",	(png_filters_fp_t)png_filters_paeth_rvv_read_bulk);
 	ret |= subbmark_add(bmark, "rvv",		(png_filters_fp_t)png_filters_paeth_rvv);
-#endif /* RVVBMARK_RVV_SUPPORT == 1 */
+#endif /* RVVBMARK_RVV_SUPPORT */
 
 	if (ret)
 		return -1;

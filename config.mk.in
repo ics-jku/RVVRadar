@@ -11,8 +11,11 @@ RVVBMARK_SUBVERSION="2"
 RVVBMARK_RV_SUPPORT=@RVVBMARK_RV_SUPPORT@
 
 # Does toolchain support RISC-V vector extension (RVV)
+# 0 .. no
+# 1 .. rvv v0.7/v0.8
+# 2 .. rvv v0.9/v0.10/v1.0
 # (can be built for non-rvv when set to zero)
-RVVBMARK_RVV_SUPPORT=@RVVBMARK_RV_SUPPORT@
+RVVBMARK_RVV_SUPPORT=@RVVBMARK_RVV_SUPPORT@
 
 # extra flags
 # (mainly used to add -march + vector -> see configure)
