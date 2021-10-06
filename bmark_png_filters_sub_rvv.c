@@ -33,7 +33,7 @@ void png_filters_sub_rvv_dload(unsigned int bpp, unsigned int rowbytes, uint8_t 
 	 */
 
 
-	while (row < rp_end) {
+	while (row_next < rp_end) {
 
 		asm volatile ("vsetvli		zero, %0, e8, m1" : : "r" (bpp));
 
