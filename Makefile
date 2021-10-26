@@ -25,11 +25,13 @@ ifeq ($(debug),1)
 	# no optimization, with debug symbols install unstripped
 	CFLAGS+=	-Og -g
 	INSTALLFLAGS=
+	OBJDIR=		debug
 else
 	# Benchmarks are built explicitly with/without autovectorization
 	# independent of the settings here (see below)
 	CFLAGS+=	-O2
 	INSTALLFLAGS=	-s --strip-program=$(STRIP)
+	OBJDIR=		release
 endif
 
 CFLAGS+=	$(RVVBMARK_EXTRA_CFLAGS) \
@@ -55,32 +57,35 @@ C_SOURCES := $(wildcard *.c)
 C_SOURCES_OPT_IN := $(wildcard *_c.c.in)
 
 # build %.o from %.c and %.s
-OBJS := $(patsubst %.c,%.o,$(C_SOURCES))
+OBJS := $(patsubst %.c,$(OBJDIR)/%.o,$(C_SOURCES))
 # build multiple %.o with different optimizations from %.c.in
-OBJS += $(patsubst %.c.in,%_avect.o,$(C_SOURCES_OPT_IN))
-OBJS += $(patsubst %.c.in,%_noavect.o,$(C_SOURCES_OPT_IN))
+OBJS += $(patsubst %.c.in,$(OBJDIR)/%_avect.o,$(C_SOURCES_OPT_IN))
+OBJS += $(patsubst %.c.in,$(OBJDIR)/%_noavect.o,$(C_SOURCES_OPT_IN))
 
 
 
-.PHONY: all check style clean distclean install
+.PHONY: all check style clean distclean install create_obj_dir
 
 
 all: $(BIN_NAME)
 
+create_obj_dir:
+		@mkdir -p $(OBJDIR)
+
 # generic rule
-%.o: %.c $(HEADERS) config.mk
-		$(CC) $(CFLAGS) -c $<
+$(OBJDIR)/%.o: %.c $(HEADERS) config.mk | create_obj_dir
+		$(CC) $(CFLAGS) -c $< -o $@
 
 # generic rule for disabled autovectorization
 # verbose info of vectorization is print on compilation (there should be no output!)
-%_c_noavect.o: %_c.c.in $(HEADERS) config.mk
+$(OBJDIR)/%_c_noavect.o: %_c.c.in $(HEADERS) config.mk | create_obj_dir
 		@echo "BUILD $< WITHOUT VECTORIZATION"
 		sed $< -e s/@OPTIMIZATION@/noavect/g | $(CC) $(CFLAGS) -O3 -fno-tree-vectorize -fopt-info-vec-all -c -o $@ -xc -
 
 # generic rule for enabled autovectorization
 # -O3 enables autovectorization (-ftree-vectorize) on x86(debian 10) and risc-v (risc-v foundation toolchain)
 # verbose info of vectorization is print on compilation
-%_c_avect.o: %_c.c.in $(HEADERS) config.mk
+$(OBJDIR)/%_c_avect.o: %_c.c.in $(HEADERS) config.mk | create_obj_dir
 		@echo "BUILD $< WITH VECTORIZER"
 		sed $< -e s/@OPTIMIZATION@/avect/g | $(CC) $(CFLAGS) -O3 -ftree-vectorize -fopt-info-vec-all -c -o $@ -xc -
 
@@ -96,8 +101,8 @@ style:
 		(PWD=`pwd`; astyle $(ASTYLE_ARGS) $(C_SOURCES) ${C_SOURCES_OPT_IN} $(HEADERS);)
 
 clean:
-		- rm $(BIN_NAME)
-		- rm *.o
+		- rm -rf release debug
+		- rm -f $(BIN_NAME)
 
 distclean: clean
 		- rm config.mk
