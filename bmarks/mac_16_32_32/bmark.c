@@ -40,7 +40,7 @@ static void diff_fields(int32_t *dest, int32_t *src, int len)
 }
 
 
-static int subbmark_preexec(subbmark_t *subbmark, int iteration, bool check)
+static int subbmark_preexec(subbmark_t *subbmark, int iteration, bool verify)
 {
 	struct data *d = (struct data*)subbmark->bmark->data;
 	/* init add_res with add before benchmark run */
@@ -50,7 +50,7 @@ static int subbmark_preexec(subbmark_t *subbmark, int iteration, bool check)
 }
 
 
-static int subbmark_exec_wrapper(subbmark_t *subbmark, bool check)
+static int subbmark_exec_wrapper(subbmark_t *subbmark, bool verify)
 {
 	struct data *d = (struct data*)subbmark->bmark->data;
 	struct subdata *sd = (struct subdata*)subbmark->data;
@@ -59,10 +59,10 @@ static int subbmark_exec_wrapper(subbmark_t *subbmark, bool check)
 }
 
 
-static int subbmark_postexec(subbmark_t *subbmark, bool check)
+static int subbmark_postexec(subbmark_t *subbmark, bool verify)
 {
-	/* result-check disabled -> nothing to do */
-	if (!check)
+	/* result-verify disabled -> nothing to do */
+	if (!verify)
 		return 0;
 
 	struct data *d = (struct data*)subbmark->bmark->data;

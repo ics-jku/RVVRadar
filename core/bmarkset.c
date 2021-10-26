@@ -117,7 +117,7 @@ static int subbmark_call_init(subbmark_t *subbmark)
 }
 
 
-static int subbmark_call_preexec(subbmark_t *subbmark, int iteration, bool check)
+static int subbmark_call_preexec(subbmark_t *subbmark, int iteration, bool verify)
 {
 	if (subbmark == NULL) {
 		errno = EINVAL;
@@ -128,11 +128,11 @@ static int subbmark_call_preexec(subbmark_t *subbmark, int iteration, bool check
 	if (subbmark->preexec == NULL)
 		return 0;
 
-	return subbmark->preexec(subbmark, iteration, check);
+	return subbmark->preexec(subbmark, iteration, verify);
 }
 
 
-static int subbmark_call_exec(subbmark_t *subbmark, bool check)
+static int subbmark_call_exec(subbmark_t *subbmark, bool verify)
 {
 	if (subbmark == NULL) {
 		errno = EINVAL;
@@ -143,12 +143,12 @@ static int subbmark_call_exec(subbmark_t *subbmark, bool check)
 	if (subbmark->exec == NULL)
 		return 0;
 
-	return subbmark->exec(subbmark, check);
+	return subbmark->exec(subbmark, verify);
 
 }
 
 
-static int subbmark_call_postexec(subbmark_t *subbmark, bool check)
+static int subbmark_call_postexec(subbmark_t *subbmark, bool verify)
 {
 	if (subbmark == NULL) {
 		errno = EINVAL;
@@ -159,7 +159,7 @@ static int subbmark_call_postexec(subbmark_t *subbmark, bool check)
 	if (subbmark->postexec == NULL)
 		return 0;
 
-	return subbmark->postexec(subbmark, check);
+	return subbmark->postexec(subbmark, verify);
 }
 
 
@@ -178,7 +178,7 @@ static int subbmark_call_cleanup(subbmark_t *subbmark)
 }
 
 
-static int subbmark_run_single(subbmark_t *subbmark, int iteration, bool check)
+static int subbmark_run_single(subbmark_t *subbmark, int iteration, bool verify)
 {
 	int ret = 0;
 
@@ -189,18 +189,18 @@ static int subbmark_run_single(subbmark_t *subbmark, int iteration, bool check)
 
 	subbmark->runs++;
 
-	ret = subbmark_call_preexec(subbmark, iteration, check);
+	ret = subbmark_call_preexec(subbmark, iteration, verify);
 	if (ret < 0)
 		goto __err;
 
 	/* exec and measure */
 	chrono_start(&subbmark->chrono);
-	ret = subbmark_call_exec(subbmark, check);
+	ret = subbmark_call_exec(subbmark, verify);
 	if (ret < 0)
 		goto __err;
 	chrono_stop(&subbmark->chrono);
 
-	ret = subbmark_call_postexec(subbmark, check);
+	ret = subbmark_call_postexec(subbmark, verify);
 	if (ret)
 		goto __data_err;
 
@@ -266,7 +266,7 @@ static int subbmark_print_csv(subbmark_t *subbmark, FILE *out)
 }
 
 
-static int subbmark_run(subbmark_t *subbmark, int iterations, bool check, bool verbose)
+static int subbmark_run(subbmark_t *subbmark, int iterations, bool verify, bool verbose)
 {
 	if (subbmark == NULL) {
 		errno = EINVAL;
@@ -275,7 +275,7 @@ static int subbmark_run(subbmark_t *subbmark, int iterations, bool check, bool v
 
 	for (int iteration = 0; iteration < iterations; iteration++) {
 		pinfo("\r%s: %i/%i -> ", subbmark->name, iteration + 1, iterations);
-		int ret = subbmark_run_single(subbmark, iteration, check);
+		int ret = subbmark_run_single(subbmark, iteration, verify);
 		if (ret < 0)
 			return -1;
 		else if (ret > 0) {
@@ -470,7 +470,7 @@ static int bmark_call_postexec(bmark_t *bmark)
 }
 
 
-static int bmark_run(bmark_t *bmark, int seed, int iterations, bool check, bool verbose)
+static int bmark_run(bmark_t *bmark, int seed, int iterations, bool verify, bool verbose)
 {
 	int ret;
 
@@ -496,7 +496,7 @@ static int bmark_run(bmark_t *bmark, int seed, int iterations, bool check, bool 
 		if (ret < 0)
 			return -1;
 
-		ret = subbmark_run(s, iterations, check, verbose);
+		ret = subbmark_run(s, iterations, verify, verbose);
 		if (ret < 0)
 			return -1;
 
@@ -593,7 +593,7 @@ void bmarkset_reset(bmarkset_t *bmarkset)
 }
 
 
-int bmarkset_run(bmarkset_t *bmarkset, int seed, int iterations, bool check, bool verbose)
+int bmarkset_run(bmarkset_t *bmarkset, int seed, int iterations, bool verify, bool verbose)
 {
 	int ret;
 
@@ -610,7 +610,7 @@ int bmarkset_run(bmarkset_t *bmarkset, int seed, int iterations, bool check, boo
 		b != NULL;
 		b = b->next
 	) {
-		ret = bmark_run(b, seed, iterations, check, verbose);
+		ret = bmark_run(b, seed, iterations, verify, verbose);
 		if (ret < 0)
 			return -1;
 	}

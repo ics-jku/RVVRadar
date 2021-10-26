@@ -34,7 +34,7 @@
 
 /* default parameters */
 #define DEFAULT_QUIET			false
-#define DEFAULT_CHECK			false
+#define DEFAULT_VERIFY			false
 #define DEFAULT_RANDSEED		0
 #define DEFAULT_ITERATIONS		10000
 #define DEFAULT_LEN_START		32
@@ -96,11 +96,10 @@ void print_usage(const char *name)
 		"     Set random seed for benchmarks.\n"
 		"     (Default: %u)\n"
 		"\n"
-		"  [--check|-c]\n"
-		"     Enable checking for valid calculations after each\n"
-		"     benchmark iteration.\n"
+		"  [--verify|-v]\n"
+		"     Enable verification of results benchmark iteration.\n"
 		"     Enable this, if you want to make sure, that calculations\n"
-		"     are correct (e.g. development, functional tests, ...).\n"
+		"     are correct (e.g. while development, functional tests, ...).\n"
 		"     Leave it disabled if you want to run benchmarks with as\n"
 		"     little interference (caches, ...) as possible.\n"
 		"     (Default: %s)\n"
@@ -143,7 +142,7 @@ void print_usage(const char *name)
 		name,
 		DEFAULT_QUIET ? "true" : "false",
 		DEFAULT_RANDSEED,
-		DEFAULT_CHECK ? "true" : "false",
+		DEFAULT_VERIFY ? "true" : "false",
 		DEFAULT_ITERATIONS,
 		DEFAULT_LEN_START,
 		DEFAULT_LEN_END,
@@ -159,7 +158,7 @@ int main(int argc, char **argv)
 
 	bool quiet = DEFAULT_QUIET;
 	int randseed = DEFAULT_RANDSEED;
-	bool check = DEFAULT_CHECK;
+	bool verify = DEFAULT_VERIFY;
 	unsigned int iterations = DEFAULT_ITERATIONS;
 	unsigned int len_start = DEFAULT_LEN_START;
 	unsigned int len_end = DEFAULT_LEN_END;
@@ -171,7 +170,7 @@ int main(int argc, char **argv)
 	struct option long_options[] = {
 		{"quiet",		no_argument,		0,	'q'	},
 		{"randseed",		required_argument,	0,	'r'	},
-		{"check",		no_argument,		0,	'c'	},
+		{"verify",		no_argument,		0,	'v'	},
 		{"iterations",		required_argument,	0,	'i'	},
 		{"len_start",		required_argument,	0,	's'	},
 		{"len_end",		required_argument,	0,	'e'	},
@@ -180,7 +179,7 @@ int main(int argc, char **argv)
 		{0,			0,			0,	0	}
 	};
 
-	while ((opt = getopt_long(argc, argv, "qr:ci:s:e:b:h",
+	while ((opt = getopt_long(argc, argv, "qr:vi:s:e:b:h",
 				  long_options, &long_index )) != -1) {
 		int ret = -1;
 		switch (opt) {
@@ -190,8 +189,8 @@ int main(int argc, char **argv)
 		case 'r':
 			randseed = atoi(optarg);
 			break;
-		case 'c':
-			check = true;
+		case 'v':
+			verify = true;
 			break;
 		case 'i':
 			iterations = atoi(optarg);
@@ -233,7 +232,7 @@ int main(int argc, char **argv)
 		fprintf(stderr, "\n");
 		fprintf(stderr, " + parameters:\n");
 		fprintf(stderr, "   + randseed:       %u\n", randseed);
-		fprintf(stderr, "   + check:          %s\n", check ? "true" : "false");
+		fprintf(stderr, "   + verify:         %s\n", verify ? "true" : "false");
 		fprintf(stderr, "   + iterations:     %u\n", iterations);
 		fprintf(stderr, "   + len_start:      %u\n", len_start);
 		fprintf(stderr, "   + len_end:        %u\n", len_end);
@@ -324,7 +323,7 @@ int main(int argc, char **argv)
 	/* execution */
 	bmarkset_reset(bmarkset);
 
-	if (bmarkset_run(bmarkset, randseed, iterations, check, !quiet) < 0) {
+	if (bmarkset_run(bmarkset, randseed, iterations, verify, !quiet) < 0) {
 		perror("Error on run");
 		ret = -1;
 		goto __ret_bmarkset_destroy;

@@ -17,15 +17,15 @@ struct subbmark;
  * all functions have to return:
  * >=0 .. if everything was ok
  * <0 .. on error -> errno has to be set!
- * EXCEPTION: subbmark_postexec_fp_t (check function):
+ * EXCEPTION: subbmark_postexec_fp_t (verify function):
  * 0 .. if everything was ok
  * >0 .. on data error (e.g. incorrect benchmark results)
  * <0 .. on error -> errno has to be set!
  */
 typedef int (*subbmark_init_fp_t)(struct subbmark *subbmark);
-typedef int (*subbmark_preexec_fp_t)(struct subbmark *subbmark, int iteration, bool check);
-typedef int (*subbmark_exec_fp_t)(struct subbmark *subbmark, bool check);
-typedef int (*subbmark_postexec_fp_t)(struct subbmark *subbmark, bool check);
+typedef int (*subbmark_preexec_fp_t)(struct subbmark *subbmark, int iteration, bool verify);
+typedef int (*subbmark_exec_fp_t)(struct subbmark *subbmark, bool verify);
+typedef int (*subbmark_postexec_fp_t)(struct subbmark *subbmark, bool verify);
 typedef int (*subbmark_cleanup_fp_t)(struct subbmark *subbmark);
 
 
@@ -159,7 +159,7 @@ void bmarkset_reset(bmarkset_t *bmarkset);
 /*
  * run the benchmark set
  */
-int bmarkset_run(bmarkset_t *bmark, int seed, int iterations, bool check, bool verbose);
+int bmarkset_run(bmarkset_t *bmark, int seed, int iterations, bool verify, bool verbose);
 
 
 #endif /* BMARKSET_H */
