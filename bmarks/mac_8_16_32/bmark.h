@@ -1,6 +1,5 @@
 /*
  * Copyright (C) 2021 Manfred Schlaegl <manfred.schlaegl@gmx.at>
- * All rights reserved.
  *
  * SPDX-License-Identifier: GPL-3.0-only
  */
