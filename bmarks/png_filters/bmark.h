@@ -8,7 +8,7 @@
 #ifndef BMARK_PNG_FILTERS_H
 #define BMARK_PNG_FILTERS_H
 
-#include "bmarkset.h"
+#include <core/bmarkset.h>
 
 enum bmark_png_filters_filter {
 	up,		// bpp is irrelevant/ignored

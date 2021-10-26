@@ -8,7 +8,7 @@
 #ifndef BMARK_MEMCPY_H
 #define BMARK_MEMCPY_H
 
-#include "bmarkset.h"
+#include <core/bmarkset.h>
 
 int bmark_memcpy_add(bmarkset_t *bmarkset, unsigned int len);
 

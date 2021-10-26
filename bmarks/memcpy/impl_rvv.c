@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-#include "rvv_helpers.h"
+#include <core/rvv_helpers.h>
 
 
 #if RVVBMARK_RVV_SUPPORT

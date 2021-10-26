@@ -8,7 +8,7 @@
 #ifndef BMARK_MAC_16_32_32_H
 #define BMARK_MAC_16_32_32_H
 
-#include "bmarkset.h"
+#include <core/bmarkset.h>
 
 int bmark_mac_16_32_32_add(bmarkset_t *bmarkset, unsigned int len);
 

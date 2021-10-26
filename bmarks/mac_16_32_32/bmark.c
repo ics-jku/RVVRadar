@@ -8,8 +8,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "rvv_helpers.h"
-#include "bmark_mac_16_32_32.h"
+#include <core/rvv_helpers.h>
+#include "bmark.h"
 
 
 /* data for bmark */

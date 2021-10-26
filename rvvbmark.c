@@ -8,12 +8,13 @@
 #include <stdlib.h>
 #include <getopt.h>
 
-#include "rvv_helpers.h"
-#include "bmarkset.h"
-#include "bmark_memcpy.h"
-#include "bmark_mac_16_32_32.h"
-#include "bmark_mac_8_16_32.h"
-#include "bmark_png_filters.h"
+#include <core/rvv_helpers.h>
+#include <core/bmarkset.h>
+
+#include <bmarks/memcpy/bmark.h>
+#include <bmarks/mac_16_32_32/bmark.h>
+#include <bmarks/mac_8_16_32/bmark.h>
+#include <bmarks/png_filters/bmark.h>
 
 
 /* ids of benchmarks */

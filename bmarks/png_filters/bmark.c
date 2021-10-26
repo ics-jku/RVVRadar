@@ -10,8 +10,8 @@
 #include <stdint.h>
 #include <errno.h>
 
-#include "rvv_helpers.h"
-#include "bmark_png_filters.h"
+#include <core/rvv_helpers.h>
+#include "bmark.h"
 
 
 /* data for bmark */

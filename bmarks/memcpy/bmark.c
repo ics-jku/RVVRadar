@@ -8,8 +8,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "rvv_helpers.h"
-#include "bmark_memcpy.h"
+#include <core/rvv_helpers.h>
+#include "bmark.h"
 
 
 /* data for bmark */

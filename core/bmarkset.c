@@ -9,7 +9,7 @@
 #include <string.h>
 #include <errno.h>
 
-#include "bmarkset.h"
+#include <core/bmarkset.h>
 
 
 /*

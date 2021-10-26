@@ -47,14 +47,14 @@ LDFLAGS+=
 # by ifdefs (RVVBMARK_RVV_SUPPORT) in code.
 
 # All *.h files
-HEADERS := $(wildcard *.h)
+HEADERS := $(wildcard core/*.h) $(wildcard bmarks/*/*.h)
 
 # All *.c files
-C_SOURCES := $(wildcard *.c)
+C_SOURCES := $(wildcard *.c) $(wildcard core/*.c) $(wildcard bmarks/*/*.c)
 
 # All *.c.in files
 # Will be compiled to multiple object files with different optimizations
-C_SOURCES_OPT_IN := $(wildcard *_c.c.in)
+C_SOURCES_OPT_IN := $(wildcard *_c.c.in) $(wildcard bmarks/*/*_c.c.in)
 
 # build %.o from %.c and %.s
 OBJS := $(patsubst %.c,$(OBJDIR)/%.o,$(C_SOURCES))
@@ -70,7 +70,7 @@ OBJS += $(patsubst %.c.in,$(OBJDIR)/%_noavect.o,$(C_SOURCES_OPT_IN))
 all: $(BIN_NAME)
 
 create_obj_dir:
-		@mkdir -p $(OBJDIR)
+		@for o in $(OBJS) ; do mkdir -p `dirname $${o}` ; done
 
 # generic rule
 $(OBJDIR)/%.o: %.c $(HEADERS) config.mk | create_obj_dir

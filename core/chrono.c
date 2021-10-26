@@ -12,7 +12,7 @@
 #include <errno.h>
 #include <time.h>
 
-#include "chrono.h"
+#include <core/chrono.h>
 
 
 /* time difference in ns */
