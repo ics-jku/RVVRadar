@@ -22,9 +22,9 @@ struct data {
 };
 
 
-/* data for subbmark */
+/* data for implementation */
 typedef int (*mac_16_32_32_fp_t)(int32_t *add_res, int16_t *mul1, int16_t *mul2, unsigned int len);
-struct subdata {
+struct impldata {
 	mac_16_32_32_fp_t mac_16_32_32;	// mac to be called by wrapper
 };
 
@@ -40,9 +40,9 @@ static void diff_fields(int32_t *dest, int32_t *src, int len)
 }
 
 
-static int subbmark_preexec(subbmark_t *subbmark, int iteration, bool verify)
+static int impl_preexec(impl_t *impl, int iteration, bool verify)
 {
-	struct data *d = (struct data*)subbmark->bmark->data;
+	struct data *d = (struct data*)impl->bmark->data;
 	/* init add_res with add before benchmark run */
 	memcpy(d->add_res, d->add, d->len * sizeof(*d->add));
 
@@ -50,22 +50,22 @@ static int subbmark_preexec(subbmark_t *subbmark, int iteration, bool verify)
 }
 
 
-static int subbmark_exec_wrapper(subbmark_t *subbmark, bool verify)
+static int impl_exec_wrapper(impl_t *impl, bool verify)
 {
-	struct data *d = (struct data*)subbmark->bmark->data;
-	struct subdata *sd = (struct subdata*)subbmark->data;
+	struct data *d = (struct data*)impl->bmark->data;
+	struct impldata *sd = (struct impldata*)impl->data;
 	sd->mac_16_32_32(d->add_res, d->mul1, d->mul2, d->len);
 	return 0;
 }
 
 
-static int subbmark_postexec(subbmark_t *subbmark, bool verify)
+static int impl_postexec(impl_t *impl, bool verify)
 {
 	/* result-verify disabled -> nothing to do */
 	if (!verify)
 		return 0;
 
-	struct data *d = (struct data*)subbmark->bmark->data;
+	struct data *d = (struct data*)impl->bmark->data;
 
 	/* use mac for speed -> use diff only if error was detected */
 	int ret = memcmp(d->add_res, d->compare, d->len * sizeof(*d->add_res));
@@ -78,25 +78,25 @@ static int subbmark_postexec(subbmark_t *subbmark, bool verify)
 }
 
 
-static int subbmark_add(
+static int impl_add(
 	bmark_t *bmark,
 	const char *name,
 	mac_16_32_32_fp_t mac_16_32_32)
 {
-	subbmark_t *subbmark;
+	impl_t *impl;
 
-	subbmark = bmark_add_subbmark(bmark,
-				      name,
-				      NULL,
-				      subbmark_preexec,
-				      subbmark_exec_wrapper,
-				      subbmark_postexec,
-				      NULL,
-				      sizeof(struct subdata));
-	if (subbmark == NULL)
+	impl = bmark_add_impl(bmark,
+			      name,
+			      NULL,
+			      impl_preexec,
+			      impl_exec_wrapper,
+			      impl_postexec,
+			      NULL,
+			      sizeof(struct impldata));
+	if (impl == NULL)
 		return -1;
 
-	struct subdata *sd = (struct subdata*)subbmark->data;
+	struct impldata *sd = (struct impldata*)impl->data;
 	sd->mac_16_32_32 = mac_16_32_32;
 
 	return 0;
@@ -120,17 +120,17 @@ extern void mac_16_32_32_rvv_e32(int32_t *add_res, int16_t *mul1, int16_t *mul2,
 extern void mac_16_32_32_rvv_e16_widening(int32_t *add_res, int16_t *mul1, int16_t *mul2, unsigned int len);
 #endif /* RVVBMARK_RVV_SUPPORT */
 
-static int subbmarks_add(bmark_t *bmark)
+static int impls_add(bmark_t *bmark)
 {
 	int ret = 0;
 
-	ret |= subbmark_add(bmark, "c byte noavect",				(mac_16_32_32_fp_t)mac_16_32_32_c_byte_noavect);
-	ret |= subbmark_add(bmark, "c byte avect",				(mac_16_32_32_fp_t)mac_16_32_32_c_byte_avect);
+	ret |= impl_add(bmark, "c byte noavect",			(mac_16_32_32_fp_t)mac_16_32_32_c_byte_noavect);
+	ret |= impl_add(bmark, "c byte avect",				(mac_16_32_32_fp_t)mac_16_32_32_c_byte_avect);
 #if RVVBMARK_RVV_SUPPORT
 #if RVVBMARK_RVV_SUPPORT == RVVBMARK_RVV_SUPPORT_VER_07_08
-	ret |= subbmark_add(bmark, "rvv 32bit elements",			(mac_16_32_32_fp_t)mac_16_32_32_rvv_e32);
+	ret |= impl_add(bmark, "rvv 32bit elements",			(mac_16_32_32_fp_t)mac_16_32_32_rvv_e32);
 #endif /* RVVBMARK_RVV_SUPPORT_VER_07_08 */
-	ret |= subbmark_add(bmark, "rvv 16bit elements with widening",		(mac_16_32_32_fp_t)mac_16_32_32_rvv_e16_widening);
+	ret |= impl_add(bmark, "rvv 16bit elements with widening",	(mac_16_32_32_fp_t)mac_16_32_32_rvv_e16_widening);
 #endif /* RVVBMARK_RVV_SUPPORT */
 
 	if (ret)
@@ -221,11 +221,11 @@ int bmark_mac_16_32_32_add(bmarkset_t *bmarkset, unsigned int len)
 	if (bmark == NULL)
 		return -1;
 
-	/* set private data and add sub benchmarks */
+	/* set private data and add implementations */
 	struct data *d = (struct data*)bmark->data;
 	d->len = len;
 
-	if (subbmarks_add(bmark) < 0) {
+	if (impls_add(bmark) < 0) {
 		bmark_destroy(bmark);
 		return -1;
 	}

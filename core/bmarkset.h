@@ -12,42 +12,42 @@
 #include <core/chrono.h>
 
 
-struct subbmark;
 /*
  * all functions have to return:
  * >=0 .. if everything was ok
  * <0 .. on error -> errno has to be set!
- * EXCEPTION: subbmark_postexec_fp_t (verify function):
+ * EXCEPTION: impl_postexec_fp_t (verify function):
  * 0 .. if everything was ok
- * >0 .. on data error (e.g. incorrect benchmark results)
+ * >0 .. on data error (e.g. incorrect implementation results)
  * <0 .. on error -> errno has to be set!
  */
-typedef int (*subbmark_init_fp_t)(struct subbmark *subbmark);
-typedef int (*subbmark_preexec_fp_t)(struct subbmark *subbmark, int iteration, bool verify);
-typedef int (*subbmark_exec_fp_t)(struct subbmark *subbmark, bool verify);
-typedef int (*subbmark_postexec_fp_t)(struct subbmark *subbmark, bool verify);
-typedef int (*subbmark_cleanup_fp_t)(struct subbmark *subbmark);
+struct impl;
+typedef int (*impl_init_fp_t)(struct impl *impl);
+typedef int (*impl_preexec_fp_t)(struct impl *impl, int iteration, bool verify);
+typedef int (*impl_exec_fp_t)(struct impl *impl, bool verify);
+typedef int (*impl_postexec_fp_t)(struct impl *impl, bool verify);
+typedef int (*impl_cleanup_fp_t)(struct impl *impl);
 
+/* algorithm implementation */
+typedef struct impl {
+	char *name;				// name of the implementation
+	unsigned int index;			// index in the list of implementations
 
-typedef struct subbmark {
-	char *name;				// name of the subbmark
-	unsigned int index;			// index in subbmark list
-
-	subbmark_init_fp_t init;		// called before iteration over subbmarks
-	subbmark_preexec_fp_t preexec;		// called before each subbmark
-	subbmark_exec_fp_t exec;		// subbmark function (measured)
-	subbmark_postexec_fp_t postexec;	// called after each subbmark
-	subbmark_cleanup_fp_t cleanup;		// called after iteration over subbmarks
+	impl_init_fp_t init;			// called before iterations over implementations
+	impl_preexec_fp_t preexec;		// called before each implementation execution
+	impl_exec_fp_t exec;			// implementation function (measured)
+	impl_postexec_fp_t postexec;		// called after each implementation execution
+	impl_cleanup_fp_t cleanup;		// called after iterations over implementations
 
 	struct bmark *bmark;			// parent bmark
-	struct subbmark *next;			// next in subbmark list
+	struct impl *next;			// next in the implementation list
 
 	unsigned int runs;			// number of runs
 	unsigned int fails;			// number of failed runs
 	chrono_t chrono;			// chrono (including result statistics)
 
-	void *data;				// optional data for the subbmark
-} subbmark_t;
+	void *data;				// optional private data for the implementation
+} impl_t;
 
 
 struct bmark;
@@ -59,10 +59,10 @@ typedef struct bmark {
 	char *parastr;				// string containing parameters as string
 	unsigned int index;			// index in bmark list
 
-	// linked list of subbmarks
-	struct subbmark *subbmarks_head;
-	struct subbmark *subbmarks_tail;
-	unsigned int subbmarks_len;
+	// linked list of algorithm implementations
+	impl_t *impls_head;
+	impl_t *impls_tail;
+	unsigned int impls_len;
 
 	bmark_preexec_fp_t preexec;		// called before bmark
 	bmark_postexec_fp_t postexec;		// called after bmark
@@ -77,7 +77,7 @@ typedef struct bmark {
 typedef struct bmarkset {
 	char *name;
 
-	// linked list of subbmarks
+	// linked list of bmarks
 	struct bmark *bmarks_head;
 	struct bmark *bmarks_tail;
 	unsigned int bmarks_len;
@@ -110,19 +110,19 @@ void bmark_destroy(bmark_t *bmark);
 
 
 /*
- * allocated and create a new bmark
+ * create and add a new algorithm implementation
  * name will be duplicated and handled by bmark (e.g. heap allocated
  * parameters are valid)
  * returns NULL on error
  */
-subbmark_t *bmark_add_subbmark(
+impl_t *bmark_add_impl(
 	bmark_t *bmark,
 	const char *name,
-	subbmark_init_fp_t init,
-	subbmark_preexec_fp_t preexec,
-	subbmark_exec_fp_t exec,
-	subbmark_postexec_fp_t postexec,
-	subbmark_cleanup_fp_t cleanup,
+	impl_init_fp_t init,
+	impl_preexec_fp_t preexec,
+	impl_exec_fp_t exec,
+	impl_postexec_fp_t postexec,
+	impl_cleanup_fp_t cleanup,
 	unsigned int data_len);
 
 

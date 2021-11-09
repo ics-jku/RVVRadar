@@ -27,16 +27,16 @@
 
 
 /*
- * SUBBMARK
+ * ALGORITHM IMPLEMENTATION
  */
 
-static subbmark_t *subbmark_create(
+static impl_t *impl_create(
 	const char *name,
-	subbmark_init_fp_t init,
-	subbmark_preexec_fp_t preexec,
-	subbmark_exec_fp_t exec,
-	subbmark_postexec_fp_t postexec,
-	subbmark_cleanup_fp_t cleanup,
+	impl_init_fp_t init,
+	impl_preexec_fp_t preexec,
+	impl_exec_fp_t exec,
+	impl_postexec_fp_t postexec,
+	impl_cleanup_fp_t cleanup,
 	int data_len)
 {
 	/* name must be given */
@@ -45,162 +45,162 @@ static subbmark_t *subbmark_create(
 		return NULL;
 	}
 
-	subbmark_t *subbmark = calloc(1, sizeof(subbmark_t));
-	if (subbmark == NULL)
+	impl_t *impl = calloc(1, sizeof(impl_t));
+	if (impl == NULL)
 		return NULL;
 
-	subbmark->name = strdup(name);
-	if (subbmark->name == NULL) {
-		free(subbmark);
+	impl->name = strdup(name);
+	if (impl->name == NULL) {
+		free(impl);
 		return NULL;
 	}
-	subbmark->init = init;
-	subbmark->preexec = preexec;
-	subbmark->exec = exec;
-	subbmark->postexec = postexec;
-	subbmark->cleanup = cleanup;
+	impl->init = init;
+	impl->preexec = preexec;
+	impl->exec = exec;
+	impl->postexec = postexec;
+	impl->cleanup = cleanup;
 
 	/* alloc optional data area */
 	if (data_len == 0)
-		return subbmark;
-	subbmark->data = calloc(1, data_len);
-	if (subbmark->data == NULL) {
-		free(subbmark->name);
-		free(subbmark);
+		return impl;
+	impl->data = calloc(1, data_len);
+	if (impl->data == NULL) {
+		free(impl->name);
+		free(impl);
 		return NULL;
 	}
 
-	return subbmark;
+	return impl;
 }
 
 
-static void subbmark_destroy(subbmark_t *subbmark)
+static void impl_destroy(impl_t *impl)
 {
-	if (subbmark == NULL)
+	if (impl == NULL)
 		return;
 
-	chrono_cleanup(&subbmark->chrono);
+	chrono_cleanup(&impl->chrono);
 
-	free(subbmark->name);
+	free(impl->name);
 
 	/* free optional data area */
-	free(subbmark->data);
+	free(impl->data);
 
-	free(subbmark);
+	free(impl);
 }
 
 
-static void subbmark_reset(subbmark_t *subbmark)
+static void impl_reset(impl_t *impl)
 {
-	if (subbmark == NULL)
+	if (impl == NULL)
 		return;
 
-	subbmark->runs = 0;
-	subbmark->fails = 0;
+	impl->runs = 0;
+	impl->fails = 0;
 
-	chrono_init(&subbmark->chrono);
+	chrono_init(&impl->chrono);
 }
 
 
-static int subbmark_call_init(subbmark_t *subbmark)
+static int impl_call_init(impl_t *impl)
 {
-	if (subbmark == NULL) {
+	if (impl == NULL) {
 		errno = EINVAL;
 		return -1;
 	}
 
 	/* nothing todo? */
-	if (subbmark->init == NULL)
+	if (impl->init == NULL)
 		return 0;
 
-	return subbmark->init(subbmark);
+	return impl->init(impl);
 }
 
 
-static int subbmark_call_preexec(subbmark_t *subbmark, int iteration, bool verify)
+static int impl_call_preexec(impl_t *impl, int iteration, bool verify)
 {
-	if (subbmark == NULL) {
+	if (impl == NULL) {
 		errno = EINVAL;
 		return -1;
 	}
 
 	/* nothing todo? */
-	if (subbmark->preexec == NULL)
+	if (impl->preexec == NULL)
 		return 0;
 
-	return subbmark->preexec(subbmark, iteration, verify);
+	return impl->preexec(impl, iteration, verify);
 }
 
 
-static int subbmark_call_exec(subbmark_t *subbmark, bool verify)
+static int impl_call_exec(impl_t *impl, bool verify)
 {
-	if (subbmark == NULL) {
+	if (impl == NULL) {
 		errno = EINVAL;
 		return -1;
 	}
 
 	/* nothing todo? */
-	if (subbmark->exec == NULL)
+	if (impl->exec == NULL)
 		return 0;
 
-	return subbmark->exec(subbmark, verify);
+	return impl->exec(impl, verify);
 
 }
 
 
-static int subbmark_call_postexec(subbmark_t *subbmark, bool verify)
+static int impl_call_postexec(impl_t *impl, bool verify)
 {
-	if (subbmark == NULL) {
+	if (impl == NULL) {
 		errno = EINVAL;
 		return -1;
 	}
 
 	/* nothing todo? */
-	if (subbmark->postexec == NULL)
+	if (impl->postexec == NULL)
 		return 0;
 
-	return subbmark->postexec(subbmark, verify);
+	return impl->postexec(impl, verify);
 }
 
 
-static int subbmark_call_cleanup(subbmark_t *subbmark)
+static int impl_call_cleanup(impl_t *impl)
 {
-	if (subbmark == NULL) {
+	if (impl == NULL) {
 		errno = EINVAL;
 		return -1;
 	}
 
 	/* nothing todo? */
-	if (subbmark->cleanup == NULL)
+	if (impl->cleanup == NULL)
 		return 0;
 
-	return subbmark->cleanup(subbmark);
+	return impl->cleanup(impl);
 }
 
 
-static int subbmark_run_single(subbmark_t *subbmark, int iteration, bool verify)
+static int impl_run(impl_t *impl, int iteration, bool verify)
 {
 	int ret = 0;
 
-	if (subbmark == NULL) {
+	if (impl == NULL) {
 		errno = EINVAL;
 		return -1;
 	}
 
-	subbmark->runs++;
+	impl->runs++;
 
-	ret = subbmark_call_preexec(subbmark, iteration, verify);
+	ret = impl_call_preexec(impl, iteration, verify);
 	if (ret < 0)
 		goto __err;
 
 	/* exec and measure */
-	chrono_start(&subbmark->chrono);
-	ret = subbmark_call_exec(subbmark, verify);
+	chrono_start(&impl->chrono);
+	ret = impl_call_exec(impl, verify);
 	if (ret < 0)
 		goto __err;
-	chrono_stop(&subbmark->chrono);
+	chrono_stop(&impl->chrono);
 
-	ret = subbmark_call_postexec(subbmark, verify);
+	ret = impl_call_postexec(impl, verify);
 	if (ret)
 		goto __data_err;
 
@@ -210,72 +210,72 @@ static int subbmark_run_single(subbmark_t *subbmark, int iteration, bool verify)
 __err:
 	ret = -1;
 __data_err:
-	subbmark->fails++;
+	impl->fails++;
 __ret:
 	return ret;
 }
 
 
-static int subbmark_print_pretty(subbmark_t *subbmark, FILE *out)
+static int impl_print_pretty(impl_t *impl, FILE *out)
 {
-	if (subbmark == NULL || out == NULL) {
+	if (impl == NULL || out == NULL) {
 		errno = EINVAL;
 		return -1;
 	}
 
-	fprintf(out, "     + sub: %s\n", subbmark->name);
-	fprintf(out, "       + runs:  %i\n", subbmark->runs);
-	fprintf(out, "       + fails: %i\n", subbmark->fails);
+	fprintf(out, "     + implementation: %s\n", impl->name);
+	fprintf(out, "       + runs:  %i\n", impl->runs);
+	fprintf(out, "       + fails: %i\n", impl->fails);
 	fprintf(out, "       + timing:\n");
-	chrono_print_pretty(&subbmark->chrono, "         + ", out);
+	chrono_print_pretty(&impl->chrono, "         + ", out);
 	return 0;
 }
 
 
-static int subbmark_print_csv_head(FILE *out)
+static int impl_print_csv_head(FILE *out)
 {
 	if (out == NULL) {
 		errno = EINVAL;
 		return -1;
 	}
 
-	printf("set;benchmark(parameters);sub;runs;fails;");
+	printf("set;benchmark(parameters);implementation;runs;fails;");
 	chrono_print_csv_head(DATAOUT);
 	printf("\n");
 	return 0;
 }
 
 
-static int subbmark_print_csv(subbmark_t *subbmark, FILE *out)
+static int impl_print_csv(impl_t *impl, FILE *out)
 {
-	if (subbmark == NULL || out == NULL) {
+	if (impl == NULL || out == NULL) {
 		errno = EINVAL;
 		return -1;
 	}
 
 	printf("%s;%s(%s);%s;%i;%i;",
-	       subbmark->bmark->bmarkset->name,
-	       subbmark->bmark->name,
-	       subbmark->bmark->parastr,
-	       subbmark->name,
-	       subbmark->runs,
-	       subbmark->fails);
-	chrono_print_csv(&subbmark->chrono, out);
+	       impl->bmark->bmarkset->name,
+	       impl->bmark->name,
+	       impl->bmark->parastr,
+	       impl->name,
+	       impl->runs,
+	       impl->fails);
+	chrono_print_csv(&impl->chrono, out);
 	printf("\n");
 	return 0;
 }
 
 
-static int subbmark_run(subbmark_t *subbmark, int iterations, bool verify, bool verbose)
+static int impl_run_iterations(impl_t *impl, int iterations, bool verify, bool verbose)
 {
-	if (subbmark == NULL) {
+	if (impl == NULL) {
 		errno = EINVAL;
 		return -1;
 	}
 
 	for (int iteration = 0; iteration < iterations; iteration++) {
-		pinfo("\r%s: %i/%i -> ", subbmark->name, iteration + 1, iterations);
-		int ret = subbmark_run_single(subbmark, iteration, verify);
+		pinfo("\r%s: %i/%i -> ", impl->name, iteration + 1, iterations);
+		int ret = impl_run(impl, iteration, verify);
 		if (ret < 0)
 			return -1;
 		else if (ret > 0) {
@@ -290,10 +290,10 @@ static int subbmark_run(subbmark_t *subbmark, int iterations, bool verify, bool 
 		pinfo("          ");
 	pinfo("\r");
 	if (verbose)
-		subbmark_print_pretty(subbmark, INFOOUT);
+		impl_print_pretty(impl, INFOOUT);
 
-	// data output
-	subbmark_print_csv(subbmark, DATAOUT);
+	/* data output */
+	impl_print_csv(impl, DATAOUT);
 
 	return 0;
 }
@@ -354,10 +354,10 @@ void bmark_destroy(bmark_t *bmark)
 {
 	if (bmark == NULL)
 		return;
-	subbmark_t *s = bmark->subbmarks_head;
+	impl_t *s = bmark->impls_head;
 	while (s != NULL) {
-		subbmark_t *n = s->next;
-		subbmark_destroy(s);
+		impl_t *n = s->next;
+		impl_destroy(s);
 		s = n;
 	}
 
@@ -371,37 +371,37 @@ void bmark_destroy(bmark_t *bmark)
 }
 
 
-subbmark_t *bmark_add_subbmark(
+impl_t *bmark_add_impl(
 	bmark_t *bmark,
 	const char *name,
-	subbmark_init_fp_t init,
-	subbmark_preexec_fp_t preexec,
-	subbmark_exec_fp_t exec,
-	subbmark_postexec_fp_t postexec,
-	subbmark_cleanup_fp_t cleanup,
+	impl_init_fp_t init,
+	impl_preexec_fp_t preexec,
+	impl_exec_fp_t exec,
+	impl_postexec_fp_t postexec,
+	impl_cleanup_fp_t cleanup,
 	unsigned int data_len)
 {
-	subbmark_t *subbmark = subbmark_create(
-				       name,
-				       init, preexec, exec, postexec, cleanup,
-				       data_len);
-	if (subbmark == NULL)
+	impl_t *impl = impl_create(
+			       name,
+			       init, preexec, exec, postexec, cleanup,
+			       data_len);
+	if (impl == NULL)
 		return NULL;
 
 	/* add to link list */
-	subbmark->index = bmark->subbmarks_len;
-	if (bmark->subbmarks_tail == NULL)
+	impl->index = bmark->impls_len;
+	if (bmark->impls_tail == NULL)
 		/* first element */
-		bmark->subbmarks_head = subbmark;
+		bmark->impls_head = impl;
 	else
-		bmark->subbmarks_tail->next = subbmark;
-	bmark->subbmarks_tail = subbmark;
-	bmark->subbmarks_len++;
+		bmark->impls_tail->next = impl;
+	bmark->impls_tail = impl;
+	bmark->impls_len++;
 
 	/* link bmark (parent) */
-	subbmark->bmark = bmark;
+	impl->bmark = bmark;
 
-	return subbmark;
+	return impl;
 }
 
 
@@ -410,33 +410,33 @@ static void bmark_reset(bmark_t *bmark)
 	if (bmark == NULL)
 		return;
 	for (
-		subbmark_t *s = bmark->subbmarks_head;
+		impl_t *s = bmark->impls_head;
 		s != NULL;
 		s = s->next
 	)
-		subbmark_reset(s);
+		impl_reset(s);
 }
 
 
-subbmark_t *bmark_get_first_subbmark(bmark_t *bmark)
+impl_t *bmark_get_first_impl(bmark_t *bmark)
 {
 	if (bmark == NULL) {
 		errno = EINVAL;
 		return NULL;
 	}
 
-	return bmark->subbmarks_head;
+	return bmark->impls_head;
 }
 
 
-subbmark_t *bmark_get_next_subbmark(subbmark_t *subbmark)
+impl_t *bmark_get_next_impl(impl_t *impl)
 {
-	if (subbmark == NULL) {
+	if (impl == NULL) {
 		errno = EINVAL;
 		return NULL;
 	}
 
-	return subbmark->next;
+	return impl->next;
 }
 
 
@@ -486,21 +486,21 @@ static int bmark_run(bmark_t *bmark, int seed, int iterations, bool verify, bool
 	if (ret < 0)
 		return -1;
 
-	/* run all sub benchmarks */
+	/* run all implementations */
 	for (
-		subbmark_t *s = bmark->subbmarks_head;
+		impl_t *s = bmark->impls_head;
 		s != NULL;
 		s = s->next
 	) {
-		ret = subbmark_call_init(s);
+		ret = impl_call_init(s);
 		if (ret < 0)
 			return -1;
 
-		ret = subbmark_run(s, iterations, verify, verbose);
+		ret = impl_run_iterations(s, iterations, verify, verbose);
 		if (ret < 0)
 			return -1;
 
-		ret = subbmark_call_cleanup(s);
+		ret = impl_call_cleanup(s);
 		if (ret < 0)
 			return -1;
 	}
@@ -602,7 +602,7 @@ int bmarkset_run(bmarkset_t *bmarkset, int seed, int iterations, bool verify, bo
 		return -1;
 	}
 
-	subbmark_print_csv_head(DATAOUT);
+	impl_print_csv_head(DATAOUT);
 
 	pinfo(" + set: %s\n", bmarkset->name);
 	for (

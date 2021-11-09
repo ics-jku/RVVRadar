@@ -19,9 +19,9 @@ struct data {
 };
 
 
-/* data for subbmark */
+/* data for implementation */
 typedef int (*memcpy_fp_t)(void *dest, void *src, unsigned int len);
-struct subdata {
+struct impldata {
 	memcpy_fp_t memcpy;	// memcpy to be called by wrapper
 };
 
@@ -37,35 +37,35 @@ static void diff_fields(char *dest, char *src, int len)
 }
 
 
-static int subbmark_preexec(subbmark_t *subbmark, int iteration, bool verify)
+static int impl_preexec(impl_t *impl, int iteration, bool verify)
 {
 	/* result-verify disabled -> nothing to do */
 	if (!verify)
 		return 0;
 
-	struct data *d = (struct data*)subbmark->bmark->data;
+	struct data *d = (struct data*)impl->bmark->data;
 	/* reset dest array before benchmark run */
 	memset(d->dest, 0, d->len);
 	return 0;
 }
 
 
-static int subbmark_exec_wrapper(subbmark_t *subbmark, bool verify)
+static int impl_exec_wrapper(impl_t *impl, bool verify)
 {
-	struct data *d = (struct data*)subbmark->bmark->data;
-	struct subdata *sd = (struct subdata*)subbmark->data;
+	struct data *d = (struct data*)impl->bmark->data;
+	struct impldata *sd = (struct impldata*)impl->data;
 	sd->memcpy(d->dest, d->src, d->len);
 	return 0;
 }
 
 
-static int subbmark_postexec(subbmark_t *subbmark, bool verify)
+static int impl_postexec(impl_t *impl, bool verify)
 {
 	/* result-verify disabled -> nothing to do */
 	if (!verify)
 		return 0;
 
-	struct data *d = (struct data*)subbmark->bmark->data;
+	struct data *d = (struct data*)impl->bmark->data;
 
 	/* use memcpy for speed -> use diff only if error was detected */
 	int ret = memcmp(d->dest, d->src, d->len);
@@ -78,25 +78,25 @@ static int subbmark_postexec(subbmark_t *subbmark, bool verify)
 }
 
 
-static int subbmark_add(
+static int impl_add(
 	bmark_t *bmark,
 	const char *name,
 	memcpy_fp_t memcpy)
 {
-	subbmark_t *subbmark;
+	impl_t *impl;
 
-	subbmark = bmark_add_subbmark(bmark,
-				      name,
-				      NULL,
-				      subbmark_preexec,
-				      subbmark_exec_wrapper,
-				      subbmark_postexec,
-				      NULL,
-				      sizeof(struct subdata));
-	if (subbmark == NULL)
+	impl = bmark_add_impl(bmark,
+			      name,
+			      NULL,
+			      impl_preexec,
+			      impl_exec_wrapper,
+			      impl_postexec,
+			      NULL,
+			      sizeof(struct impldata));
+	if (impl == NULL)
 		return -1;
 
-	struct subdata *sd = (struct subdata*)subbmark->data;
+	struct impldata *sd = (struct impldata*)impl->data;
 	sd->memcpy = memcpy;
 
 	return 0;
@@ -117,22 +117,22 @@ extern void memcpy_rvv_32(void *dest, void *src, unsigned int len);
 #endif /* RVVBMARK_RVV_SUPPORT */
 #endif /* RVVBMARK_RV_SUPPORT */
 
-static int subbmarks_add(bmark_t *bmark)
+static int impls_add(bmark_t *bmark)
 {
 	int ret = 0;
 
-	ret |= subbmark_add(bmark, "c byte noavect",	 		(memcpy_fp_t)memcpy_c_byte_noavect);
+	ret |= impl_add(bmark, "c byte noavect",	 		(memcpy_fp_t)memcpy_c_byte_noavect);
 #if RVVBMARK_RV_SUPPORT
-	ret |= subbmark_add(bmark, "4 int regs",	 		(memcpy_fp_t)memcpy_rv_wlenx4);
+	ret |= impl_add(bmark, "4 int regs",	 			(memcpy_fp_t)memcpy_rv_wlenx4);
 #endif /* RVVBMARK_RV_SUPPORT */
-	ret |= subbmark_add(bmark, "c byte avect",	 		(memcpy_fp_t)memcpy_c_byte_avect);
-	ret |= subbmark_add(bmark, "system",		 		(memcpy_fp_t)memcpy);
+	ret |= impl_add(bmark, "c byte avect",	 			(memcpy_fp_t)memcpy_c_byte_avect);
+	ret |= impl_add(bmark, "system",		 		(memcpy_fp_t)memcpy);
 #if RVVBMARK_RVV_SUPPORT
-	ret |= subbmark_add(bmark, "rvv 32bit elements", 		(memcpy_fp_t)memcpy_rvv_32);
-	ret |= subbmark_add(bmark, "rvv 8bit elements (no grouping)",  	(memcpy_fp_t)memcpy_rvv_8_m1);
-	ret |= subbmark_add(bmark, "rvv 8bit elements (group two)",  	(memcpy_fp_t)memcpy_rvv_8_m2);
-	ret |= subbmark_add(bmark, "rvv 8bit elements (group four)",  	(memcpy_fp_t)memcpy_rvv_8_m4);
-	ret |= subbmark_add(bmark, "rvv 8bit elements (group eight)",  	(memcpy_fp_t)memcpy_rvv_8_m8);
+	ret |= impl_add(bmark, "rvv 32bit elements", 			(memcpy_fp_t)memcpy_rvv_32);
+	ret |= impl_add(bmark, "rvv 8bit elements (no grouping)",  	(memcpy_fp_t)memcpy_rvv_8_m1);
+	ret |= impl_add(bmark, "rvv 8bit elements (group two)",  	(memcpy_fp_t)memcpy_rvv_8_m2);
+	ret |= impl_add(bmark, "rvv 8bit elements (group four)",  	(memcpy_fp_t)memcpy_rvv_8_m4);
+	ret |= impl_add(bmark, "rvv 8bit elements (group eight)",  	(memcpy_fp_t)memcpy_rvv_8_m8);
 #endif /* RVVBMARK_RVV_SUPPORT */
 
 	if (ret)
@@ -211,11 +211,11 @@ int bmark_memcpy_add(bmarkset_t *bmarkset, unsigned int len)
 	if (bmark == NULL)
 		return -1;
 
-	/* set private data and add sub benchmarks */
+	/* set private data and add implementations */
 	struct data *d = (struct data*)bmark->data;
 	d->len = len;
 
-	if (subbmarks_add(bmark) < 0) {
+	if (impls_add(bmark) < 0) {
 		bmark_destroy(bmark);
 		return -1;
 	}
