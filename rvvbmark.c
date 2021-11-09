@@ -36,9 +36,9 @@
 #define DEFAULT_QUIET			false
 #define DEFAULT_VERIFY			false
 #define DEFAULT_RANDSEED		0
-#define DEFAULT_ITERATIONS		10000
+#define DEFAULT_ITERATIONS		1000
 #define DEFAULT_LEN_START		32
-#define DEFAULT_LEN_END			1024 * 1024 * 16
+#define DEFAULT_LEN_END			1024 * 1024 * 1
 #define DEFAULT_ALG_ENA_MASK	( \
 				  alg_mask(ALG_ID_MEMCPY)		| \
 				  alg_mask(ALG_ID_MAC_16_32_32)		| \
