@@ -26,13 +26,13 @@ ifeq ($(debug),1)
 	# no optimization, with debug symbols install unstripped
 	CFLAGS+=	-Og -g
 	INSTALLFLAGS=
-	OBJDIR=		debug
+	OBJDIR=		.obj/debug
 else
 	# Algorithm implementations are built explicitly with/without
 	# autovectorization independent of the settings here (see below)
 	CFLAGS+=	-O2
 	INSTALLFLAGS=	-s --strip-program=$(STRIP)
-	OBJDIR=		release
+	OBJDIR=		.obj/release
 endif
 
 CFLAGS+=	$(RVVBMARK_EXTRA_CFLAGS) \
@@ -102,7 +102,7 @@ style:
 		(PWD=`pwd`; astyle $(ASTYLE_ARGS) $(C_SOURCES) ${C_SOURCES_OPT_IN} $(HEADERS);)
 
 clean:
-		- rm -rf release debug
+		- rm -rf .obj
 		- rm -f $(BIN_NAME)
 
 distclean: clean
