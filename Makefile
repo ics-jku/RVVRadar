@@ -24,7 +24,7 @@ STRIP ?= strip
 ifeq ($(debug),1)
 	# make debug=1
 	# no optimization, with debug symbols install unstripped
-	CFLAGS+=	-Og -g
+	CFLAGS+=	-Og -g -fopt-info-vec-all
 	INSTALLFLAGS=
 	OBJDIR=		.obj/debug
 else
@@ -81,14 +81,14 @@ $(OBJDIR)/%.o: %.c $(HEADERS) config.mk | create_obj_dir
 # verbose info of vectorization is print on compilation (there should be no output!)
 $(OBJDIR)/%_c_noavect.o: %_c.c.in $(HEADERS) config.mk | create_obj_dir
 		@echo "BUILD $< WITHOUT VECTORIZATION"
-		sed $< -e s/@OPTIMIZATION@/noavect/g | $(CC) $(CFLAGS) -O3 -fno-tree-vectorize -fopt-info-vec-all -c -o $@ -xc -
+		sed $< -e s/@OPTIMIZATION@/noavect/g | $(CC) $(CFLAGS) -O3 -fno-tree-vectorize -c -o $@ -xc -
 
 # generic rule for enabled autovectorization
 # -O3 enables autovectorization (-ftree-vectorize) on x86(debian 10) and risc-v (risc-v foundation toolchain)
 # verbose info of vectorization is print on compilation
 $(OBJDIR)/%_c_avect.o: %_c.c.in $(HEADERS) config.mk | create_obj_dir
 		@echo "BUILD $< WITH VECTORIZER"
-		sed $< -e s/@OPTIMIZATION@/avect/g | $(CC) $(CFLAGS) -O3 -ftree-vectorize -fopt-info-vec-all -c -o $@ -xc -
+		sed $< -e s/@OPTIMIZATION@/avect/g | $(CC) $(CFLAGS) -O3 -ftree-vectorize -c -o $@ -xc -
 
 
 
