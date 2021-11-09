@@ -20,13 +20,14 @@
 #define ALG_ID_MEMCPY			0
 #define ALG_ID_MAC_16_32_32		1
 #define ALG_ID_MAC_8_16_32		2
-#define ALG_ID_PNG_FILTER_UP		3
-#define ALG_ID_PNG_FILTER_SUB3		4
-#define ALG_ID_PNG_FILTER_SUB4		5
-#define ALG_ID_PNG_FILTER_AVG3		6
-#define ALG_ID_PNG_FILTER_AVG4		7
-#define ALG_ID_PNG_FILTER_PAETH3	8
-#define ALG_ID_PNG_FILTER_PAETH4	9
+#define ALG_ID_PNG_FILTER_UP3		3
+#define ALG_ID_PNG_FILTER_UP4		4
+#define ALG_ID_PNG_FILTER_SUB3		5
+#define ALG_ID_PNG_FILTER_SUB4		6
+#define ALG_ID_PNG_FILTER_AVG3		7
+#define ALG_ID_PNG_FILTER_AVG4		8
+#define ALG_ID_PNG_FILTER_PAETH3	9
+#define ALG_ID_PNG_FILTER_PAETH4	10
 
 /* alg mask helpers */
 #define alg_mask(id)			(1 << id)
@@ -43,7 +44,8 @@
 				  alg_mask(ALG_ID_MEMCPY)		| \
 				  alg_mask(ALG_ID_MAC_16_32_32)		| \
 				  alg_mask(ALG_ID_MAC_8_16_32)		| \
-				  alg_mask(ALG_ID_PNG_FILTER_UP)	| \
+				  alg_mask(ALG_ID_PNG_FILTER_UP3)	| \
+				  alg_mask(ALG_ID_PNG_FILTER_UP4)	| \
 				  alg_mask(ALG_ID_PNG_FILTER_SUB3)	| \
 				  alg_mask(ALG_ID_PNG_FILTER_SUB4)	| \
 				  alg_mask(ALG_ID_PNG_FILTER_AVG3)	| \
@@ -126,13 +128,14 @@ void print_usage(const char *name)
 		"         0             memcpy\n"
 		"         1             mac_16_32_32\n"
 		"         2             mac_8_16_32\n"
-		"         3             png_filter_up\n"
-		"         4             png_filter_sub3\n"
-		"         5             png_filter_sub4\n"
-		"         6             png_filter_avg3\n"
-		"         7             png_filter_avg4\n"
-		"         8             png_filter_paeth3\n"
-		"         9             png_filter_paeth4\n"
+		"         3             png_filter_up3\n"
+		"         4             png_filter_up4\n"
+		"         5             png_filter_sub3\n"
+		"         6             png_filter_sub4\n"
+		"         7             png_filter_avg3\n"
+		"         8             png_filter_avg4\n"
+		"         9             png_filter_paeth3\n"
+		"        10             png_filter_paeth4\n"
 		"     (Default: 0x%X)\n"
 		"\n\n"
 		"Output:\n"
@@ -271,10 +274,16 @@ int main(int argc, char **argv)
 				goto __ret_algset_destroy;
 			}
 
-		if (alg_enabled(alg_ena_mask, ALG_ID_PNG_FILTER_UP))
-			/* bpp is irrelevant */
+		if (alg_enabled(alg_ena_mask, ALG_ID_PNG_FILTER_UP3))
+			if (alg_png_filters_add(algset, up, bpp3, len) < 0) {
+				perror("Error adding png_filter_up3");
+				ret = -1;
+				goto __ret_algset_destroy;
+			}
+
+		if (alg_enabled(alg_ena_mask, ALG_ID_PNG_FILTER_UP4))
 			if (alg_png_filters_add(algset, up, bpp4, len) < 0) {
-				perror("Error adding png_filter_up");
+				perror("Error adding png_filter_up4");
 				ret = -1;
 				goto __ret_algset_destroy;
 			}

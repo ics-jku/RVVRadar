@@ -10,13 +10,20 @@
 #include <core/algset.h>
 
 enum alg_png_filters_filter {
-	up,		// bpp is irrelevant/ignored
+	up,
 	sub,
 	avg,
 	paeth
 };
 enum alg_png_filters_bpp {bpp3, bpp4};
 
+/*
+ * add a png filter algorithm
+ * algset .. set to add to
+ * filter .. which algorithm to add (see above)
+ * bpp .. number of bytes/colorchannels per pixel (see above)
+ * len .. number of pixels to process
+ */
 int alg_png_filters_add(
 	algset_t *algset,
 	enum alg_png_filters_filter filter,

@@ -16,8 +16,8 @@
 /* algorithm specific data */
 struct data {
 	enum alg_png_filters_filter filter;
-	unsigned int len;
 	unsigned int bpp;	// bytes per pixel
+	unsigned int rowbytes;	// bytes per line
 	uint8_t *prev_row;	// input last row
 	uint8_t *row_orig;	// input row
 	uint8_t *row;		// input/output row
@@ -47,7 +47,7 @@ static int impl_preexec(impl_t *impl, int iteration, bool verify)
 {
 	struct data *d = IMPL_GET_ALG_PRIV_DATA(struct data*, impl);
 	/* restore row before execution */
-	memcpy(d->row, d->row_orig, d->len * sizeof(*d->row));
+	memcpy(d->row, d->row_orig, d->rowbytes);
 	return 0;
 }
 
@@ -56,7 +56,7 @@ static int impl_exec_wrapper(impl_t *impl, bool verify)
 {
 	struct data *d = IMPL_GET_ALG_PRIV_DATA(struct data*, impl);
 	struct impldata *sd = IMPL_GET_PRIV_DATA(struct impldata*, impl);
-	sd->png_filters(d->bpp, d->len, d->row, d->prev_row);
+	sd->png_filters(d->bpp, d->rowbytes, d->row, d->prev_row);
 	return 0;
 }
 
@@ -70,9 +70,9 @@ static int impl_postexec(impl_t *impl, bool verify)
 	struct data *d = IMPL_GET_ALG_PRIV_DATA(struct data*, impl);
 
 	/* use memcpy for speed -> use diff only if error was detected */
-	int ret = memcmp(d->row, d->row_compare, d->len * sizeof(*d->row));
+	int ret = memcmp(d->row, d->row_compare, d->rowbytes);
 	if (ret) {
-		diff_row(d->row, d->row_compare, d->len * sizeof(*d->row));
+		diff_row(d->row, d->row_compare, d->rowbytes);
 		return 1;	/* data error */
 	}
 
@@ -225,45 +225,45 @@ static int alg_preexec(struct alg *alg, int seed)
 	struct data *d = ALG_GET_PRIV_DATA(struct data*, alg);
 
 	/* alloc */
-	d->prev_row = malloc(d->len * sizeof(*d->prev_row));
+	d->prev_row = malloc(d->rowbytes);
 	if (d->prev_row == NULL)
 		goto __err_alloc_prev_row;
-	d->row_orig = malloc(d->len * sizeof(*d->row_orig));
+	d->row_orig = malloc(d->rowbytes);
 	if (d->row_orig == NULL)
 		goto __err_alloc_row_orig;
-	d->row = malloc(d->len * sizeof(*d->row));
+	d->row = malloc(d->rowbytes);
 	if (d->row == NULL)
 		goto __err_alloc_row;
-	d->row_compare = malloc(d->len * sizeof(*d->row_compare));
+	d->row_compare = malloc(d->rowbytes);
 	if (d->row_compare == NULL)
 		goto __err_alloc_row_compare;
 
 	/* init */
 	srandom(seed);
-	for (int i = 0; i < d->len; i++) {
+	for (int i = 0; i < d->rowbytes; i++) {
 		d->prev_row[i] = random();
 		d->row_orig[i] = random();
 	}
-	memcpy(d->row, d->row_orig, d->len * sizeof(*d->row));
+	memcpy(d->row, d->row_orig, d->rowbytes);
 
 	/* calculate compare */
 	switch (d->filter) {
 	case up:
-		png_filters_up_c_byte_avect(d->bpp, d->len, d->row, d->prev_row);
+		png_filters_up_c_byte_avect(d->bpp, d->rowbytes, d->row, d->prev_row);
 		break;
 	case sub:
-		png_filters_sub_c_byte_avect(d->bpp, d->len, d->row, d->prev_row);
+		png_filters_sub_c_byte_avect(d->bpp, d->rowbytes, d->row, d->prev_row);
 		break;
 	case avg:
-		png_filters_avg_c_byte_avect(d->bpp, d->len, d->row, d->prev_row);
+		png_filters_avg_c_byte_avect(d->bpp, d->rowbytes, d->row, d->prev_row);
 		break;
 	case paeth:
-		png_filters_paeth_c_byte_avect(d->bpp, d->len, d->row, d->prev_row);
+		png_filters_paeth_c_byte_avect(d->bpp, d->rowbytes, d->row, d->prev_row);
 		break;
 	default:
 		goto __err_calc_row_compare;
 	}
-	memcpy(d->row_compare, d->row, d->len * sizeof(*d->row_compare));
+	memcpy(d->row_compare, d->row, d->rowbytes);
 
 	return 0;
 
@@ -318,7 +318,7 @@ int alg_png_filters_add(
 	char namestr[256] = "\0";
 	switch (filter) {
 	case up:
-		sprintf(namestr, "png_filters_up");
+		sprintf(namestr, "png_filters_up%i", bppval);
 		break;
 	case sub:
 		sprintf(namestr, "png_filters_sub%i", bppval);
@@ -334,12 +334,11 @@ int alg_png_filters_add(
 		return -1;
 	}
 
-	/* ensure, that parameter len is a multiple of bpp */
-	len = ((len + bppval - 1) / bppval) * bppval;
+	unsigned int rowbytes = len * bppval;
 
 	/* build parameter string */
 	char parastr[256] = "\0";
-	snprintf(parastr, 256, "len=%u", len);
+	snprintf(parastr, 256, "len=%u,rowbytes=%u", len, rowbytes);
 
 	/* create algorithm */
 	alg_t *alg = alg_create(
@@ -354,8 +353,8 @@ int alg_png_filters_add(
 	/* set private data */
 	struct data *d = ALG_GET_PRIV_DATA(struct data*, alg);
 	d->filter = filter;
-	d->len = len;
 	d->bpp = bppval;
+	d->rowbytes = rowbytes;
 
 	/* add implementations according to parameter filter */
 	switch (filter) {
