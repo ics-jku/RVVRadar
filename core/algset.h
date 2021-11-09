@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: GPL-3.0-only
  */
 
-#ifndef BMARKSET_H
-#define BMARKSET_H
+#ifndef ALGSET_H
+#define ALGSET_H
 
 #include <stdbool.h>
 
@@ -39,7 +39,7 @@ typedef struct impl {
 	impl_postexec_fp_t postexec;		// called after each implementation execution
 	impl_cleanup_fp_t cleanup;		// called after iterations over implementations
 
-	struct bmark *bmark;			// parent bmark
+	struct alg *alg;			// parent algorithm the implementation belongs to
 	struct impl *next;			// next in the implementation list
 
 	unsigned int runs;			// number of runs
@@ -50,73 +50,73 @@ typedef struct impl {
 } impl_t;
 
 
-struct bmark;
-typedef int (*bmark_preexec_fp_t)(struct bmark *bmark, int seed);
-typedef int (*bmark_postexec_fp_t)(struct bmark *bmark);
+struct alg;
+typedef int (*alg_preexec_fp_t)(struct alg *alg, int seed);
+typedef int (*alg_postexec_fp_t)(struct alg *alg);
 
-typedef struct bmark {
-	char *name;				// name of the bmark
+typedef struct alg {
+	char *name;				// name of the algorithm
 	char *parastr;				// string containing parameters as string
-	unsigned int index;			// index in bmark list
+	unsigned int index;			// index in algorithm list
 
 	// linked list of algorithm implementations
 	impl_t *impls_head;
 	impl_t *impls_tail;
 	unsigned int impls_len;
 
-	bmark_preexec_fp_t preexec;		// called before bmark
-	bmark_postexec_fp_t postexec;		// called after bmark
+	alg_preexec_fp_t preexec;		// called before running the algorithm
+	alg_postexec_fp_t postexec;		// called after running the algorithm
 
-	struct bmarkset *bmarkset;		// parent bmarkset
-	struct bmark *next;			// next in bmark list
+	struct algset *algset;			// parent algorithm set
+	struct alg *next;			// next in algorithm list
 
-	void *data;				// optional data for the bmark
-} bmark_t;
+	void *data;				// optional privated data for the algorithm
+} alg_t;
 
 
-typedef struct bmarkset {
+typedef struct algset {
 	char *name;
 
-	// linked list of bmarks
-	struct bmark *bmarks_head;
-	struct bmark *bmarks_tail;
-	unsigned int bmarks_len;
-} bmarkset_t;
+	// linked list of algorithms
+	struct alg *algs_head;
+	struct alg *algs_tail;
+	unsigned int algs_len;
+} algset_t;
 
 
 /*
- * BMARK
+ * ALGORITHM
  */
 
 /*
- * create a bmark
- * handling of optional given data (free) is handled by bmark!
- * name and parastr will be duplicated and handled by bmark (e.g. heap
+ * create an algorithm
+ * handling of optional given data (free) is handled by alg!
+ * name and parastr will be duplicated and handled by alg (e.g. heap
  * allocated parameters are valid)
  */
-bmark_t *bmark_create(
+alg_t *alg_create(
 	const char *name,
 	const char *parastr,
-	bmark_preexec_fp_t preexec,
-	bmark_postexec_fp_t postexec,
+	alg_preexec_fp_t preexec,
+	alg_postexec_fp_t postexec,
 	unsigned int data_len);
 
 
 /*
- * destroy the bmark
- * (data will also freed here)
+ * destroy the algorithm
+ * (data and linked implementations will be also destroyed here)
  */
-void bmark_destroy(bmark_t *bmark);
+void alg_destroy(alg_t *alg);
 
 
 /*
  * create and add a new algorithm implementation
- * name will be duplicated and handled by bmark (e.g. heap allocated
+ * name will be duplicated and handled by alg (e.g. heap allocated
  * parameters are valid)
  * returns NULL on error
  */
-impl_t *bmark_add_impl(
-	bmark_t *bmark,
+impl_t *alg_add_impl(
+	alg_t *alg,
 	const char *name,
 	impl_init_fp_t init,
 	impl_preexec_fp_t preexec,
@@ -127,39 +127,41 @@ impl_t *bmark_add_impl(
 
 
 /*
- * BMARKSET
+ * ALGSET
  */
 
 /*
- * allocated and create a new bmarkset
- * name will be duplicated and handled by bmark (e.g. heap allocated
+ * allocated and create a new set of algorithms
+ * name will be duplicated and handled by algset (e.g. heap allocated
  * parameters are valid)
  */
-bmarkset_t *bmarkset_create(const char *name);
+algset_t *algset_create(const char *name);
 
 
 /*
- * destroy the bmarkset
+ * destroy the algorithm set
+ * (linked algorithms will be also destroyed here)
  */
-void bmarkset_destroy(bmarkset_t *bmarkset);
+void algset_destroy(algset_t *algset);
 
 
 /*
- * add a new bmark to set
+ * add a new algorithm to the set
  */
-int bmarkset_add_bmark(bmarkset_t *bmarkset, bmark_t *bmark);
+int algset_add_alg(algset_t *algset, alg_t *alg);
 
 
 /*
- * reset all bmarks
+ * reset the state of the whole set
+ * (collected data, measurements, ...)
  */
-void bmarkset_reset(bmarkset_t *bmarkset);
+void algset_reset(algset_t *algset);
 
 
 /*
- * run the benchmark set
+ * run the algorithm set
  */
-int bmarkset_run(bmarkset_t *bmark, int seed, int iterations, bool verify, bool verbose);
+int algset_run(algset_t *alg, int seed, int iterations, bool verify, bool verbose);
 
 
-#endif /* BMARKSET_H */
+#endif /* ALGSET_H */

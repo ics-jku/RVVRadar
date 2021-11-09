@@ -8,10 +8,10 @@
 #include <string.h>
 
 #include <core/rvv_helpers.h>
-#include "bmark.h"
+#include "alg.h"
 
 
-/* data for bmark */
+/* algorithm specific data */
 struct data {
 	unsigned int len;
 	int16_t *mul1;
@@ -22,7 +22,7 @@ struct data {
 };
 
 
-/* data for implementation */
+/* implementation specific data */
 typedef int (*mac_16_32_32_fp_t)(int32_t *add_res, int16_t *mul1, int16_t *mul2, unsigned int len);
 struct impldata {
 	mac_16_32_32_fp_t mac_16_32_32;	// mac to be called by wrapper
@@ -42,8 +42,8 @@ static void diff_fields(int32_t *dest, int32_t *src, int len)
 
 static int impl_preexec(impl_t *impl, int iteration, bool verify)
 {
-	struct data *d = (struct data*)impl->bmark->data;
-	/* init add_res with add before benchmark run */
+	struct data *d = (struct data*)impl->alg->data;
+	/* init add_res with add before execution */
 	memcpy(d->add_res, d->add, d->len * sizeof(*d->add));
 
 	return 0;
@@ -52,7 +52,7 @@ static int impl_preexec(impl_t *impl, int iteration, bool verify)
 
 static int impl_exec_wrapper(impl_t *impl, bool verify)
 {
-	struct data *d = (struct data*)impl->bmark->data;
+	struct data *d = (struct data*)impl->alg->data;
 	struct impldata *sd = (struct impldata*)impl->data;
 	sd->mac_16_32_32(d->add_res, d->mul1, d->mul2, d->len);
 	return 0;
@@ -65,7 +65,7 @@ static int impl_postexec(impl_t *impl, bool verify)
 	if (!verify)
 		return 0;
 
-	struct data *d = (struct data*)impl->bmark->data;
+	struct data *d = (struct data*)impl->alg->data;
 
 	/* use mac for speed -> use diff only if error was detected */
 	int ret = memcmp(d->add_res, d->compare, d->len * sizeof(*d->add_res));
@@ -79,20 +79,20 @@ static int impl_postexec(impl_t *impl, bool verify)
 
 
 static int impl_add(
-	bmark_t *bmark,
+	alg_t *alg,
 	const char *name,
 	mac_16_32_32_fp_t mac_16_32_32)
 {
 	impl_t *impl;
 
-	impl = bmark_add_impl(bmark,
-			      name,
-			      NULL,
-			      impl_preexec,
-			      impl_exec_wrapper,
-			      impl_postexec,
-			      NULL,
-			      sizeof(struct impldata));
+	impl = alg_add_impl(alg,
+			    name,
+			    NULL,
+			    impl_preexec,
+			    impl_exec_wrapper,
+			    impl_postexec,
+			    NULL,
+			    sizeof(struct impldata));
 	if (impl == NULL)
 		return -1;
 
@@ -120,17 +120,17 @@ extern void mac_16_32_32_rvv_e32(int32_t *add_res, int16_t *mul1, int16_t *mul2,
 extern void mac_16_32_32_rvv_e16_widening(int32_t *add_res, int16_t *mul1, int16_t *mul2, unsigned int len);
 #endif /* RVVBMARK_RVV_SUPPORT */
 
-static int impls_add(bmark_t *bmark)
+static int impls_add(alg_t *alg)
 {
 	int ret = 0;
 
-	ret |= impl_add(bmark, "c byte noavect",			(mac_16_32_32_fp_t)mac_16_32_32_c_byte_noavect);
-	ret |= impl_add(bmark, "c byte avect",				(mac_16_32_32_fp_t)mac_16_32_32_c_byte_avect);
+	ret |= impl_add(alg, "c byte noavect",				(mac_16_32_32_fp_t)mac_16_32_32_c_byte_noavect);
+	ret |= impl_add(alg, "c byte avect",				(mac_16_32_32_fp_t)mac_16_32_32_c_byte_avect);
 #if RVVBMARK_RVV_SUPPORT
 #if RVVBMARK_RVV_SUPPORT == RVVBMARK_RVV_SUPPORT_VER_07_08
-	ret |= impl_add(bmark, "rvv 32bit elements",			(mac_16_32_32_fp_t)mac_16_32_32_rvv_e32);
+	ret |= impl_add(alg, "rvv 32bit elements",			(mac_16_32_32_fp_t)mac_16_32_32_rvv_e32);
 #endif /* RVVBMARK_RVV_SUPPORT_VER_07_08 */
-	ret |= impl_add(bmark, "rvv 16bit elements with widening",	(mac_16_32_32_fp_t)mac_16_32_32_rvv_e16_widening);
+	ret |= impl_add(alg, "rvv 16bit elements with widening",	(mac_16_32_32_fp_t)mac_16_32_32_rvv_e16_widening);
 #endif /* RVVBMARK_RVV_SUPPORT */
 
 	if (ret)
@@ -140,9 +140,9 @@ static int impls_add(bmark_t *bmark)
 }
 
 
-static int bmark_preexec(struct bmark *bmark, int seed)
+static int alg_preexec(struct alg *alg, int seed)
 {
-	struct data *d = (struct data*)bmark->data;
+	struct data *d = (struct data*)alg->data;
 
 	/* alloc */
 	d->mul1 = malloc(d->len * sizeof(*d->mul1));
@@ -189,9 +189,9 @@ __err_mul1:
 }
 
 
-static int bmark_postexec(struct bmark *bmark)
+static int alg_postexec(struct alg *alg)
 {
-	struct data *d = (struct data*)bmark->data;
+	struct data *d = (struct data*)alg->data;
 	if (d == NULL)
 		return 0;
 
@@ -205,34 +205,35 @@ static int bmark_postexec(struct bmark *bmark)
 }
 
 
-int bmark_mac_16_32_32_add(bmarkset_t *bmarkset, unsigned int len)
+int alg_mac_16_32_32_add(algset_t *algset, unsigned int len)
 {
 	/* build parameter string */
 	char parastr[256] = "\0";
 	snprintf(parastr, 256, "len=%u", len);
 
-	/* create benchmark */
-	bmark_t *bmark = bmark_create(
-				 "mac 32bit = 32bit + (16bit*16bit)",
-				 parastr,
-				 bmark_preexec,
-				 bmark_postexec,
-				 sizeof(struct data));
-	if (bmark == NULL)
+	/* create algorithm */
+	alg_t *alg = alg_create(
+			     "mac 32bit = 32bit + (16bit*16bit)",
+			     parastr,
+			     alg_preexec,
+			     alg_postexec,
+			     sizeof(struct data));
+	if (alg == NULL)
 		return -1;
 
-	/* set private data and add implementations */
-	struct data *d = (struct data*)bmark->data;
+	/* set private data */
+	struct data *d = (struct data*)alg->data;
 	d->len = len;
 
-	if (impls_add(bmark) < 0) {
-		bmark_destroy(bmark);
+	/* add implementations */
+	if (impls_add(alg) < 0) {
+		alg_destroy(alg);
 		return -1;
 	}
 
-	/* add benchmark to set */
-	if (bmarkset_add_bmark(bmarkset, bmark) < 0) {
-		bmark_destroy(bmark);
+	/* add algorithm to set */
+	if (algset_add_alg(algset, alg) < 0) {
+		alg_destroy(alg);
 		return -1;
 	}
 

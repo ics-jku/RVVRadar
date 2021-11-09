@@ -1,5 +1,5 @@
-Tool and framework code (core/*, bmark/*/bmark.?) is licensed under GPLv3 (see LICENSE_GPL3.txt)
-Algorithm implementations (e.g. bmark/*/impl*) are licensed under MIT (see LICENSE_MIT.txt)
+Tool and framework code (core/*, algorithms/*/alg.?) is licensed under GPLv3 (see LICENSE_GPL3.txt)
+Algorithm implementations (e.g. algorithms/*/impl*) are licensed under MIT (see LICENSE_MIT.txt)
 
 Rule of Thumb:
  * Consider the whole tool as licensed under GPLv3

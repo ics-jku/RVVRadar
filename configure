@@ -16,6 +16,9 @@ RVVBMARK_RVV_SUPPORT=$RVVBMARK_RVV_SUPPORT_NO
 RVVBMARK_EXTRA_ASFLAGS=""
 RVVBMARK_EXTRA_CFLAGS=""
 
+# directories
+COREDIR=core
+ALGDIR=algorithms
 
 # set defaults if not set
 [[ -z $CC ]] && CC=gcc
@@ -95,7 +98,7 @@ echo -en "Check toolchain RISC-V support .. "
 if ! $CC				\
 	-DRVVBMARK_RV_SUPPORT=1		\
 	-DRVVBMARK_RVV_SUPPORT=0	\
-	-c bmarks/memcpy/impl_rv.c	\
+	-c ${ALGDIR}/memcpy/impl_rv.c	\
 	-o /dev/null > /dev/null 2>&1 ;
 then
 	echo "no"
@@ -121,7 +124,7 @@ else
 				-march=$march_tmp					\
 				-DRVVBMARK_RV_SUPPORT=1					\
 				-DRVVBMARK_RVV_SUPPORT=$rvv_support			\
-				-c bmarks/memcpy/impl_rvv.c				\
+				-c ${ALGDIR}/memcpy/impl_rvv.c				\
 				-o /dev/null > /dev/null 2>&1 ;
 			then
 				RVVBMARK_RVV_SUPPORT=$rvv_support

@@ -10,6 +10,8 @@ include config.mk
 debug?=0
 
 BIN_NAME=rvvbmark
+COREDIR=core
+ALGDIR=algorithms
 ASTYLE_ARGS=--options=none --suffix=none --quiet \
 	    --style=linux --indent=force-tab=8 --pad-header --pad-oper --indent-preprocessor
 VERSION_STR=$(BIN_NAME)-${RVVBMARK_VERSION}.${RVVBMARK_SUBVERSION}
@@ -26,8 +28,8 @@ ifeq ($(debug),1)
 	INSTALLFLAGS=
 	OBJDIR=		debug
 else
-	# Benchmarks are built explicitly with/without autovectorization
-	# independent of the settings here (see below)
+	# Algorithm implementations are built explicitly with/without
+	# autovectorization independent of the settings here (see below)
 	CFLAGS+=	-O2
 	INSTALLFLAGS=	-s --strip-program=$(STRIP)
 	OBJDIR=		release
@@ -46,14 +48,14 @@ LDFLAGS+=
 # by ifdefs (RVVBMARK_RVV_SUPPORT) in code.
 
 # All *.h files
-HEADERS := $(wildcard core/*.h) $(wildcard bmarks/*/*.h)
+HEADERS := $(wildcard $(COREDIR)/*.h) $(wildcard $(ALGDIR)/*/*.h)
 
 # All *.c files
-C_SOURCES := $(wildcard *.c) $(wildcard core/*.c) $(wildcard bmarks/*/*.c)
+C_SOURCES := $(wildcard *.c) $(wildcard $(COREDIR)/*.c) $(wildcard $(ALGDIR)/*/*.c)
 
 # All *.c.in files
 # Will be compiled to multiple object files with different optimizations
-C_SOURCES_OPT_IN := $(wildcard *_c.c.in) $(wildcard bmarks/*/*_c.c.in)
+C_SOURCES_OPT_IN := $(wildcard *_c.c.in) $(wildcard $(ALGDIR)/*/*_c.c.in)
 
 # build %.o from %.c and %.s
 OBJS := $(patsubst %.c,$(OBJDIR)/%.o,$(C_SOURCES))

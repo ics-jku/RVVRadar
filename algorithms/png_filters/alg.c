@@ -10,12 +10,12 @@
 #include <errno.h>
 
 #include <core/rvv_helpers.h>
-#include "bmark.h"
+#include "alg.h"
 
 
-/* data for bmark */
+/* algorithm specific data */
 struct data {
-	enum bmark_png_filters_filter filter;
+	enum alg_png_filters_filter filter;
 	unsigned int len;
 	unsigned int bpp;	// bytes per pixel
 	uint8_t *prev_row;	// input last row
@@ -25,7 +25,7 @@ struct data {
 };
 
 
-/* data for implementation */
+/* implementation specific data */
 typedef int (*png_filters_fp_t)(unsigned int bpp, unsigned int rowbytes, uint8_t *row, uint8_t *prev_row);
 struct impldata {
 	png_filters_fp_t png_filters;	// png_filters to be called by wrapper
@@ -45,8 +45,8 @@ static void diff_row(uint8_t *output, uint8_t *original, int len)
 
 static int impl_preexec(impl_t *impl, int iteration, bool verify)
 {
-	struct data *d = (struct data*)impl->bmark->data;
-	/* restore row before benchmark run */
+	struct data *d = (struct data*)impl->alg->data;
+	/* restore row before execution */
 	memcpy(d->row, d->row_orig, d->len * sizeof(*d->row));
 	return 0;
 }
@@ -54,7 +54,7 @@ static int impl_preexec(impl_t *impl, int iteration, bool verify)
 
 static int impl_exec_wrapper(impl_t *impl, bool verify)
 {
-	struct data *d = (struct data*)impl->bmark->data;
+	struct data *d = (struct data*)impl->alg->data;
 	struct impldata *sd = (struct impldata*)impl->data;
 	sd->png_filters(d->bpp, d->len, d->row, d->prev_row);
 	return 0;
@@ -67,7 +67,7 @@ static int impl_postexec(impl_t *impl, bool verify)
 	if (!verify)
 		return 0;
 
-	struct data *d = (struct data*)impl->bmark->data;
+	struct data *d = (struct data*)impl->alg->data;
 
 	/* use memcpy for speed -> use diff only if error was detected */
 	int ret = memcmp(d->row, d->row_compare, d->len * sizeof(*d->row));
@@ -81,20 +81,20 @@ static int impl_postexec(impl_t *impl, bool verify)
 
 
 static int impl_add(
-	bmark_t *bmark,
+	alg_t *alg,
 	const char *name,
 	png_filters_fp_t png_filters)
 {
 	impl_t *impl;
 
-	impl = bmark_add_impl(bmark,
-			      name,
-			      NULL,
-			      impl_preexec,
-			      impl_exec_wrapper,
-			      impl_postexec,
-			      NULL,
-			      sizeof(struct impldata));
+	impl = alg_add_impl(alg,
+			    name,
+			    NULL,
+			    impl_preexec,
+			    impl_exec_wrapper,
+			    impl_postexec,
+			    NULL,
+			    sizeof(struct impldata));
 	if (impl == NULL)
 		return -1;
 
@@ -117,17 +117,17 @@ extern void png_filters_up_rvv_m4(unsigned int bpp, unsigned int rowbytes, uint8
 extern void png_filters_up_rvv_m8(unsigned int bpp, unsigned int rowbytes, uint8_t *row, uint8_t *prev_row);
 #endif /* RVVBMARK_RVV_SUPPORT */
 
-static int impls_add_up(bmark_t *bmark)
+static int impls_add_up(alg_t *alg)
 {
 	int ret = 0;
 
-	ret |= impl_add(bmark, "c byte noavect",	(png_filters_fp_t)png_filters_up_c_byte_noavect);
-	ret |= impl_add(bmark, "c byte avect",		(png_filters_fp_t)png_filters_up_c_byte_avect);
+	ret |= impl_add(alg, "c byte noavect",	(png_filters_fp_t)png_filters_up_c_byte_noavect);
+	ret |= impl_add(alg, "c byte avect",	(png_filters_fp_t)png_filters_up_c_byte_avect);
 #if RVVBMARK_RVV_SUPPORT
-	ret |= impl_add(bmark, "rvv_m1",		(png_filters_fp_t)png_filters_up_rvv_m1);
-	ret |= impl_add(bmark, "rvv_m2",		(png_filters_fp_t)png_filters_up_rvv_m2);
-	ret |= impl_add(bmark, "rvv_m4",		(png_filters_fp_t)png_filters_up_rvv_m4);
-	ret |= impl_add(bmark, "rvv_m8",		(png_filters_fp_t)png_filters_up_rvv_m8);
+	ret |= impl_add(alg, "rvv_m1",		(png_filters_fp_t)png_filters_up_rvv_m1);
+	ret |= impl_add(alg, "rvv_m2",		(png_filters_fp_t)png_filters_up_rvv_m2);
+	ret |= impl_add(alg, "rvv_m4",		(png_filters_fp_t)png_filters_up_rvv_m4);
+	ret |= impl_add(alg, "rvv_m8",		(png_filters_fp_t)png_filters_up_rvv_m8);
 #endif /* RVVBMARK_RVV_SUPPORT */
 
 	if (ret)
@@ -147,15 +147,15 @@ extern void png_filters_sub_rvv_dload(unsigned int bpp, unsigned int rowbytes, u
 extern void png_filters_sub_rvv_reuse(unsigned int bpp, unsigned int rowbytes, uint8_t *row, uint8_t *prev_row);
 #endif /* RVVBMARK_RVV_SUPPORT */
 
-static int impls_add_sub(bmark_t *bmark)
+static int impls_add_sub(alg_t *alg)
 {
 	int ret = 0;
 
-	ret |= impl_add(bmark, "c byte noavect",	(png_filters_fp_t)png_filters_sub_c_byte_noavect);
-	ret |= impl_add(bmark, "c byte avect",		(png_filters_fp_t)png_filters_sub_c_byte_avect);
+	ret |= impl_add(alg, "c byte noavect",	(png_filters_fp_t)png_filters_sub_c_byte_noavect);
+	ret |= impl_add(alg, "c byte avect",	(png_filters_fp_t)png_filters_sub_c_byte_avect);
 #if RVVBMARK_RVV_SUPPORT
-	ret |= impl_add(bmark, "rvv_dload",		(png_filters_fp_t)png_filters_sub_rvv_dload);
-	ret |= impl_add(bmark, "rvv_reuse",		(png_filters_fp_t)png_filters_sub_rvv_reuse);
+	ret |= impl_add(alg, "rvv_dload",	(png_filters_fp_t)png_filters_sub_rvv_dload);
+	ret |= impl_add(alg, "rvv_reuse",	(png_filters_fp_t)png_filters_sub_rvv_reuse);
 #endif /* RVVBMARK_RVV_SUPPORT */
 
 	if (ret)
@@ -174,14 +174,14 @@ extern void png_filters_avg_c_byte_noavect(unsigned int bpp, unsigned int rowbyt
 extern void png_filters_avg_rvv(unsigned int bpp, unsigned int rowbytes, uint8_t *row, uint8_t *prev_row);
 #endif /* RVVBMARK_RVV_SUPPORT */
 
-static int impls_add_avg(bmark_t *bmark)
+static int impls_add_avg(alg_t *alg)
 {
 	int ret = 0;
 
-	ret |= impl_add(bmark, "c byte noavect",	(png_filters_fp_t)png_filters_avg_c_byte_noavect);
-	ret |= impl_add(bmark, "c byte avect",		(png_filters_fp_t)png_filters_avg_c_byte_avect);
+	ret |= impl_add(alg, "c byte noavect",	(png_filters_fp_t)png_filters_avg_c_byte_noavect);
+	ret |= impl_add(alg, "c byte avect",	(png_filters_fp_t)png_filters_avg_c_byte_avect);
 #if RVVBMARK_RVV_SUPPORT
-	ret |= impl_add(bmark, "rvv",			(png_filters_fp_t)png_filters_avg_rvv);
+	ret |= impl_add(alg, "rvv",		(png_filters_fp_t)png_filters_avg_rvv);
 #endif /* RVVBMARK_RVV_SUPPORT */
 
 	if (ret)
@@ -201,15 +201,15 @@ extern void png_filters_paeth_rvv_read_bulk(unsigned int bpp, unsigned int rowby
 extern void png_filters_paeth_rvv(unsigned int bpp, unsigned int rowbytes, uint8_t *row, uint8_t *prev_row);
 #endif /* RVVBMARK_RVV_SUPPORT */
 
-static int impls_add_paeth(bmark_t *bmark)
+static int impls_add_paeth(alg_t *alg)
 {
 	int ret = 0;
 
-	ret |= impl_add(bmark, "c byte noavect",	(png_filters_fp_t)png_filters_paeth_c_byte_noavect);
-	ret |= impl_add(bmark, "c byte avect",		(png_filters_fp_t)png_filters_paeth_c_byte_avect);
+	ret |= impl_add(alg, "c byte noavect",	(png_filters_fp_t)png_filters_paeth_c_byte_noavect);
+	ret |= impl_add(alg, "c byte avect",	(png_filters_fp_t)png_filters_paeth_c_byte_avect);
 #if RVVBMARK_RVV_SUPPORT
-	ret |= impl_add(bmark, "rvv_read_bulk",		(png_filters_fp_t)png_filters_paeth_rvv_read_bulk);
-	ret |= impl_add(bmark, "rvv",			(png_filters_fp_t)png_filters_paeth_rvv);
+	ret |= impl_add(alg, "rvv_read_bulk",	(png_filters_fp_t)png_filters_paeth_rvv_read_bulk);
+	ret |= impl_add(alg, "rvv",		(png_filters_fp_t)png_filters_paeth_rvv);
 #endif /* RVVBMARK_RVV_SUPPORT */
 
 	if (ret)
@@ -220,9 +220,9 @@ static int impls_add_paeth(bmark_t *bmark)
 
 
 
-static int bmark_preexec(struct bmark *bmark, int seed)
+static int alg_preexec(struct alg *alg, int seed)
 {
-	struct data *d = (struct data*)bmark->data;
+	struct data *d = (struct data*)alg->data;
 
 	/* alloc */
 	d->prev_row = malloc(d->len * sizeof(*d->prev_row));
@@ -279,9 +279,9 @@ __err_alloc_prev_row:
 }
 
 
-static int bmark_postexec(struct bmark *bmark)
+static int alg_postexec(struct alg *alg)
 {
-	struct data *d = (struct data*)bmark->data;
+	struct data *d = (struct data*)alg->data;
 	if (d == NULL)
 		return 0;
 	free(d->prev_row);
@@ -292,10 +292,10 @@ static int bmark_postexec(struct bmark *bmark)
 }
 
 
-int bmark_png_filters_add(
-	bmarkset_t *bmarkset,
-	enum bmark_png_filters_filter filter,
-	enum bmark_png_filters_bpp bpp,
+int alg_png_filters_add(
+	algset_t *algset,
+	enum alg_png_filters_filter filter,
+	enum alg_png_filters_bpp bpp,
 	unsigned int len)
 {
 	int ret = 0;
@@ -341,18 +341,18 @@ int bmark_png_filters_add(
 	char parastr[256] = "\0";
 	snprintf(parastr, 256, "len=%u", len);
 
-	/* create benchmark */
-	bmark_t *bmark = bmark_create(
-				 namestr,
-				 parastr,
-				 bmark_preexec,
-				 bmark_postexec,
-				 sizeof(struct data));
-	if (bmark == NULL)
+	/* create algorithm */
+	alg_t *alg = alg_create(
+			     namestr,
+			     parastr,
+			     alg_preexec,
+			     alg_postexec,
+			     sizeof(struct data));
+	if (alg == NULL)
 		return -1;
 
-	/* set private data and add implementations */
-	struct data *d = (struct data*)bmark->data;
+	/* set private data */
+	struct data *d = (struct data*)alg->data;
 	d->filter = filter;
 	d->len = len;
 	d->bpp = bppval;
@@ -360,29 +360,29 @@ int bmark_png_filters_add(
 	/* add implementations according to parameter filter */
 	switch (filter) {
 	case up:
-		ret = impls_add_up(bmark);
+		ret = impls_add_up(alg);
 		break;
 	case sub:
-		ret = impls_add_sub(bmark);
+		ret = impls_add_sub(alg);
 		break;
 	case avg:
-		ret = impls_add_avg(bmark);
+		ret = impls_add_avg(alg);
 		break;
 	case paeth:
-		ret = impls_add_paeth(bmark);
+		ret = impls_add_paeth(alg);
 		break;
 	default:
 		errno = EINVAL;
 		ret = -1;
 	}
 	if (ret < 0) {
-		bmark_destroy(bmark);
+		alg_destroy(alg);
 		return -1;
 	}
 
-	/* add benchmark to set */
-	if (bmarkset_add_bmark(bmarkset, bmark) < 0) {
-		bmark_destroy(bmark);
+	/* add algorithm to set */
+	if (algset_add_alg(algset, alg) < 0) {
+		alg_destroy(alg);
 		return -1;
 	}
 

@@ -8,7 +8,7 @@
 #include <string.h>
 #include <errno.h>
 
-#include <core/bmarkset.h>
+#include <core/algset.h>
 
 
 /*
@@ -239,7 +239,7 @@ static int impl_print_csv_head(FILE *out)
 		return -1;
 	}
 
-	printf("set;benchmark(parameters);implementation;runs;fails;");
+	printf("set;algorithm(parameters);implementation;runs;fails;");
 	chrono_print_csv_head(DATAOUT);
 	printf("\n");
 	return 0;
@@ -254,9 +254,9 @@ static int impl_print_csv(impl_t *impl, FILE *out)
 	}
 
 	printf("%s;%s(%s);%s;%i;%i;",
-	       impl->bmark->bmarkset->name,
-	       impl->bmark->name,
-	       impl->bmark->parastr,
+	       impl->alg->algset->name,
+	       impl->alg->name,
+	       impl->alg->parastr,
 	       impl->name,
 	       impl->runs,
 	       impl->fails);
@@ -300,14 +300,14 @@ static int impl_run_iterations(impl_t *impl, int iterations, bool verify, bool v
 
 
 /*
- * BMARK
+ * ALGORITHM
  */
 
-bmark_t *bmark_create(
+alg_t *alg_create(
 	const char *name,
 	const char *parastr,
-	bmark_preexec_fp_t preexec,
-	bmark_postexec_fp_t postexec,
+	alg_preexec_fp_t preexec,
+	alg_postexec_fp_t postexec,
 	unsigned int data_len)
 {
 	/* name must be given */
@@ -316,63 +316,63 @@ bmark_t *bmark_create(
 		return NULL;
 	}
 
-	bmark_t *bmark = calloc(1, sizeof(bmark_t));
-	if (bmark == NULL)
+	alg_t *alg = calloc(1, sizeof(alg_t));
+	if (alg == NULL)
 		return NULL;
 
-	bmark->name = strdup(name);
-	if (bmark->name == NULL) {
-		free(bmark);
+	alg->name = strdup(name);
+	if (alg->name == NULL) {
+		free(alg);
 		return NULL;
 	}
 	if (parastr == NULL)
 		parastr = "";
-	bmark->parastr = strdup(parastr);
-	if (bmark->parastr == NULL) {
-		free(bmark);
+	alg->parastr = strdup(parastr);
+	if (alg->parastr == NULL) {
+		free(alg);
 		return NULL;
 	}
-	bmark->preexec = preexec;
-	bmark->postexec = postexec;
+	alg->preexec = preexec;
+	alg->postexec = postexec;
 
 	/* alloc optional data area */
 	if (data_len == 0)
-		return bmark;
-	bmark->data = calloc(1, data_len);
-	if (bmark->data == NULL) {
-		free(bmark->parastr);
-		free(bmark->name);
-		free(bmark);
+		return alg;
+	alg->data = calloc(1, data_len);
+	if (alg->data == NULL) {
+		free(alg->parastr);
+		free(alg->name);
+		free(alg);
 		return NULL;
 	}
 
-	return bmark;
+	return alg;
 }
 
 
-void bmark_destroy(bmark_t *bmark)
+void alg_destroy(alg_t *alg)
 {
-	if (bmark == NULL)
+	if (alg == NULL)
 		return;
-	impl_t *s = bmark->impls_head;
+	impl_t *s = alg->impls_head;
 	while (s != NULL) {
 		impl_t *n = s->next;
 		impl_destroy(s);
 		s = n;
 	}
 
-	free(bmark->name);
-	free(bmark->parastr);
+	free(alg->name);
+	free(alg->parastr);
 
 	/* free optional data area */
-	free(bmark->data);
+	free(alg->data);
 
-	free(bmark);
+	free(alg);
 }
 
 
-impl_t *bmark_add_impl(
-	bmark_t *bmark,
+impl_t *alg_add_impl(
+	alg_t *alg,
 	const char *name,
 	impl_init_fp_t init,
 	impl_preexec_fp_t preexec,
@@ -389,28 +389,28 @@ impl_t *bmark_add_impl(
 		return NULL;
 
 	/* add to link list */
-	impl->index = bmark->impls_len;
-	if (bmark->impls_tail == NULL)
+	impl->index = alg->impls_len;
+	if (alg->impls_tail == NULL)
 		/* first element */
-		bmark->impls_head = impl;
+		alg->impls_head = impl;
 	else
-		bmark->impls_tail->next = impl;
-	bmark->impls_tail = impl;
-	bmark->impls_len++;
+		alg->impls_tail->next = impl;
+	alg->impls_tail = impl;
+	alg->impls_len++;
 
-	/* link bmark (parent) */
-	impl->bmark = bmark;
+	/* link alg (parent) */
+	impl->alg = alg;
 
 	return impl;
 }
 
 
-static void bmark_reset(bmark_t *bmark)
+static void alg_reset(alg_t *alg)
 {
-	if (bmark == NULL)
+	if (alg == NULL)
 		return;
 	for (
-		impl_t *s = bmark->impls_head;
+		impl_t *s = alg->impls_head;
 		s != NULL;
 		s = s->next
 	)
@@ -418,18 +418,18 @@ static void bmark_reset(bmark_t *bmark)
 }
 
 
-impl_t *bmark_get_first_impl(bmark_t *bmark)
+impl_t *alg_get_first_impl(alg_t *alg)
 {
-	if (bmark == NULL) {
+	if (alg == NULL) {
 		errno = EINVAL;
 		return NULL;
 	}
 
-	return bmark->impls_head;
+	return alg->impls_head;
 }
 
 
-impl_t *bmark_get_next_impl(impl_t *impl)
+impl_t *alg_get_next_impl(impl_t *impl)
 {
 	if (impl == NULL) {
 		errno = EINVAL;
@@ -440,55 +440,55 @@ impl_t *bmark_get_next_impl(impl_t *impl)
 }
 
 
-int bmark_call_preexec(bmark_t *bmark, int seed)
+int alg_call_preexec(alg_t *alg, int seed)
 {
-	if (bmark == NULL) {
+	if (alg == NULL) {
 		errno = ENODEV;
 		return -1;
 	}
 
 	/* nothing todo? */
-	if (bmark->preexec == NULL)
+	if (alg->preexec == NULL)
 		return 0;
 
-	return bmark->preexec(bmark, seed);
+	return alg->preexec(alg, seed);
 }
 
 
-static int bmark_call_postexec(bmark_t *bmark)
+static int alg_call_postexec(alg_t *alg)
 {
-	if (bmark == NULL) {
+	if (alg == NULL) {
 		errno = EINVAL;
 		return -1;
 	}
 
 	/* nothing todo? */
-	if (bmark->postexec == NULL)
+	if (alg->postexec == NULL)
 		return 0;
 
-	return bmark->postexec(bmark);
+	return alg->postexec(alg);
 }
 
 
-static int bmark_run(bmark_t *bmark, int seed, int iterations, bool verify, bool verbose)
+static int alg_run(alg_t *alg, int seed, int iterations, bool verify, bool verbose)
 {
 	int ret;
 
-	if (bmark == NULL) {
+	if (alg == NULL) {
 		errno = EINVAL;
 		return -1;
 	}
 
-	pinfo("   + benchm: %s(%s)\n", bmark->name, bmark->parastr);
+	pinfo("   + algorithm: %s(%s)\n", alg->name, alg->parastr);
 
 	/* call preexec */
-	ret = bmark_call_preexec(bmark, seed);
+	ret = alg_call_preexec(alg, seed);
 	if (ret < 0)
 		return -1;
 
 	/* run all implementations */
 	for (
-		impl_t *s = bmark->impls_head;
+		impl_t *s = alg->impls_head;
 		s != NULL;
 		s = s->next
 	) {
@@ -506,7 +506,7 @@ static int bmark_run(bmark_t *bmark, int seed, int iterations, bool verify, bool
 	}
 
 	/* call postexec */
-	ret = bmark_call_postexec(bmark);
+	ret = alg_call_postexec(alg);
 	if (ret < 0)
 		return -1;
 
@@ -515,10 +515,10 @@ static int bmark_run(bmark_t *bmark, int seed, int iterations, bool verify, bool
 
 
 /*
- * BMARKSET
+ * ALGORITHM SET
  */
 
-bmarkset_t *bmarkset_create(const char *name)
+algset_t *algset_create(const char *name)
 {
 	/* name must be given */
 	if (name == NULL || strlen(name) == 0) {
@@ -526,91 +526,91 @@ bmarkset_t *bmarkset_create(const char *name)
 		return NULL;
 	}
 
-	bmarkset_t *bmarkset = calloc(1, sizeof(bmarkset_t));
-	if (bmarkset == NULL)
+	algset_t *algset = calloc(1, sizeof(algset_t));
+	if (algset == NULL)
 		return NULL;
 
-	bmarkset->name = strdup(name);
-	if (bmarkset->name == NULL) {
-		free(bmarkset);
+	algset->name = strdup(name);
+	if (algset->name == NULL) {
+		free(algset);
 		return NULL;
 	}
 
-	return bmarkset;
+	return algset;
 }
 
 
-void bmarkset_destroy(bmarkset_t *bmarkset)
+void algset_destroy(algset_t *algset)
 {
-	if (bmarkset == NULL)
+	if (algset == NULL)
 		return;
-	bmark_t *t = bmarkset->bmarks_head;
+	alg_t *t = algset->algs_head;
 	while (t != NULL) {
-		bmark_t *n = t->next;
-		bmark_destroy(t);
+		alg_t *n = t->next;
+		alg_destroy(t);
 		t = n;
 	}
 
-	free(bmarkset->name);
-	free(bmarkset);
+	free(algset->name);
+	free(algset);
 }
 
 
-int bmarkset_add_bmark(bmarkset_t *bmarkset, bmark_t *bmark)
+int algset_add_alg(algset_t *algset, alg_t *alg)
 {
-	if (bmarkset == NULL || bmark == NULL) {
+	if (algset == NULL || alg == NULL) {
 		errno = EINVAL;
 		return -1;
 	}
 
 	/* add to link list */
-	bmark->index = bmarkset->bmarks_len;
-	if (bmarkset->bmarks_tail == NULL)
+	alg->index = algset->algs_len;
+	if (algset->algs_tail == NULL)
 		/* first element */
-		bmarkset->bmarks_head = bmark;
+		algset->algs_head = alg;
 	else
-		bmarkset->bmarks_tail->next = bmark;
-	bmarkset->bmarks_tail = bmark;
-	bmarkset->bmarks_len++;
+		algset->algs_tail->next = alg;
+	algset->algs_tail = alg;
+	algset->algs_len++;
 
-	/* link bmark (parent) */
-	bmark->bmarkset = bmarkset;
+	/* link algset (parent) */
+	alg->algset = algset;
 
 	return 0;
 }
 
 
-void bmarkset_reset(bmarkset_t *bmarkset)
+void algset_reset(algset_t *algset)
 {
-	if (bmarkset == NULL)
+	if (algset == NULL)
 		return;
 	for (
-		bmark_t *t = bmarkset->bmarks_head;
+		alg_t *t = algset->algs_head;
 		t != NULL;
 		t = t->next
 	)
-		bmark_reset(t);
+		alg_reset(t);
 }
 
 
-int bmarkset_run(bmarkset_t *bmarkset, int seed, int iterations, bool verify, bool verbose)
+int algset_run(algset_t *algset, int seed, int iterations, bool verify, bool verbose)
 {
 	int ret;
 
-	if (bmarkset == NULL) {
+	if (algset == NULL) {
 		errno = EINVAL;
 		return -1;
 	}
 
 	impl_print_csv_head(DATAOUT);
 
-	pinfo(" + set: %s\n", bmarkset->name);
+	pinfo(" + set: %s\n", algset->name);
 	for (
-		bmark_t *b = bmarkset->bmarks_head;
+		alg_t *b = algset->algs_head;
 		b != NULL;
 		b = b->next
 	) {
-		ret = bmark_run(b, seed, iterations, verify, verbose);
+		ret = alg_run(b, seed, iterations, verify, verbose);
 		if (ret < 0)
 			return -1;
 	}

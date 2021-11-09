@@ -8,10 +8,10 @@
 #include <string.h>
 
 #include <core/rvv_helpers.h>
-#include "bmark.h"
+#include "alg.h"
 
 
-/* data for bmark */
+/* algorithm specific data */
 struct data {
 	unsigned int len;
 	void *src;
@@ -19,7 +19,7 @@ struct data {
 };
 
 
-/* data for implementation */
+/* implementation specific data */
 typedef int (*memcpy_fp_t)(void *dest, void *src, unsigned int len);
 struct impldata {
 	memcpy_fp_t memcpy;	// memcpy to be called by wrapper
@@ -43,8 +43,8 @@ static int impl_preexec(impl_t *impl, int iteration, bool verify)
 	if (!verify)
 		return 0;
 
-	struct data *d = (struct data*)impl->bmark->data;
-	/* reset dest array before benchmark run */
+	struct data *d = (struct data*)impl->alg->data;
+	/* reset dest array before execution */
 	memset(d->dest, 0, d->len);
 	return 0;
 }
@@ -52,7 +52,7 @@ static int impl_preexec(impl_t *impl, int iteration, bool verify)
 
 static int impl_exec_wrapper(impl_t *impl, bool verify)
 {
-	struct data *d = (struct data*)impl->bmark->data;
+	struct data *d = (struct data*)impl->alg->data;
 	struct impldata *sd = (struct impldata*)impl->data;
 	sd->memcpy(d->dest, d->src, d->len);
 	return 0;
@@ -65,7 +65,7 @@ static int impl_postexec(impl_t *impl, bool verify)
 	if (!verify)
 		return 0;
 
-	struct data *d = (struct data*)impl->bmark->data;
+	struct data *d = (struct data*)impl->alg->data;
 
 	/* use memcpy for speed -> use diff only if error was detected */
 	int ret = memcmp(d->dest, d->src, d->len);
@@ -79,20 +79,20 @@ static int impl_postexec(impl_t *impl, bool verify)
 
 
 static int impl_add(
-	bmark_t *bmark,
+	alg_t *alg,
 	const char *name,
 	memcpy_fp_t memcpy)
 {
 	impl_t *impl;
 
-	impl = bmark_add_impl(bmark,
-			      name,
-			      NULL,
-			      impl_preexec,
-			      impl_exec_wrapper,
-			      impl_postexec,
-			      NULL,
-			      sizeof(struct impldata));
+	impl = alg_add_impl(alg,
+			    name,
+			    NULL,
+			    impl_preexec,
+			    impl_exec_wrapper,
+			    impl_postexec,
+			    NULL,
+			    sizeof(struct impldata));
 	if (impl == NULL)
 		return -1;
 
@@ -117,22 +117,22 @@ extern void memcpy_rvv_32(void *dest, void *src, unsigned int len);
 #endif /* RVVBMARK_RVV_SUPPORT */
 #endif /* RVVBMARK_RV_SUPPORT */
 
-static int impls_add(bmark_t *bmark)
+static int impls_add(alg_t *alg)
 {
 	int ret = 0;
 
-	ret |= impl_add(bmark, "c byte noavect",	 		(memcpy_fp_t)memcpy_c_byte_noavect);
+	ret |= impl_add(alg, "c byte noavect",	 			(memcpy_fp_t)memcpy_c_byte_noavect);
 #if RVVBMARK_RV_SUPPORT
-	ret |= impl_add(bmark, "4 int regs",	 			(memcpy_fp_t)memcpy_rv_wlenx4);
+	ret |= impl_add(alg, "4 int regs",	 			(memcpy_fp_t)memcpy_rv_wlenx4);
 #endif /* RVVBMARK_RV_SUPPORT */
-	ret |= impl_add(bmark, "c byte avect",	 			(memcpy_fp_t)memcpy_c_byte_avect);
-	ret |= impl_add(bmark, "system",		 		(memcpy_fp_t)memcpy);
+	ret |= impl_add(alg, "c byte avect",	 			(memcpy_fp_t)memcpy_c_byte_avect);
+	ret |= impl_add(alg, "system",		 			(memcpy_fp_t)memcpy);
 #if RVVBMARK_RVV_SUPPORT
-	ret |= impl_add(bmark, "rvv 32bit elements", 			(memcpy_fp_t)memcpy_rvv_32);
-	ret |= impl_add(bmark, "rvv 8bit elements (no grouping)",  	(memcpy_fp_t)memcpy_rvv_8_m1);
-	ret |= impl_add(bmark, "rvv 8bit elements (group two)",  	(memcpy_fp_t)memcpy_rvv_8_m2);
-	ret |= impl_add(bmark, "rvv 8bit elements (group four)",  	(memcpy_fp_t)memcpy_rvv_8_m4);
-	ret |= impl_add(bmark, "rvv 8bit elements (group eight)",  	(memcpy_fp_t)memcpy_rvv_8_m8);
+	ret |= impl_add(alg, "rvv 32bit elements", 			(memcpy_fp_t)memcpy_rvv_32);
+	ret |= impl_add(alg, "rvv 8bit elements (no grouping)",  	(memcpy_fp_t)memcpy_rvv_8_m1);
+	ret |= impl_add(alg, "rvv 8bit elements (group two)",  		(memcpy_fp_t)memcpy_rvv_8_m2);
+	ret |= impl_add(alg, "rvv 8bit elements (group four)",  	(memcpy_fp_t)memcpy_rvv_8_m4);
+	ret |= impl_add(alg, "rvv 8bit elements (group eight)",  	(memcpy_fp_t)memcpy_rvv_8_m8);
 #endif /* RVVBMARK_RVV_SUPPORT */
 
 	if (ret)
@@ -142,9 +142,9 @@ static int impls_add(bmark_t *bmark)
 }
 
 
-static int bmark_preexec(struct bmark *bmark, int seed)
+static int alg_preexec(struct alg *alg, int seed)
 {
-	struct data *d = (struct data*)bmark->data;
+	struct data *d = (struct data*)alg->data;
 	int ret = 0;
 
 	/* alloc */
@@ -174,9 +174,9 @@ __err_src:
 }
 
 
-static int bmark_postexec(struct bmark *bmark)
+static int alg_postexec(struct alg *alg)
 {
-	struct data *d = (struct data*)bmark->data;
+	struct data *d = (struct data*)alg->data;
 	if (d == NULL)
 		return 0;
 	free(d->src);
@@ -185,7 +185,7 @@ static int bmark_postexec(struct bmark *bmark)
 }
 
 
-int bmark_memcpy_add(bmarkset_t *bmarkset, unsigned int len)
+int alg_memcpy_add(algset_t *algset, unsigned int len)
 {
 	/*
 	 * fixup data len
@@ -201,28 +201,29 @@ int bmark_memcpy_add(bmarkset_t *bmarkset, unsigned int len)
 	char parastr[256] = "\0";
 	snprintf(parastr, 256, "len=%u", len);
 
-	/* create benchmark */
-	bmark_t *bmark = bmark_create(
-				 "memcpy",
-				 parastr,
-				 bmark_preexec,
-				 bmark_postexec,
-				 sizeof(struct data));
-	if (bmark == NULL)
+	/* create algorithm */
+	alg_t *alg = alg_create(
+			     "memcpy",
+			     parastr,
+			     alg_preexec,
+			     alg_postexec,
+			     sizeof(struct data));
+	if (alg == NULL)
 		return -1;
 
-	/* set private data and add implementations */
-	struct data *d = (struct data*)bmark->data;
+	/* set private data */
+	struct data *d = (struct data*)alg->data;
 	d->len = len;
 
-	if (impls_add(bmark) < 0) {
-		bmark_destroy(bmark);
+	/* add implementations */
+	if (impls_add(alg) < 0) {
+		alg_destroy(alg);
 		return -1;
 	}
 
-	/* add benchmark to set */
-	if (bmarkset_add_bmark(bmarkset, bmark) < 0) {
-		bmark_destroy(bmark);
+	/* add algorithm to set */
+	if (algset_add_alg(algset, alg) < 0) {
+		alg_destroy(alg);
 		return -1;
 	}
 

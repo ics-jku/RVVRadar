@@ -8,29 +8,29 @@
 #include <getopt.h>
 
 #include <core/rvv_helpers.h>
-#include <core/bmarkset.h>
+#include <core/algset.h>
 
-#include <bmarks/memcpy/bmark.h>
-#include <bmarks/mac_16_32_32/bmark.h>
-#include <bmarks/mac_8_16_32/bmark.h>
-#include <bmarks/png_filters/bmark.h>
+#include <algorithms/memcpy/alg.h>
+#include <algorithms/mac_16_32_32/alg.h>
+#include <algorithms/mac_8_16_32/alg.h>
+#include <algorithms/png_filters/alg.h>
 
 
-/* ids of benchmarks */
-#define BMARK_ID_MEMCPY			0
-#define BMARK_ID_MAC_16_32_32		1
-#define BMARK_ID_MAC_8_16_32		2
-#define BMARK_ID_PNG_FILTER_UP		3
-#define BMARK_ID_PNG_FILTER_SUB3	4
-#define BMARK_ID_PNG_FILTER_SUB4	5
-#define BMARK_ID_PNG_FILTER_AVG3	6
-#define BMARK_ID_PNG_FILTER_AVG4	7
-#define BMARK_ID_PNG_FILTER_PAETH3	8
-#define BMARK_ID_PNG_FILTER_PAETH4	9
+/* ids of algorithms */
+#define ALG_ID_MEMCPY			0
+#define ALG_ID_MAC_16_32_32		1
+#define ALG_ID_MAC_8_16_32		2
+#define ALG_ID_PNG_FILTER_UP		3
+#define ALG_ID_PNG_FILTER_SUB3		4
+#define ALG_ID_PNG_FILTER_SUB4		5
+#define ALG_ID_PNG_FILTER_AVG3		6
+#define ALG_ID_PNG_FILTER_AVG4		7
+#define ALG_ID_PNG_FILTER_PAETH3	8
+#define ALG_ID_PNG_FILTER_PAETH4	9
 
-/* bmark mask helpers */
-#define bmark_mask(id)			(1 << id)
-#define bmark_enabled(mask, id)		((mask) & bmark_mask(id))
+/* alg mask helpers */
+#define alg_mask(id)			(1 << id)
+#define alg_enabled(mask, id)		((mask) & alg_mask(id))
 
 /* default parameters */
 #define DEFAULT_QUIET			false
@@ -39,17 +39,17 @@
 #define DEFAULT_ITERATIONS		10000
 #define DEFAULT_LEN_START		32
 #define DEFAULT_LEN_END			1024 * 1024 * 16
-#define DEFAULT_BMARK_ENA_MASK	( \
-				  bmark_mask(BMARK_ID_MEMCPY)			| \
-				  bmark_mask(BMARK_ID_MAC_16_32_32)		| \
-				  bmark_mask(BMARK_ID_MAC_8_16_32)		| \
-				  bmark_mask(BMARK_ID_PNG_FILTER_UP)		| \
-				  bmark_mask(BMARK_ID_PNG_FILTER_SUB3)		| \
-				  bmark_mask(BMARK_ID_PNG_FILTER_SUB4)		| \
-				  bmark_mask(BMARK_ID_PNG_FILTER_AVG3)		| \
-				  bmark_mask(BMARK_ID_PNG_FILTER_AVG4)		| \
-				  bmark_mask(BMARK_ID_PNG_FILTER_PAETH3)	| \
-				  bmark_mask(BMARK_ID_PNG_FILTER_PAETH4))
+#define DEFAULT_ALG_ENA_MASK	( \
+				  alg_mask(ALG_ID_MEMCPY)		| \
+				  alg_mask(ALG_ID_MAC_16_32_32)		| \
+				  alg_mask(ALG_ID_MAC_8_16_32)		| \
+				  alg_mask(ALG_ID_PNG_FILTER_UP)	| \
+				  alg_mask(ALG_ID_PNG_FILTER_SUB3)	| \
+				  alg_mask(ALG_ID_PNG_FILTER_SUB4)	| \
+				  alg_mask(ALG_ID_PNG_FILTER_AVG3)	| \
+				  alg_mask(ALG_ID_PNG_FILTER_AVG4)	| \
+				  alg_mask(ALG_ID_PNG_FILTER_PAETH3)	| \
+				  alg_mask(ALG_ID_PNG_FILTER_PAETH4))
 
 
 void print_version(void)
@@ -93,34 +93,36 @@ void print_usage(const char *name)
 		"     (Default: %s)\n"
 		"\n"
 		"  [--randseed|-r <seed>]\n"
-		"     Set random seed for benchmarks.\n"
+		"     Set random seed for test data.\n"
 		"     (Default: %u)\n"
 		"\n"
 		"  [--verify|-v]\n"
-		"     Enable verification of results benchmark iteration.\n"
+		"     Enable verification of algorithm implementation results.\n"
 		"     Enable this, if you want to make sure, that calculations\n"
 		"     are correct (e.g. while development, functional tests, ...).\n"
-		"     Leave it disabled if you want to run benchmarks with as\n"
-		"     little interference (caches, ...) as possible.\n"
+		"     Leave it disabled if you want to execute with as little\n"
+		"     interference (caches, ...) as possible.\n"
 		"     (Default: %s)\n"
 		"\n"
 		"  [--iterations|-i <#iterations>]\n"
-		"     Number of iterations to run each (sub-)benchmark.\n"
+		"     Number of iterations to run each algorithm implementation.\n"
 		"     (Default: %u)\n"
 		"\n"
 		"  [--len_start|-s <#elements>]\n"
-		"     Number of elements to start (sub-)benchmarks with.\n"
+		"     Initial number of elements to run algorithm implementations\n"
+		"     with.\n"
 		"     (Will be doubled until len_end is reached).\n"
 		"     (Default: %u)\n"
 		"\n"
 		"  [--len_end|-e <#elements>]\n"
-		"     Number of elements to end benchmarks with.\n"
+		"     Final number of elements to run algorithm implementations\n"
+		"     with.\n"
 		"     (len_start will be doubled until len_end is reached).\n"
 		"     (Default: %u)\n"
 		"\n"
-		"  [--bmarks_enabled|-b <bmark_mask>]\n"
-		"     Bitmask of benchmarks to run (hexadecimal).\n"
-		"       bit             bmark\n"
+		"  [--algs_enabled|-a <algs_mask>]\n"
+		"     Bitmask of algorithms to run (hexadecimal).\n"
+		"       bit             algorithm\n"
 		"         0             memcpy\n"
 		"         1             mac_16_32_32\n"
 		"         2             mac_8_16_32\n"
@@ -146,7 +148,7 @@ void print_usage(const char *name)
 		DEFAULT_ITERATIONS,
 		DEFAULT_LEN_START,
 		DEFAULT_LEN_END,
-		DEFAULT_BMARK_ENA_MASK);
+		DEFAULT_ALG_ENA_MASK);
 }
 
 
@@ -162,7 +164,7 @@ int main(int argc, char **argv)
 	unsigned int iterations = DEFAULT_ITERATIONS;
 	unsigned int len_start = DEFAULT_LEN_START;
 	unsigned int len_end = DEFAULT_LEN_END;
-	unsigned int bmark_ena_mask = DEFAULT_BMARK_ENA_MASK;
+	unsigned int alg_ena_mask = DEFAULT_ALG_ENA_MASK;
 
 	/* parameter parsing */
 
@@ -174,12 +176,12 @@ int main(int argc, char **argv)
 		{"iterations",		required_argument,	0,	'i'	},
 		{"len_start",		required_argument,	0,	's'	},
 		{"len_end",		required_argument,	0,	'e'	},
-		{"bmarks_enabled",	required_argument,	0,	'b'	},
+		{"algs_enabled",	required_argument,	0,	'a'	},
 		{"help",		no_argument,		0,	'h'	},
 		{0,			0,			0,	0	}
 	};
 
-	while ((opt = getopt_long(argc, argv, "qr:vi:s:e:b:h",
+	while ((opt = getopt_long(argc, argv, "qr:vi:s:e:a:h",
 				  long_options, &long_index )) != -1) {
 		int ret = -1;
 		switch (opt) {
@@ -201,8 +203,8 @@ int main(int argc, char **argv)
 		case 'e':
 			len_end = atoi(optarg);
 			break;
-		case 'b':
-			sscanf(optarg, "%X", &bmark_ena_mask);
+		case 'a':
+			sscanf(optarg, "%X", &alg_ena_mask);
 			break;
 		case 'h':
 			ret = 0;
@@ -236,104 +238,104 @@ int main(int argc, char **argv)
 		fprintf(stderr, "   + iterations:     %u\n", iterations);
 		fprintf(stderr, "   + len_start:      %u\n", len_start);
 		fprintf(stderr, "   + len_end:        %u\n", len_end);
-		fprintf(stderr, "   + bmarks_enabled: 0x%X\n", bmark_ena_mask);
+		fprintf(stderr, "   + algs_enabled: 0x%X\n", alg_ena_mask);
 	}
 
-	/* buildup benchmarks */
+	/* build up set of algorithms */
 
-	bmarkset_t *bmarkset = bmarkset_create("rvvbmark");
-	if (bmarkset == NULL)
+	algset_t *algset = algset_create("rvvbmark");
+	if (algset == NULL)
 		return -1;
 
 	/* start with len_start and double len until len_end */
 	for (int len = len_start; len <= len_end; len <<= 1) {
 
-		if (bmark_enabled(bmark_ena_mask, BMARK_ID_MEMCPY))
-			if (bmark_memcpy_add(bmarkset, len) < 0) {
+		if (alg_enabled(alg_ena_mask, ALG_ID_MEMCPY))
+			if (alg_memcpy_add(algset, len) < 0) {
 				perror("Error adding memcpy");
 				ret = -1;
-				goto __ret_bmarkset_destroy;
+				goto __ret_algset_destroy;
 			}
 
-		if (bmark_enabled(bmark_ena_mask, BMARK_ID_MAC_16_32_32))
-			if (bmark_mac_16_32_32_add(bmarkset, len) < 0) {
+		if (alg_enabled(alg_ena_mask, ALG_ID_MAC_16_32_32))
+			if (alg_mac_16_32_32_add(algset, len) < 0) {
 				perror("Error adding mac_16_32_32");
 				ret = -1;
-				goto __ret_bmarkset_destroy;
+				goto __ret_algset_destroy;
 			}
 
-		if (bmark_enabled(bmark_ena_mask, BMARK_ID_MAC_8_16_32))
-			if (bmark_mac_8_16_32_add(bmarkset, len) < 0) {
+		if (alg_enabled(alg_ena_mask, ALG_ID_MAC_8_16_32))
+			if (alg_mac_8_16_32_add(algset, len) < 0) {
 				perror("Error adding mac_8_16_32");
 				ret = -1;
-				goto __ret_bmarkset_destroy;
+				goto __ret_algset_destroy;
 			}
 
-		if (bmark_enabled(bmark_ena_mask, BMARK_ID_PNG_FILTER_UP))
+		if (alg_enabled(alg_ena_mask, ALG_ID_PNG_FILTER_UP))
 			/* bpp is irrelevant */
-			if (bmark_png_filters_add(bmarkset, up, bpp4, len) < 0) {
+			if (alg_png_filters_add(algset, up, bpp4, len) < 0) {
 				perror("Error adding png_filter_up");
 				ret = -1;
-				goto __ret_bmarkset_destroy;
+				goto __ret_algset_destroy;
 			}
 
-		if (bmark_enabled(bmark_ena_mask, BMARK_ID_PNG_FILTER_SUB3))
-			if (bmark_png_filters_add(bmarkset, sub, bpp3, len) < 0) {
+		if (alg_enabled(alg_ena_mask, ALG_ID_PNG_FILTER_SUB3))
+			if (alg_png_filters_add(algset, sub, bpp3, len) < 0) {
 				perror("Error adding png_filter_sub3");
 				ret = -1;
-				goto __ret_bmarkset_destroy;
+				goto __ret_algset_destroy;
 			}
 
-		if (bmark_enabled(bmark_ena_mask, BMARK_ID_PNG_FILTER_SUB4))
-			if (bmark_png_filters_add(bmarkset, sub, bpp4, len) < 0) {
+		if (alg_enabled(alg_ena_mask, ALG_ID_PNG_FILTER_SUB4))
+			if (alg_png_filters_add(algset, sub, bpp4, len) < 0) {
 				perror("Error adding png_filter_sub4");
 				ret = -1;
-				goto __ret_bmarkset_destroy;
+				goto __ret_algset_destroy;
 			}
 
-		if (bmark_enabled(bmark_ena_mask, BMARK_ID_PNG_FILTER_AVG3))
-			if (bmark_png_filters_add(bmarkset, avg, bpp3, len) < 0) {
+		if (alg_enabled(alg_ena_mask, ALG_ID_PNG_FILTER_AVG3))
+			if (alg_png_filters_add(algset, avg, bpp3, len) < 0) {
 				perror("Error adding png_filter_avg3");
 				ret = -1;
-				goto __ret_bmarkset_destroy;
+				goto __ret_algset_destroy;
 			}
 
-		if (bmark_enabled(bmark_ena_mask, BMARK_ID_PNG_FILTER_AVG4))
-			if (bmark_png_filters_add(bmarkset, avg, bpp4, len) < 0) {
+		if (alg_enabled(alg_ena_mask, ALG_ID_PNG_FILTER_AVG4))
+			if (alg_png_filters_add(algset, avg, bpp4, len) < 0) {
 				perror("Error adding png_filter_avg4");
 				ret = -1;
-				goto __ret_bmarkset_destroy;
+				goto __ret_algset_destroy;
 			}
 
-		if (bmark_enabled(bmark_ena_mask, BMARK_ID_PNG_FILTER_PAETH3))
-			if (bmark_png_filters_add(bmarkset, paeth, bpp3, len) < 0) {
+		if (alg_enabled(alg_ena_mask, ALG_ID_PNG_FILTER_PAETH3))
+			if (alg_png_filters_add(algset, paeth, bpp3, len) < 0) {
 				perror("Error adding png_filter_paeth3");
 				ret = -1;
-				goto __ret_bmarkset_destroy;
+				goto __ret_algset_destroy;
 			}
 
-		if (bmark_enabled(bmark_ena_mask, BMARK_ID_PNG_FILTER_PAETH4))
-			if (bmark_png_filters_add(bmarkset, paeth, bpp4, len) < 0) {
+		if (alg_enabled(alg_ena_mask, ALG_ID_PNG_FILTER_PAETH4))
+			if (alg_png_filters_add(algset, paeth, bpp4, len) < 0) {
 				perror("Error adding png_filter_paeth4");
 				ret = -1;
-				goto __ret_bmarkset_destroy;
+				goto __ret_algset_destroy;
 			}
 	}
 
 	/* execution */
-	bmarkset_reset(bmarkset);
+	algset_reset(algset);
 
-	if (bmarkset_run(bmarkset, randseed, iterations, verify, !quiet) < 0) {
+	if (algset_run(algset, randseed, iterations, verify, !quiet) < 0) {
 		perror("Error on run");
 		ret = -1;
-		goto __ret_bmarkset_destroy;
+		goto __ret_algset_destroy;
 	}
 
 	ret = 0;
 
 	/* cleanup */
 
-__ret_bmarkset_destroy:
-	bmarkset_destroy(bmarkset);
+__ret_algset_destroy:
+	algset_destroy(algset);
 	exit(ret);
 }

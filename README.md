@@ -19,7 +19,7 @@ Supported RVV Drafts (autodetected by configure):
 
 ## Directory Structure
  * core .. rvvbmark framework
- * bmarks .. benchmarks (algorithms and implementations)
+ * algorithms .. algorithms and their implementations
 
 
 
