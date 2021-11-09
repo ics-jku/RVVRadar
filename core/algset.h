@@ -46,7 +46,7 @@ typedef struct impl {
 	unsigned int fails;			// number of failed runs
 	chrono_t chrono;			// chrono (including result statistics)
 
-	void *data;				// optional private data for the implementation
+	void *priv_data;			// optional private data for the implementation
 } impl_t;
 
 
@@ -70,7 +70,7 @@ typedef struct alg {
 	struct algset *algset;			// parent algorithm set
 	struct alg *next;			// next in algorithm list
 
-	void *data;				// optional privated data for the algorithm
+	void *priv_data;			// optional private data for the algorithm
 } alg_t;
 
 
@@ -82,6 +82,20 @@ typedef struct algset {
 	struct alg *algs_tail;
 	unsigned int algs_len;
 } algset_t;
+
+/* internal helper to get private data from given object
+ * and cast to given type
+ */
+#define _GET_PRIV_DATA(_type_, _objptr_)		((_type_)((_objptr_)->priv_data))
+
+/* helpers to get parent object */
+#define ALG_GET_ALGSET(_algptr_)			((_algptr_)->algset)
+#define IMPL_GET_ALG(_implptr_)				((_implptr_)->alg)
+
+/* helpers to get private data with given type from given object */
+#define ALG_GET_PRIV_DATA(_type_, _algptr_)		_GET_PRIV_DATA(_type_, _algptr_)
+#define IMPL_GET_PRIV_DATA(_type_, _implptr_)		_GET_PRIV_DATA(_type_, _implptr_)
+#define IMPL_GET_ALG_PRIV_DATA(_type_, _implptr_)	ALG_GET_PRIV_DATA(_type_, IMPL_GET_ALG(_implptr_))
 
 
 /*
@@ -99,7 +113,7 @@ alg_t *alg_create(
 	const char *parastr,
 	alg_preexec_fp_t preexec,
 	alg_postexec_fp_t postexec,
-	unsigned int data_len);
+	unsigned int priv_data_len);
 
 
 /*
@@ -123,7 +137,7 @@ impl_t *alg_add_impl(
 	impl_exec_fp_t exec,
 	impl_postexec_fp_t postexec,
 	impl_cleanup_fp_t cleanup,
-	unsigned int data_len);
+	unsigned int priv_data_len);
 
 
 /*

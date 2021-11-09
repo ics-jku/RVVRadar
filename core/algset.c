@@ -37,7 +37,7 @@ static impl_t *impl_create(
 	impl_exec_fp_t exec,
 	impl_postexec_fp_t postexec,
 	impl_cleanup_fp_t cleanup,
-	int data_len)
+	int priv_data_len)
 {
 	/* name must be given */
 	if (name == NULL || strlen(name) == 0) {
@@ -60,11 +60,11 @@ static impl_t *impl_create(
 	impl->postexec = postexec;
 	impl->cleanup = cleanup;
 
-	/* alloc optional data area */
-	if (data_len == 0)
+	/* alloc optional private data area */
+	if (priv_data_len == 0)
 		return impl;
-	impl->data = calloc(1, data_len);
-	if (impl->data == NULL) {
+	impl->priv_data = calloc(1, priv_data_len);
+	if (impl->priv_data == NULL) {
 		free(impl->name);
 		free(impl);
 		return NULL;
@@ -83,8 +83,8 @@ static void impl_destroy(impl_t *impl)
 
 	free(impl->name);
 
-	/* free optional data area */
-	free(impl->data);
+	/* free optional private data area */
+	free(impl->priv_data);
 
 	free(impl);
 }
@@ -308,7 +308,7 @@ alg_t *alg_create(
 	const char *parastr,
 	alg_preexec_fp_t preexec,
 	alg_postexec_fp_t postexec,
-	unsigned int data_len)
+	unsigned int priv_data_len)
 {
 	/* name must be given */
 	if (name == NULL || strlen(name) == 0) {
@@ -335,11 +335,11 @@ alg_t *alg_create(
 	alg->preexec = preexec;
 	alg->postexec = postexec;
 
-	/* alloc optional data area */
-	if (data_len == 0)
+	/* alloc optional private data area */
+	if (priv_data_len == 0)
 		return alg;
-	alg->data = calloc(1, data_len);
-	if (alg->data == NULL) {
+	alg->priv_data = calloc(1, priv_data_len);
+	if (alg->priv_data == NULL) {
 		free(alg->parastr);
 		free(alg->name);
 		free(alg);
@@ -364,8 +364,8 @@ void alg_destroy(alg_t *alg)
 	free(alg->name);
 	free(alg->parastr);
 
-	/* free optional data area */
-	free(alg->data);
+	/* free optional private data area */
+	free(alg->priv_data);
 
 	free(alg);
 }
@@ -379,12 +379,12 @@ impl_t *alg_add_impl(
 	impl_exec_fp_t exec,
 	impl_postexec_fp_t postexec,
 	impl_cleanup_fp_t cleanup,
-	unsigned int data_len)
+	unsigned int priv_data_len)
 {
 	impl_t *impl = impl_create(
 			       name,
 			       init, preexec, exec, postexec, cleanup,
-			       data_len);
+			       priv_data_len);
 	if (impl == NULL)
 		return NULL;
 

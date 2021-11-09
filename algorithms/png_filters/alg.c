@@ -45,7 +45,7 @@ static void diff_row(uint8_t *output, uint8_t *original, int len)
 
 static int impl_preexec(impl_t *impl, int iteration, bool verify)
 {
-	struct data *d = (struct data*)impl->alg->data;
+	struct data *d = IMPL_GET_ALG_PRIV_DATA(struct data*, impl);
 	/* restore row before execution */
 	memcpy(d->row, d->row_orig, d->len * sizeof(*d->row));
 	return 0;
@@ -54,8 +54,8 @@ static int impl_preexec(impl_t *impl, int iteration, bool verify)
 
 static int impl_exec_wrapper(impl_t *impl, bool verify)
 {
-	struct data *d = (struct data*)impl->alg->data;
-	struct impldata *sd = (struct impldata*)impl->data;
+	struct data *d = IMPL_GET_ALG_PRIV_DATA(struct data*, impl);
+	struct impldata *sd = IMPL_GET_PRIV_DATA(struct impldata*, impl);
 	sd->png_filters(d->bpp, d->len, d->row, d->prev_row);
 	return 0;
 }
@@ -67,7 +67,7 @@ static int impl_postexec(impl_t *impl, bool verify)
 	if (!verify)
 		return 0;
 
-	struct data *d = (struct data*)impl->alg->data;
+	struct data *d = IMPL_GET_ALG_PRIV_DATA(struct data*, impl);
 
 	/* use memcpy for speed -> use diff only if error was detected */
 	int ret = memcmp(d->row, d->row_compare, d->len * sizeof(*d->row));
@@ -98,7 +98,7 @@ static int impl_add(
 	if (impl == NULL)
 		return -1;
 
-	struct impldata *sd = (struct impldata*)impl->data;
+	struct impldata *sd = IMPL_GET_PRIV_DATA(struct impldata*, impl);
 	sd->png_filters = png_filters;
 
 	return 0;
@@ -222,7 +222,7 @@ static int impls_add_paeth(alg_t *alg)
 
 static int alg_preexec(struct alg *alg, int seed)
 {
-	struct data *d = (struct data*)alg->data;
+	struct data *d = ALG_GET_PRIV_DATA(struct data*, alg);
 
 	/* alloc */
 	d->prev_row = malloc(d->len * sizeof(*d->prev_row));
@@ -281,13 +281,13 @@ __err_alloc_prev_row:
 
 static int alg_postexec(struct alg *alg)
 {
-	struct data *d = (struct data*)alg->data;
-	if (d == NULL)
-		return 0;
+	struct data *d = ALG_GET_PRIV_DATA(struct data*, alg);
+
 	free(d->prev_row);
 	free(d->row_orig);
 	free(d->row);
 	free(d->row_compare);
+
 	return 0;
 }
 
@@ -352,7 +352,7 @@ int alg_png_filters_add(
 		return -1;
 
 	/* set private data */
-	struct data *d = (struct data*)alg->data;
+	struct data *d = ALG_GET_PRIV_DATA(struct data*, alg);
 	d->filter = filter;
 	d->len = len;
 	d->bpp = bppval;

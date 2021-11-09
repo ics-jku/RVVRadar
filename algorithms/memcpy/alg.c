@@ -43,7 +43,7 @@ static int impl_preexec(impl_t *impl, int iteration, bool verify)
 	if (!verify)
 		return 0;
 
-	struct data *d = (struct data*)impl->alg->data;
+	struct data *d = IMPL_GET_ALG_PRIV_DATA(struct data*, impl);
 	/* reset dest array before execution */
 	memset(d->dest, 0, d->len);
 	return 0;
@@ -52,8 +52,8 @@ static int impl_preexec(impl_t *impl, int iteration, bool verify)
 
 static int impl_exec_wrapper(impl_t *impl, bool verify)
 {
-	struct data *d = (struct data*)impl->alg->data;
-	struct impldata *sd = (struct impldata*)impl->data;
+	struct data *d = IMPL_GET_ALG_PRIV_DATA(struct data*, impl);
+	struct impldata *sd = IMPL_GET_PRIV_DATA(struct impldata*, impl);
 	sd->memcpy(d->dest, d->src, d->len);
 	return 0;
 }
@@ -65,7 +65,7 @@ static int impl_postexec(impl_t *impl, bool verify)
 	if (!verify)
 		return 0;
 
-	struct data *d = (struct data*)impl->alg->data;
+	struct data *d = IMPL_GET_ALG_PRIV_DATA(struct data*, impl);
 
 	/* use memcpy for speed -> use diff only if error was detected */
 	int ret = memcmp(d->dest, d->src, d->len);
@@ -96,7 +96,7 @@ static int impl_add(
 	if (impl == NULL)
 		return -1;
 
-	struct impldata *sd = (struct impldata*)impl->data;
+	struct impldata *sd = IMPL_GET_PRIV_DATA(struct impldata*, impl);
 	sd->memcpy = memcpy;
 
 	return 0;
@@ -144,7 +144,7 @@ static int impls_add(alg_t *alg)
 
 static int alg_preexec(struct alg *alg, int seed)
 {
-	struct data *d = (struct data*)alg->data;
+	struct data *d = ALG_GET_PRIV_DATA(struct data*, alg);
 	int ret = 0;
 
 	/* alloc */
@@ -176,11 +176,11 @@ __err_src:
 
 static int alg_postexec(struct alg *alg)
 {
-	struct data *d = (struct data*)alg->data;
-	if (d == NULL)
-		return 0;
+	struct data *d = ALG_GET_PRIV_DATA(struct data*, alg);
+
 	free(d->src);
 	free(d->dest);
+
 	return 0;
 }
 
@@ -212,7 +212,7 @@ int alg_memcpy_add(algset_t *algset, unsigned int len)
 		return -1;
 
 	/* set private data */
-	struct data *d = (struct data*)alg->data;
+	struct data *d = ALG_GET_PRIV_DATA(struct data*, alg);
 	d->len = len;
 
 	/* add implementations */

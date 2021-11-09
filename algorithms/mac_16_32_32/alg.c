@@ -42,7 +42,7 @@ static void diff_fields(int32_t *dest, int32_t *src, int len)
 
 static int impl_preexec(impl_t *impl, int iteration, bool verify)
 {
-	struct data *d = (struct data*)impl->alg->data;
+	struct data *d = IMPL_GET_ALG_PRIV_DATA(struct data*, impl);
 	/* init add_res with add before execution */
 	memcpy(d->add_res, d->add, d->len * sizeof(*d->add));
 
@@ -52,8 +52,8 @@ static int impl_preexec(impl_t *impl, int iteration, bool verify)
 
 static int impl_exec_wrapper(impl_t *impl, bool verify)
 {
-	struct data *d = (struct data*)impl->alg->data;
-	struct impldata *sd = (struct impldata*)impl->data;
+	struct data *d = IMPL_GET_ALG_PRIV_DATA(struct data*, impl);
+	struct impldata *sd = IMPL_GET_PRIV_DATA(struct impldata*, impl);
 	sd->mac_16_32_32(d->add_res, d->mul1, d->mul2, d->len);
 	return 0;
 }
@@ -65,7 +65,7 @@ static int impl_postexec(impl_t *impl, bool verify)
 	if (!verify)
 		return 0;
 
-	struct data *d = (struct data*)impl->alg->data;
+	struct data *d = IMPL_GET_ALG_PRIV_DATA(struct data*, impl);
 
 	/* use mac for speed -> use diff only if error was detected */
 	int ret = memcmp(d->add_res, d->compare, d->len * sizeof(*d->add_res));
@@ -96,7 +96,7 @@ static int impl_add(
 	if (impl == NULL)
 		return -1;
 
-	struct impldata *sd = (struct impldata*)impl->data;
+	struct impldata *sd = IMPL_GET_PRIV_DATA(struct impldata*, impl);
 	sd->mac_16_32_32 = mac_16_32_32;
 
 	return 0;
@@ -142,7 +142,7 @@ static int impls_add(alg_t *alg)
 
 static int alg_preexec(struct alg *alg, int seed)
 {
-	struct data *d = (struct data*)alg->data;
+	struct data *d = ALG_GET_PRIV_DATA(struct data*, alg);
 
 	/* alloc */
 	d->mul1 = malloc(d->len * sizeof(*d->mul1));
@@ -191,9 +191,7 @@ __err_mul1:
 
 static int alg_postexec(struct alg *alg)
 {
-	struct data *d = (struct data*)alg->data;
-	if (d == NULL)
-		return 0;
+	struct data *d = ALG_GET_PRIV_DATA(struct data*, alg);
 
 	free(d->mul1);
 	free(d->mul2);
@@ -222,7 +220,7 @@ int alg_mac_16_32_32_add(algset_t *algset, unsigned int len)
 		return -1;
 
 	/* set private data */
-	struct data *d = (struct data*)alg->data;
+	struct data *d = ALG_GET_PRIV_DATA(struct data*, alg);
 	d->len = len;
 
 	/* add implementations */
