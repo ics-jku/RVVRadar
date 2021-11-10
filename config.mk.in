@@ -2,10 +2,6 @@
 #
 # SPDX-License-Identifier: GPL-3.0-only
 
-# version
-RVVRADAR_VERSION="0"
-RVVRADAR_SUBVERSION="8"
-
 # Does toolchain support RISC-V
 RVVRADAR_RV_SUPPORT=@RVVRADAR_RV_SUPPORT@
 

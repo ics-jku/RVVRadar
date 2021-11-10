@@ -2,6 +2,11 @@
 #
 # SPDX-License-Identifier: GPL-3.0-only
 
+# version
+BIN_NAME=RVVRadar
+RVVRADAR_VERSION="0"
+RVVRADAR_SUBVERSION="8"
+
 ifeq (,$(wildcard config.mk))
     $(error Not configured yet -> call configure / see README.md)
 endif
@@ -9,7 +14,6 @@ include config.mk
 
 debug?=0
 
-BIN_NAME=RVVRadar
 COREDIR=core
 ALGDIR=algorithms
 ASTYLE_ARGS=--options=none --suffix=none --quiet \
@@ -74,25 +78,25 @@ create_obj_dir:
 		@for o in $(OBJS) ; do mkdir -p `dirname $${o}` ; done
 
 # generic rule
-$(OBJDIR)/%.o: %.c $(HEADERS) config.mk | create_obj_dir
+$(OBJDIR)/%.o: %.c $(HEADERS) Makefile config.mk | create_obj_dir
 		$(CC) $(CFLAGS) -c $< -o $@
 
 # generic rule for disabled autovectorization
 # verbose info of vectorization is print on compilation (there should be no output!)
-$(OBJDIR)/%_c_noavect.o: %_c.c.in $(HEADERS) config.mk | create_obj_dir
+$(OBJDIR)/%_c_noavect.o: %_c.c.in $(HEADERS) Makefile config.mk | create_obj_dir
 		@echo "BUILD $< WITHOUT VECTORIZATION"
 		sed $< -e s/@OPTIMIZATION@/noavect/g | $(CC) $(CFLAGS) -O3 -fno-tree-vectorize -c -o $@ -xc -
 
 # generic rule for enabled autovectorization
 # -O3 enables autovectorization (-ftree-vectorize) on x86(debian 10) and risc-v (risc-v foundation toolchain)
 # verbose info of vectorization is print on compilation
-$(OBJDIR)/%_c_avect.o: %_c.c.in $(HEADERS) config.mk | create_obj_dir
+$(OBJDIR)/%_c_avect.o: %_c.c.in $(HEADERS) Makefile config.mk | create_obj_dir
 		@echo "BUILD $< WITH VECTORIZER"
 		sed $< -e s/@OPTIMIZATION@/avect/g | $(CC) $(CFLAGS) -O3 -ftree-vectorize -c -o $@ -xc -
 
 
 
-$(BIN_NAME): $(OBJS) $(HEADERS) config.mk
+$(BIN_NAME): $(OBJS) $(HEADERS) Makefile config.mk
 		$(CC) $(OBJS) $(CFLAGS) $(LDFLAGS) $(LIBS) -o $@
 
 check:
