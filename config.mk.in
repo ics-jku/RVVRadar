@@ -3,22 +3,22 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 # version
-RVVBMARK_VERSION="1"
-RVVBMARK_SUBVERSION="3"
+RVVRADAR_VERSION="0"
+RVVRADAR_SUBVERSION="8"
 
 # Does toolchain support RISC-V
-RVVBMARK_RV_SUPPORT=@RVVBMARK_RV_SUPPORT@
+RVVRADAR_RV_SUPPORT=@RVVRADAR_RV_SUPPORT@
 
 # Does toolchain support RISC-V vector extension (RVV)
 # 0 .. no
 # 1 .. rvv v0.7/v0.8
 # 2 .. rvv v0.9/v0.10/v1.0
 # (can be built for non-rvv when set to zero)
-RVVBMARK_RVV_SUPPORT=@RVVBMARK_RVV_SUPPORT@
+RVVRADAR_RVV_SUPPORT=@RVVRADAR_RVV_SUPPORT@
 
 # extra flags
 # (mainly used to add -march + vector -> see configure)
-RVVBMARK_EXTRA_CFLAGS=@RVVBMARK_EXTRA_CFLAGS@
+RVVRADAR_EXTRA_CFLAGS=@RVVRADAR_EXTRA_CFLAGS@
 
 # install prefix
-RVVBMARK_INSTALL_PREFIX=@RVVBMARK_INSTALL_PREFIX@
+RVVRADAR_INSTALL_PREFIX=@RVVRADAR_INSTALL_PREFIX@

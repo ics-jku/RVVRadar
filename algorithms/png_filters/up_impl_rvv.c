@@ -9,7 +9,7 @@
 #include <core/rvv_helpers.h>
 
 
-#if RVVBMARK_RVV_SUPPORT
+#if RVVRADAR_RVV_SUPPORT
 
 /*
  * add two vectors and save result back
@@ -151,4 +151,4 @@ void png_filters_up_rvv_m8(unsigned int bpp, unsigned int rowbytes, uint8_t *row
 	}
 }
 
-#endif /* RVVBMARK_RVV_SUPPORT */
+#endif /* RVVRADAR_RVV_SUPPORT */

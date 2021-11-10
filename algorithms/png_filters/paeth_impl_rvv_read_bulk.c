@@ -10,7 +10,7 @@
 #include <core/rvv_helpers.h>
 
 
-#if RVVBMARK_RVV_SUPPORT
+#if RVVRADAR_RVV_SUPPORT
 
 /*
  * read as much as possible in e8/m1
@@ -163,4 +163,4 @@ void png_filters_paeth_rvv_read_bulk(unsigned int bpp, unsigned int rowbytes, ui
 	}
 }
 
-#endif /* RVVBMARK_RVV_SUPPORT */
+#endif /* RVVRADAR_RVV_SUPPORT */

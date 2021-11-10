@@ -9,7 +9,7 @@
 #include <core/rvv_helpers.h>
 
 
-#if RVVBMARK_RVV_SUPPORT
+#if RVVRADAR_RVV_SUPPORT
 
 /* use e8 elements; no grouping */
 void memcpy_rvv_8_m1(uint8_t *dest, uint8_t *src, unsigned int len)
@@ -122,4 +122,4 @@ void memcpy_rvv_32(uint8_t *dest, uint8_t *src, unsigned int len)
 	}
 }
 
-#endif /* RVVBMARK_RVV_SUPPORT */
+#endif /* RVVRADAR_RVV_SUPPORT */

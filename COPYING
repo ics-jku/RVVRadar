@@ -3,6 +3,6 @@ Algorithm implementations (e.g. algorithms/*/impl*) are licensed under MIT (see 
 
 Rule of Thumb:
  * Consider the whole tool as licensed under GPLv3
- * Reuse of algorithm implementations can be done under the MIT license
+ * Reuse of algorithm implementations can be done under the terms of the MIT license
 
 If in doubt check the SPDX header in source files.

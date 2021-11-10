@@ -106,34 +106,34 @@ static int impl_add(
 
 extern void memcpy_c_byte_avect(char *dest, char *src, unsigned int len);
 extern void memcpy_c_byte_noavect(char *dest, char *src, unsigned int len);
-#if RVVBMARK_RV_SUPPORT
+#if RVVRADAR_RV_SUPPORT
 extern void memcpy_rv_wlenx4(void *dest, void *src, unsigned int len);
-#if RVVBMARK_RVV_SUPPORT
+#if RVVRADAR_RVV_SUPPORT
 extern void memcpy_rvv_8_m1(void *dest, void *src, unsigned int len);
 extern void memcpy_rvv_8_m2(void *dest, void *src, unsigned int len);
 extern void memcpy_rvv_8_m4(void *dest, void *src, unsigned int len);
 extern void memcpy_rvv_8_m8(void *dest, void *src, unsigned int len);
 extern void memcpy_rvv_32(void *dest, void *src, unsigned int len);
-#endif /* RVVBMARK_RVV_SUPPORT */
-#endif /* RVVBMARK_RV_SUPPORT */
+#endif /* RVVRADAR_RVV_SUPPORT */
+#endif /* RVVRADAR_RV_SUPPORT */
 
 static int impls_add(alg_t *alg)
 {
 	int ret = 0;
 
 	ret |= impl_add(alg, "c byte noavect",	 			(memcpy_fp_t)memcpy_c_byte_noavect);
-#if RVVBMARK_RV_SUPPORT
+#if RVVRADAR_RV_SUPPORT
 	ret |= impl_add(alg, "4 int regs",	 			(memcpy_fp_t)memcpy_rv_wlenx4);
-#endif /* RVVBMARK_RV_SUPPORT */
+#endif /* RVVRADAR_RV_SUPPORT */
 	ret |= impl_add(alg, "c byte avect",	 			(memcpy_fp_t)memcpy_c_byte_avect);
 	ret |= impl_add(alg, "system",		 			(memcpy_fp_t)memcpy);
-#if RVVBMARK_RVV_SUPPORT
+#if RVVRADAR_RVV_SUPPORT
 	ret |= impl_add(alg, "rvv 32bit elements", 			(memcpy_fp_t)memcpy_rvv_32);
 	ret |= impl_add(alg, "rvv 8bit elements (no grouping)",  	(memcpy_fp_t)memcpy_rvv_8_m1);
 	ret |= impl_add(alg, "rvv 8bit elements (group two)",  		(memcpy_fp_t)memcpy_rvv_8_m2);
 	ret |= impl_add(alg, "rvv 8bit elements (group four)",  	(memcpy_fp_t)memcpy_rvv_8_m4);
 	ret |= impl_add(alg, "rvv 8bit elements (group eight)",  	(memcpy_fp_t)memcpy_rvv_8_m8);
-#endif /* RVVBMARK_RVV_SUPPORT */
+#endif /* RVVRADAR_RVV_SUPPORT */
 
 	if (ret)
 		return -1;

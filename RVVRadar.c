@@ -58,24 +58,24 @@ void print_version(void)
 {
 	fprintf(stderr,
 		"%s (C) 2021 Manfred Schlaegl <manfred.schlaegl@gmx.at>\n",
-		RVVBMARK_VERSION_STR);
+		RVVRADAR_VERSION_STR);
 
 	fprintf(stderr, "RISC-V support is ");
-#if RVVBMARK_RV_SUPPORT
+#if RVVRADAR_RV_SUPPORT
 	fprintf(stderr, "enabled\n");
 
 	fprintf(stderr, "RISC-V RVV support is ");
-#if RVVBMARK_RVV_SUPPORT == RVVBMARK_RVV_SUPPORT_NO
+#if RVVRADAR_RVV_SUPPORT == RVVRADAR_RVV_SUPPORT_NO
 	fprintf(stderr, "disabled\n");
-#elif RVVBMARK_RVV_SUPPORT == RVVBMARK_RVV_SUPPORT_VER_07_08
+#elif RVVRADAR_RVV_SUPPORT == RVVRADAR_RVV_SUPPORT_VER_07_08
 	fprintf(stderr, "enabled (v0.7/v0.8)\n");
-#elif RVVBMARK_RVV_SUPPORT == RVVBMARK_RVV_SUPPORT_VER_09_10_100
+#elif RVVRADAR_RVV_SUPPORT == RVVRADAR_RVV_SUPPORT_VER_09_10_100
 	fprintf(stderr, "enabled (v0.9/v0.10/v1.0)\n");
-#endif /* RVVBMARK_RVV_SUPPORT */
+#endif /* RVVRADAR_RVV_SUPPORT */
 
-#else /* RVVBMARK_RV_SUPPORT */
+#else /* RVVRADAR_RV_SUPPORT */
 	fprintf(stderr, "disabled\n");
-#endif /* RVVBMARK_RV_SUPPORT */
+#endif /* RVVRADAR_RV_SUPPORT */
 }
 
 
@@ -246,7 +246,7 @@ int main(int argc, char **argv)
 
 	/* build up set of algorithms */
 
-	algset_t *algset = algset_create("rvvbmark");
+	algset_t *algset = algset_create("RVVRadar");
 	if (algset == NULL)
 		return -1;
 

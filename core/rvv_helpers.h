@@ -7,15 +7,15 @@
 #ifndef RVV_HELPERS_H
 #define RVV_HELPERS_H
 
-/* values for RVVBMARK_RVV_SUPPORT */
-#define RVVBMARK_RVV_SUPPORT_NO			0
-#define RVVBMARK_RVV_SUPPORT_VER_07_08		1
-#define RVVBMARK_RVV_SUPPORT_VER_09_10_100	2
+/* values for RVVRADAR_RVV_SUPPORT */
+#define RVVRADAR_RVV_SUPPORT_NO			0
+#define RVVRADAR_RVV_SUPPORT_VER_07_08		1
+#define RVVRADAR_RVV_SUPPORT_VER_09_10_100	2
 
 /* build time replacement of mnemonics */
-#if RVVBMARK_RV_SUPPORT
+#if RVVRADAR_RV_SUPPORT
 
-#if RVVBMARK_RVV_SUPPORT == RVVBMARK_RVV_SUPPORT_VER_07_08
+#if RVVRADAR_RVV_SUPPORT == RVVRADAR_RVV_SUPPORT_VER_07_08
 #define VLE8_V		"vlbu.v"
 #define VLE16_V		"vlhu.v"
 #define VLE32_V		"vlwu.v"
@@ -24,7 +24,7 @@
 #define VSE32_V		"vsw.v"
 #define VNSRL_WI	"vnsrl.vi"
 
-#elif RVVBMARK_RVV_SUPPORT == RVVBMARK_RVV_SUPPORT_VER_09_10_100
+#elif RVVRADAR_RVV_SUPPORT == RVVRADAR_RVV_SUPPORT_VER_09_10_100
 #define VLE8_V		"vle8.v"
 #define VLE16_V		"vle16.v"
 #define VLE32_V		"vle32.v"
@@ -34,9 +34,9 @@
 #define VNSRL_WI	"vnsrl.wi"
 
 #else
-#error "unsupported RVV version -- check RVVBMARK_RVV_SUPPORT!"
+#error "unsupported RVV version -- check RVVRADAR_RVV_SUPPORT!"
 
-#endif /* RVVBMARK_RVV_SUPPORT */
-#endif /* RVVBMARK_RV_SUPPORT */
+#endif /* RVVRADAR_RVV_SUPPORT */
+#endif /* RVVRADAR_RV_SUPPORT */
 
 #endif /* RVV_HELPERS_H */

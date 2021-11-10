@@ -4,17 +4,17 @@
 #
 # SPDX-License-Identifier: GPL-3.0-only
 
-# possible values for RVVBMARK_RVV_SUPPORT
-RVVBMARK_RVV_SUPPORT_NO=0
-RVVBMARK_RVV_SUPPORT_VER_07_08=1
-RVVBMARK_RVV_SUPPORT_VER_09_10_100=2
+# possible values for RVVRADAR_RVV_SUPPORT
+RVVRADAR_RVV_SUPPORT_NO=0
+RVVRADAR_RVV_SUPPORT_VER_07_08=1
+RVVRADAR_RVV_SUPPORT_VER_09_10_100=2
 
 # initial values
-RVVBMARK_INSTALL_PREFIX="/usr/local"
-RVVBMARK_RV_SUPPORT=0
-RVVBMARK_RVV_SUPPORT=$RVVBMARK_RVV_SUPPORT_NO
-RVVBMARK_EXTRA_ASFLAGS=""
-RVVBMARK_EXTRA_CFLAGS=""
+RVVRADAR_INSTALL_PREFIX="/usr/local"
+RVVRADAR_RV_SUPPORT=0
+RVVRADAR_RVV_SUPPORT=$RVVRADAR_RVV_SUPPORT_NO
+RVVRADAR_EXTRA_ASFLAGS=""
+RVVRADAR_EXTRA_CFLAGS=""
 
 # directories
 COREDIR=core
@@ -27,7 +27,7 @@ ALGDIR=algorithms
 usage()
 {
   cat <<_ACEOF
-\`configure' configures rvvbmark to adapt to many kinds of systems.
+\`configure' configures RVVRadar to adapt to many types of systems.
 
 Usage: $0 [OPTION]...
 
@@ -38,7 +38,7 @@ Configuration:
 
 Installation directories:
   --prefix=PREFIX         install files in PREFIX
-                          [$RVVBMARK_INSTALL_PREFIX]
+                          [$RVVRADAR_INSTALL_PREFIX]
 
 _ACEOF
 }
@@ -65,7 +65,7 @@ while [[ $# -gt 0 ]]
 do
 	case "$1" in
 	--prefix)
-		RVVBMARK_INSTALL_PREFIX="$2"
+		RVVRADAR_INSTALL_PREFIX="$2"
 		shift
 		;;
 	-h|--help)
@@ -86,8 +86,8 @@ do
 done
 
 
-echo -en "Check install prefix \"$RVVBMARK_INSTALL_PREFIX\" .. "
-if ! [[ -d $RVVBMARK_INSTALL_PREFIX ]] ; then
+echo -en "Check install prefix \"$RVVRADAR_INSTALL_PREFIX\" .. "
+if ! [[ -d $RVVRADAR_INSTALL_PREFIX ]] ; then
 	echo "does not exist"
 	exit 1
 else
@@ -96,8 +96,8 @@ fi
 
 echo -en "Check toolchain RISC-V support .. "
 if ! $CC				\
-	-DRVVBMARK_RV_SUPPORT=1		\
-	-DRVVBMARK_RVV_SUPPORT=0	\
+	-DRVVRADAR_RV_SUPPORT=1		\
+	-DRVVRADAR_RVV_SUPPORT=0	\
 	-c ${ALGDIR}/memcpy/impl_rv.c	\
 	-o /dev/null > /dev/null 2>&1 ;
 then
@@ -105,7 +105,7 @@ then
 
 else
 	echo "yes"
-	RVVBMARK_RV_SUPPORT=1
+	RVVRADAR_RV_SUPPORT=1
 
 	echo -en "Check toolchain RISC-V vector support .. "
 	march=$(getflag march)
@@ -117,22 +117,22 @@ else
 		march_tmp=$march
 		[[ $march != rv*v* ]] && march_tmp+=v
 
-		RVVBMARK_RVV_SUPPORT=$RVVBMARK_RVV_SUPPORT_NO
-		for rvv_support in $RVVBMARK_RVV_SUPPORT_VER_07_08 $RVVBMARK_RVV_SUPPORT_VER_09_10_100 ; do
+		RVVRADAR_RVV_SUPPORT=$RVVRADAR_RVV_SUPPORT_NO
+		for rvv_support in $RVVRADAR_RVV_SUPPORT_VER_07_08 $RVVRADAR_RVV_SUPPORT_VER_09_10_100 ; do
 			if $CC								\
 				-I.							\
 				-march=$march_tmp					\
-				-DRVVBMARK_RV_SUPPORT=1					\
-				-DRVVBMARK_RVV_SUPPORT=$rvv_support			\
+				-DRVVRADAR_RV_SUPPORT=1					\
+				-DRVVRADAR_RVV_SUPPORT=$rvv_support			\
 				-c ${ALGDIR}/memcpy/impl_rvv.c				\
 				-o /dev/null > /dev/null 2>&1 ;
 			then
-				RVVBMARK_RVV_SUPPORT=$rvv_support
+				RVVRADAR_RVV_SUPPORT=$rvv_support
 			fi
 		done
 
-		if [[ $RVVBMARK_RVV_SUPPORT != $RVVBMARK_RVV_SUPPORT_NO ]] ; then
-			if [[ $RVVBMARK_RVV_SUPPORT == $RVVBMARK_RVV_SUPPORT_VER_07_08 ]] ; then
+		if [[ $RVVRADAR_RVV_SUPPORT != $RVVRADAR_RVV_SUPPORT_NO ]] ; then
+			if [[ $RVVRADAR_RVV_SUPPORT == $RVVRADAR_RVV_SUPPORT_VER_07_08 ]] ; then
 				echo "yes (rvv v0.7/v0.8)"
 			else
 				echo "yes (rvv v0.9/v0.10/v1.0) -- UNTESTED!"
@@ -142,7 +142,7 @@ else
 			echo -en "Check if 'v' needs to be added to march .. "
 			if [[ $march != $march_tmp ]] ; then
 				echo "yes (-march=($march_tmp))"
-				RVVBMARK_EXTRA_CFLAGS+="-march=$march_tmp"
+				RVVRADAR_EXTRA_CFLAGS+="-march=$march_tmp"
 			else
 				echo "no"
 			fi
@@ -156,10 +156,10 @@ fi
 
 
 sed config.mk.in							\
-	-e s#\@RVVBMARK_RV_SUPPORT\@#$RVVBMARK_RV_SUPPORT#g		\
-	-e s#\@RVVBMARK_RVV_SUPPORT\@#$RVVBMARK_RVV_SUPPORT#g		\
-	-e s#\@RVVBMARK_INSTALL_PREFIX\@#$RVVBMARK_INSTALL_PREFIX#g	\
-	-e s#\@RVVBMARK_EXTRA_CFLAGS\@#$RVVBMARK_EXTRA_CFLAGS#g		\
+	-e s#\@RVVRADAR_RV_SUPPORT\@#$RVVRADAR_RV_SUPPORT#g		\
+	-e s#\@RVVRADAR_RVV_SUPPORT\@#$RVVRADAR_RVV_SUPPORT#g		\
+	-e s#\@RVVRADAR_INSTALL_PREFIX\@#$RVVRADAR_INSTALL_PREFIX#g	\
+	-e s#\@RVVRADAR_EXTRA_CFLAGS\@#$RVVRADAR_EXTRA_CFLAGS#g		\
 	> config.mk
 
 echo "done."

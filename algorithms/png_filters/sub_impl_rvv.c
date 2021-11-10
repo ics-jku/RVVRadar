@@ -9,7 +9,7 @@
 #include <core/rvv_helpers.h>
 
 
-#if RVVBMARK_RVV_SUPPORT
+#if RVVRADAR_RVV_SUPPORT
 
 /*
  * sub neighbors in vectors and save result back
@@ -95,4 +95,4 @@ void png_filters_sub_rvv_reuse(unsigned int bpp, unsigned int rowbytes, uint8_t 
 	}
 }
 
-#endif /* RVVBMARK_RVV_SUPPORT */
+#endif /* RVVRADAR_RVV_SUPPORT */

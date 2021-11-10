@@ -1,11 +1,12 @@
-# RVVBMARK
+# RVVRadar
 
-Benchmark tool for RISC-V vector extension (RVV)
+Framework to support the development of optimized algorithm implementations
+for the RISC-V vector extension (RVV).
 (C) 2021 Manfred Schlaegl <manfred.schlaegl@gmx.at>
 
-rvvbmark is mainly released under the terms of the GNU General Public License
-version 3.0. To simplify the reuse of algorithm implementations, these
-implementations are licensed under permissive MIT.
+RVVRadar is mainly released under the terms of the GNU General Public License
+version 3.0. To facilitate reuse of algorithm implementations, these
+implementations are licensed under the terms of the MIT permissive license.
 See the file COPYING for details.
 
 Supported RVV Drafts (autodetected by configure):
@@ -18,7 +19,7 @@ Supported RVV Drafts (autodetected by configure):
 
 
 ## Directory Structure
- * core .. rvvbmark framework
+ * core .. RVVRadar framework
  * algorithms .. algorithms and their implementations
 
 
@@ -73,9 +74,9 @@ Configure build and install to /usr/local/bin
 > make install
 > ```
 
-Configure, build and install to /opt/rvvbmark/bin
+Configure, build and install to /opt/rvvradar/bin
 > ```
-> ./configure --prefix=opt/rvvbmark install
+> ./configure --prefix=/opt/rvvradar install
 > make install
 > ```
 

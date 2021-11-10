@@ -9,7 +9,7 @@
 #include <core/rvv_helpers.h>
 
 
-#if RVVBMARK_RVV_SUPPORT
+#if RVVRADAR_RVV_SUPPORT
 
 /*
  * read, process and save single pixels using e8/m1
@@ -140,4 +140,4 @@ void png_filters_paeth_rvv(unsigned int bpp, unsigned int rowbytes, uint8_t *row
 	}
 }
 
-#endif /* RVVBMARK_RVV_SUPPORT */
+#endif /* RVVRADAR_RVV_SUPPORT */

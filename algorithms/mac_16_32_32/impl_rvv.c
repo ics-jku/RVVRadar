@@ -9,9 +9,9 @@
 #include <core/rvv_helpers.h>
 
 
-#if RVVBMARK_RVV_SUPPORT
+#if RVVRADAR_RVV_SUPPORT
 
-#if RVVBMARK_RVV_SUPPORT == RVVBMARK_RVV_SUPPORT_VER_07_08
+#if RVVRADAR_RVV_SUPPORT == RVVRADAR_RVV_SUPPORT_VER_07_08
 /*
  * These implementation only makes sense for rvv v0.7 and v0.8
  * In newer specs, there are no signed loads. Instead a unsigned load
@@ -51,7 +51,7 @@ void mac_16_32_32_rvv_e32(int32_t *add_res, int16_t *mul1, int16_t *mul2, unsign
 	}
 }
 
-#endif /* RVVBMARK_RVV_SUPPORT_VER_07_08 */
+#endif /* RVVRADAR_RVV_SUPPORT_VER_07_08 */
 
 
 /* using e16 and widen to e32 on MAC */
@@ -102,4 +102,4 @@ void mac_16_32_32_rvv_e16_widening(int32_t *add_res, int16_t *mul1, int16_t *mul
 	}
 }
 
-#endif /* RVVBMARK_RVV_SUPPORT */
+#endif /* RVVRADAR_RVV_SUPPORT */

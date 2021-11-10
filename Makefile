@@ -9,13 +9,13 @@ include config.mk
 
 debug?=0
 
-BIN_NAME=rvvbmark
+BIN_NAME=RVVRadar
 COREDIR=core
 ALGDIR=algorithms
 ASTYLE_ARGS=--options=none --suffix=none --quiet \
 	    --style=linux --indent=force-tab=8 --pad-header --pad-oper --indent-preprocessor
-VERSION_STR=$(BIN_NAME)-${RVVBMARK_VERSION}.${RVVBMARK_SUBVERSION}
-INSTALL_BIN_DIR="$(RVVBMARK_INSTALL_PREFIX)/bin"
+VERSION_STR=$(BIN_NAME)-${RVVRADAR_VERSION}.${RVVRADAR_SUBVERSION}
+INSTALL_BIN_DIR="$(RVVRADAR_INSTALL_PREFIX)/bin"
 PKG_CONFIG ?= "pkg-config"
 INSTALL ?= install
 STRIP ?= strip
@@ -35,17 +35,17 @@ else
 	OBJDIR=		.obj/release
 endif
 
-CFLAGS+=	$(RVVBMARK_EXTRA_CFLAGS) \
+CFLAGS+=	$(RVVRADAR_EXTRA_CFLAGS) \
 		-Wall -D_GNU_SOURCE \
 		-I. \
-		-DRVVBMARK_VERSION_STR="\"$(VERSION_STR)\"" \
-		-DRVVBMARK_RV_SUPPORT=$(RVVBMARK_RV_SUPPORT) \
-		-DRVVBMARK_RVV_SUPPORT=$(RVVBMARK_RVV_SUPPORT)
+		-DRVVRADAR_VERSION_STR="\"$(VERSION_STR)\"" \
+		-DRVVRADAR_RV_SUPPORT=$(RVVRADAR_RV_SUPPORT) \
+		-DRVVRADAR_RVV_SUPPORT=$(RVVRADAR_RVV_SUPPORT)
 LIBS+=		-lm
 LDFLAGS+=
 
 # Generally all C code is platform independent. Special cases are handled
-# by ifdefs (RVVBMARK_RVV_SUPPORT) in code.
+# by ifdefs (RVVRADAR_RVV_SUPPORT) in code.
 
 # All *.h files
 HEADERS := $(wildcard $(COREDIR)/*.h) $(wildcard $(ALGDIR)/*/*.h)
