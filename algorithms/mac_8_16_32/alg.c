@@ -215,7 +215,7 @@ int alg_mac_8_16_32_add(algset_t *algset, unsigned int len)
 
 	/* create algorithm */
 	alg_t *alg = alg_create(
-			     "mac 32bit = 16bit + (8bit*8bit)",
+			     "mac 32bit = 16bit + 8bit * 8bit",
 			     parastr,
 			     alg_preexec,
 			     alg_postexec,

@@ -197,7 +197,7 @@ static int impls_add_avg(alg_t *alg)
 extern void png_filters_paeth_c_byte_avect(unsigned int bpp, unsigned int rowbytes, uint8_t *row, uint8_t *prev_row);
 extern void png_filters_paeth_c_byte_noavect(unsigned int bpp, unsigned int rowbytes, uint8_t *row, uint8_t *prev_row);
 #if RVVRADAR_RVV_SUPPORT
-extern void png_filters_paeth_rvv_read_bulk(unsigned int bpp, unsigned int rowbytes, uint8_t *row, uint8_t *prev_row);
+extern void png_filters_paeth_rvv_bulk_load(unsigned int bpp, unsigned int rowbytes, uint8_t *row, uint8_t *prev_row);
 extern void png_filters_paeth_rvv(unsigned int bpp, unsigned int rowbytes, uint8_t *row, uint8_t *prev_row);
 #endif /* RVVRADAR_RVV_SUPPORT */
 
@@ -208,7 +208,7 @@ static int impls_add_paeth(alg_t *alg)
 	ret |= impl_add(alg, "c byte noavect",	(png_filters_fp_t)png_filters_paeth_c_byte_noavect);
 	ret |= impl_add(alg, "c byte avect",	(png_filters_fp_t)png_filters_paeth_c_byte_avect);
 #if RVVRADAR_RVV_SUPPORT
-	ret |= impl_add(alg, "rvv_read_bulk",	(png_filters_fp_t)png_filters_paeth_rvv_read_bulk);
+	ret |= impl_add(alg, "rvv bulk load",	(png_filters_fp_t)png_filters_paeth_rvv_bulk_load);
 	ret |= impl_add(alg, "rvv",		(png_filters_fp_t)png_filters_paeth_rvv);
 #endif /* RVVRADAR_RVV_SUPPORT */
 

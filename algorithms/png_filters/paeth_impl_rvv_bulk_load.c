@@ -20,7 +20,7 @@
  *  * riscv-v-spec-0.7.1/0.8.1/0.9 -- Chapter 2 ("VLEN >= SLEN >= 32")
  *  * riscv-v-spec-1.0 -- Chapter 18
  */
-void png_filters_paeth_rvv_read_bulk(unsigned int bpp, unsigned int rowbytes, uint8_t *row, uint8_t *prev_row)
+void png_filters_paeth_rvv_bulk_load(unsigned int bpp, unsigned int rowbytes, uint8_t *row, uint8_t *prev_row)
 {
 	/*
 	 * row:      | a | x |
