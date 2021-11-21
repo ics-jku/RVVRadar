@@ -37,20 +37,6 @@
 #define DEFAULT_QUIET			false
 #define DEFAULT_VERIFY			false
 #define DEFAULT_RANDSEED		0
-#define DEFAULT_ITERATIONS		1000
-#define DEFAULT_LEN_START		32
-#define DEFAULT_ALG_ENA_MASK	( \
-				  alg_mask(ALG_ID_MEMCPY)		| \
-				  alg_mask(ALG_ID_MAC_16_32_32)		| \
-				  alg_mask(ALG_ID_MAC_8_16_32)		| \
-				  alg_mask(ALG_ID_PNG_FILTER_UP3)	| \
-				  alg_mask(ALG_ID_PNG_FILTER_UP4)	| \
-				  alg_mask(ALG_ID_PNG_FILTER_SUB3)	| \
-				  alg_mask(ALG_ID_PNG_FILTER_SUB4)	| \
-				  alg_mask(ALG_ID_PNG_FILTER_AVG3)	| \
-				  alg_mask(ALG_ID_PNG_FILTER_AVG4)	| \
-				  alg_mask(ALG_ID_PNG_FILTER_PAETH3)	| \
-				  alg_mask(ALG_ID_PNG_FILTER_PAETH4))
 
 
 void print_version(void)
@@ -83,45 +69,10 @@ void print_usage(const char *name)
 	print_version();
 	fprintf(stderr, "\n");
 	fprintf(stderr,
-		"Usage: %s [options]"
+		"Usage: %s options"
 		"\n\n"
 		"Options:\n"
-		"  [--help|-h]\n"
-		"     Print this help.\n"
-		"\n"
-		"  [--quiet|-q]\n"
-		"     Prevent human readable output (progress and statistics).\n"
-		"     (Default: %s)\n"
-		"\n"
-		"  [--randseed|-r <seed>]\n"
-		"     Set random seed for test data.\n"
-		"     (Default: %u)\n"
-		"\n"
-		"  [--verify|-v]\n"
-		"     Enable verification of algorithm implementation results.\n"
-		"     Enable this, if you want to make sure, that calculations\n"
-		"     are correct (e.g. while development, functional tests, ...).\n"
-		"     Leave it disabled if you want to execute with as little\n"
-		"     interference (caches, ...) as possible.\n"
-		"     (Default: %s)\n"
-		"\n"
-		"  [--iterations|-i <#iterations>]\n"
-		"     Number of iterations to run each algorithm implementation.\n"
-		"     (Default: %u)\n"
-		"\n"
-		"  [--len_start|-s <#elements>]\n"
-		"     Initial number of elements to run algorithm implementations\n"
-		"     with.\n"
-		"     (Will be doubled until len_end is reached).\n"
-		"     (Default: %u)\n"
-		"\n"
-		"  [--len_end|-e <#elements>]\n"
-		"     Final number of elements to run algorithm implementations\n"
-		"     with.\n"
-		"     (len_start will be doubled until len_end is reached).\n"
-		"     (Default: len_start)\n"
-		"\n"
-		"  [--algs_enabled|-a <algs_mask>]\n"
+		"  --algs_enabled|-a <algs_mask>\n"
 		"     Bitmask of algorithms to run (hexadecimal).\n"
 		"       bit             algorithm\n"
 		"         0             memcpy\n"
@@ -135,7 +86,39 @@ void print_usage(const char *name)
 		"         8             png_filter_avg4\n"
 		"         9             png_filter_paeth3\n"
 		"        10             png_filter_paeth4\n"
-		"     (Default: 0x%X)\n"
+		"\n"
+		"  --iterations|-i <#iterations>\n"
+		"     Number of iterations to run each algorithm implementation.\n"
+		"\n"
+		"  --len_start|-s <#elements>\n"
+		"     Initial number of elements to run algorithm implementations\n"
+		"     with.\n"
+		"     (Will be doubled until len_end is reached).\n"
+		"\n"
+		"  [--len_end|-e <#elements>]\n"
+		"     Final number of elements to run algorithm implementations\n"
+		"     with.\n"
+		"     (len_start will be doubled until len_end is reached).\n"
+		"     (Default: value given with --len_start)\n"
+		"\n"
+		"  [--randseed|-r <seed>]\n"
+		"     Set random seed for test data.\n"
+		"     (Default: %u)\n"
+		"\n"
+		"  [--verify|-v]\n"
+		"     Enable verification of algorithm implementation results.\n"
+		"     Enable this, if you want to make sure, that calculations\n"
+		"     are correct (e.g. while development, functional tests, ...).\n"
+		"     Leave it disabled if you want to execute with as little\n"
+		"     interference (caches, ...) as possible.\n"
+		"     (Default: %s)\n"
+		"\n"
+		"  [--quiet|-q]\n"
+		"     Prevent human readable output (progress and statistics).\n"
+		"     (Default: %s)\n"
+		"\n"
+		"  [--help|-h]\n"
+		"     Print this help.\n"
 		"\n\n"
 		"Output:\n"
 		"  stdout: results as comma separated values (csv).\n"
@@ -144,12 +127,9 @@ void print_usage(const char *name)
 		"          and errors (independent of quiet).\n"
 		"\n",
 		name,
-		DEFAULT_QUIET ? "true" : "false",
 		DEFAULT_RANDSEED,
 		DEFAULT_VERIFY ? "true" : "false",
-		DEFAULT_ITERATIONS,
-		DEFAULT_LEN_START,
-		DEFAULT_ALG_ENA_MASK);
+		DEFAULT_QUIET ? "true" : "false");
 }
 
 
@@ -162,10 +142,10 @@ int main(int argc, char **argv)
 	bool quiet = DEFAULT_QUIET;
 	int randseed = DEFAULT_RANDSEED;
 	bool verify = DEFAULT_VERIFY;
-	unsigned int iterations = DEFAULT_ITERATIONS;
-	unsigned int len_start = DEFAULT_LEN_START;
+	unsigned int iterations = 0;
+	unsigned int len_start = 0;
+	unsigned int alg_ena_mask = 0;
 	unsigned int len_end = 0;
-	unsigned int alg_ena_mask = DEFAULT_ALG_ENA_MASK;
 
 	/* parameter parsing */
 
@@ -215,9 +195,23 @@ int main(int argc, char **argv)
 		}
 	}
 
+	if (alg_ena_mask == 0) {
+		fprintf(stderr,
+			"Error: Missing, or invalid argument \"--algs_enabled\"!\n");
+		print_usage(argv[0]);
+		return -1;
+	}
+
+	if (iterations == 0) {
+		fprintf(stderr,
+			"Error: Missing, or invalid argument \"--iterations\"!\n");
+		print_usage(argv[0]);
+		return -1;
+	}
+
 	if (len_start == 0) {
 		fprintf(stderr,
-			"Error: Invalid argument: len_start=0 makes no sense!\n");
+			"Error: Missing, or invalid \"--len_start\"!\n");
 		print_usage(argv[0]);
 		return -1;
 	}
