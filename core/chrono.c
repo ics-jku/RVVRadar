@@ -141,13 +141,13 @@ static void chrono_update_statistics(chrono_t *chrono)
 	/* save update point */
 	chrono->nmeasure_on_last_update = chrono->nmeasure;
 
-	/* update average */
-	chrono->tdavg = chrono->tdsum / chrono->nmeasure;
+	/* update mean */
+	chrono->tdmean = chrono->tdsum / chrono->nmeasure;
 
 	/* update variance and standard deviation */
 	long long varsum = 0;
 	for (int i = 0; i < chrono->nmeasure; i++) {
-		long long diff = chrono->tdlist[i] - chrono->tdavg;
+		long long diff = chrono->tdlist[i] - chrono->tdmean;
 		varsum += diff * diff;
 	}
 	chrono->tdvar = varsum / chrono->nmeasure;
@@ -157,7 +157,7 @@ static void chrono_update_statistics(chrono_t *chrono)
 	qsort(chrono->tdlist, chrono->nmeasure, sizeof(long long), chrono_qsort_td_compare);
 	chrono->tdmedian = chrono->tdlist[chrono->nmeasure / 2];
 	if ((chrono->nmeasure & 1) == 0) {
-		/* even number of elements -> average of middle two elements */
+		/* even number of elements -> mean of middle two elements */
 		chrono->tdmedian = (chrono->tdmedian + chrono->tdlist[chrono->nmeasure / 2 - 1]) / 2;
 	}
 
@@ -254,7 +254,7 @@ int chrono_print_csv_head(FILE *out)
 		return -1;
 	}
 
-	ret = fprintf(out, "nmeasure;tdmin [ns];tdmax [ns];tdavg [ns];tdvar [ns];tdstdev [ns];tdmedian [ns];nbuckets");
+	ret = fprintf(out, "nmeasure;tdmin [ns];tdmax [ns];tdmean [ns];tdvar [ns];tdstdev [ns];tdmedian [ns];nbuckets");
 	if (ret < 0)
 		return ret;
 
@@ -282,7 +282,7 @@ int chrono_print_csv(chrono_t *chrono, FILE *out)
 		      chrono->nmeasure,
 		      chrono->tdmin,
 		      chrono->tdmax,
-		      chrono->tdavg,
+		      chrono->tdmean,
 		      chrono->tdvar,
 		      chrono->tdstdev,
 		      chrono->tdmedian,
@@ -316,14 +316,14 @@ int chrono_print_pretty(chrono_t *chrono, const char *indent, FILE *out)
 		      "%snmeasure:    %u\n"
 		      "%smin [ns]:    %lli\n"
 		      "%smax [ns]:    %lli\n"
-		      "%savg [ns]:    %lli\n"
+		      "%smean [ns]:   %lli\n"
 		      "%svar [ns]:    %lli\n"
 		      "%sstdev [ns]:  %lli\n"
 		      "%smedian [ns]: %lli\n",
 		      indent, chrono->nmeasure,
 		      indent, chrono->tdmin,
 		      indent, chrono->tdmax,
-		      indent, chrono->tdavg,
+		      indent, chrono->tdmean,
 		      indent, chrono->tdvar,
 		      indent, chrono->tdstdev,
 		      indent, chrono->tdmedian);

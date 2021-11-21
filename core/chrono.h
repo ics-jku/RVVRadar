@@ -58,7 +58,7 @@ typedef struct chrono {
 
 	/* statistics (calculated on demand) */
 	unsigned int nmeasure_on_last_update;
-	long long tdavg;
+	long long tdmean;
 	long long tdvar;
 	long long tdstdev;
 	long long tdmedian;
