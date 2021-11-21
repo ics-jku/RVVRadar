@@ -39,7 +39,6 @@
 #define DEFAULT_RANDSEED		0
 #define DEFAULT_ITERATIONS		1000
 #define DEFAULT_LEN_START		32
-#define DEFAULT_LEN_END			1024 * 1024 * 1
 #define DEFAULT_ALG_ENA_MASK	( \
 				  alg_mask(ALG_ID_MEMCPY)		| \
 				  alg_mask(ALG_ID_MAC_16_32_32)		| \
@@ -120,7 +119,7 @@ void print_usage(const char *name)
 		"     Final number of elements to run algorithm implementations\n"
 		"     with.\n"
 		"     (len_start will be doubled until len_end is reached).\n"
-		"     (Default: %u)\n"
+		"     (Default: len_start)\n"
 		"\n"
 		"  [--algs_enabled|-a <algs_mask>]\n"
 		"     Bitmask of algorithms to run (hexadecimal).\n"
@@ -150,7 +149,6 @@ void print_usage(const char *name)
 		DEFAULT_VERIFY ? "true" : "false",
 		DEFAULT_ITERATIONS,
 		DEFAULT_LEN_START,
-		DEFAULT_LEN_END,
 		DEFAULT_ALG_ENA_MASK);
 }
 
@@ -166,7 +164,7 @@ int main(int argc, char **argv)
 	bool verify = DEFAULT_VERIFY;
 	unsigned int iterations = DEFAULT_ITERATIONS;
 	unsigned int len_start = DEFAULT_LEN_START;
-	unsigned int len_end = DEFAULT_LEN_END;
+	unsigned int len_end = 0;
 	unsigned int alg_ena_mask = DEFAULT_ALG_ENA_MASK;
 
 	/* parameter parsing */
@@ -223,6 +221,8 @@ int main(int argc, char **argv)
 		print_usage(argv[0]);
 		return -1;
 	}
+	if (len_end == 0)
+		len_end = len_start;
 
 	if (len_end < len_start) {
 		fprintf(stderr,
