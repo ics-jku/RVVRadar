@@ -46,12 +46,11 @@ void png_filters_paeth_rvv(unsigned int bpp, unsigned int rowbytes, uint8_t *row
 	/* a = *row + *prev_row */
 	asm volatile (VLE8_V"		v2, (%0)" : : "r" (row));
 	asm volatile (VLE8_V"		v6, (%0)" : : "r" (prev_row));
+	prev_row += bpp;
 	asm volatile ("vadd.vv		v2, v2, v6");
 
 	/* *row = a */
 	asm volatile (VSE8_V"		v2, (%0)" : : "r" (row));	/* save a */
-
-	prev_row += bpp;
 	row += bpp;
 
 
@@ -61,6 +60,8 @@ void png_filters_paeth_rvv(unsigned int bpp, unsigned int rowbytes, uint8_t *row
 
 		/* b = *prev_row */
 		asm volatile (VLE8_V"		v4, (%0)" : : "r" (prev_row));
+		prev_row += bpp;
+
 		/* x = *row */
 		asm volatile (VLE8_V"		v8, (%0)" : : "r" (row));
 
@@ -129,13 +130,12 @@ void png_filters_paeth_rvv(unsigned int bpp, unsigned int rowbytes, uint8_t *row
 
 		/* *row = a */
 		asm volatile (VSE8_V"		v2, (%0)" : : "r" (row));
+		row += bpp;
 
 
 		/* prepare next iteration (prev_row is already in a) */
 		/* c = b */
 		asm volatile ("vmv.v.v		v6, v4");
-		prev_row += bpp;
-		row += bpp;
 	}
 }
 

@@ -39,13 +39,12 @@ void png_filters_sub_rvv_dload(unsigned int bpp, unsigned int rowbytes, uint8_t 
 
 		/* a = *row + *prev_row */
 		asm volatile (VLE8_V"		v0, (%0)" : : "r" (row));
+		row += bpp;
 		asm volatile (VLE8_V"		v8, (%0)" : : "r" (row_next));
 		asm volatile ("vadd.vv		v0, v0, v8");
 
 		/* *row = a */
 		asm volatile (VSE8_V"		v0, (%0)" : : "r" (row_next));
-
-		row += bpp;
 		row_next += bpp;
 	}
 }

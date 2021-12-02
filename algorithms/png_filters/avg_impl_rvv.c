@@ -39,6 +39,8 @@ void png_filters_avg_rvv(unsigned int bpp, unsigned int rowbytes, uint8_t *row, 
 
 	/* b = *prev_row */
 	asm volatile (VLE8_V"		v4, (%0)" : : "r" (prev_row));
+	prev_row += bpp;
+
 	/* x = *row */
 	asm volatile (VLE8_V"		v8, (%0)" : : "r" (row));
 
@@ -49,8 +51,6 @@ void png_filters_avg_rvv(unsigned int bpp, unsigned int rowbytes, uint8_t *row, 
 
 	/* *row = a */
 	asm volatile (VSE8_V"		v2, (%0)" : : "r" (row));
-
-	prev_row += bpp;
 	row += bpp;
 
 
@@ -60,6 +60,8 @@ void png_filters_avg_rvv(unsigned int bpp, unsigned int rowbytes, uint8_t *row, 
 
 		/* b = *prev_row */
 		asm volatile (VLE8_V"		v4, (%0)" : : "r" (prev_row));
+		prev_row += bpp;
+
 		/* x = *row */
 		asm volatile (VLE8_V"		v8, (%0)" : : "r" (row));
 
@@ -72,8 +74,6 @@ void png_filters_avg_rvv(unsigned int bpp, unsigned int rowbytes, uint8_t *row, 
 
 		/* *row = a */
 		asm volatile (VSE8_V"		v2, (%0)" : : "r" (row));
-
-		prev_row += bpp;
 		row += bpp;
 	}
 }

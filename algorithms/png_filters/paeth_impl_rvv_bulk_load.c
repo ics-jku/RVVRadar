@@ -46,13 +46,13 @@ void png_filters_paeth_rvv_bulk_load(unsigned int bpp, unsigned int rowbytes, ui
 	/* a = *row + *prev_row; */
 	asm volatile (VLE8_V"		v2, (%0)" : : "r" (row));
 	asm volatile (VLE8_V"		v6, (%0)" : : "r" (prev_row));
+	prev_row += bpp;
 	asm volatile ("vadd.vv		v2, v2, v6");
 
 	/* *row = a; */
 	asm volatile (VSE8_V"		v2, (%0)" : : "r" (row));
-
-	prev_row += bpp;
 	row += bpp;
+
 	rowbytes -= bpp;
 
 
