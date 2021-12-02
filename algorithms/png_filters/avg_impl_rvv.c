@@ -26,7 +26,6 @@ void png_filters_avg_rvv(unsigned int bpp, unsigned int rowbytes, uint8_t *row, 
 	 * row:      | a | x |
 	 * prev_row: |   | b |
 	 *
-	 * v0-v31
 	 * a .. 	[v2](e8)
 	 * b ..		[v4](e8)
 	 * x ..		[v8](e8)
@@ -38,7 +37,7 @@ void png_filters_avg_rvv(unsigned int bpp, unsigned int rowbytes, uint8_t *row, 
 
 	asm volatile ("vsetvli		zero, %0, e8, m1" : : "r" (bpp));
 
-	/* b = *prev_row; */
+	/* b = *prev_row */
 	asm volatile (VLE8_V"		v4, (%0)" : : "r" (prev_row));
 	/* x = *row */
 	asm volatile (VLE8_V"		v8, (%0)" : : "r" (row));
@@ -59,7 +58,7 @@ void png_filters_avg_rvv(unsigned int bpp, unsigned int rowbytes, uint8_t *row, 
 
 	while (row < rp_end) {
 
-		/* b = *prev_row; */
+		/* b = *prev_row */
 		asm volatile (VLE8_V"		v4, (%0)" : : "r" (prev_row));
 		/* x = *row */
 		asm volatile (VLE8_V"		v8, (%0)" : : "r" (row));

@@ -27,25 +27,23 @@ void png_filters_sub_rvv_dload(unsigned int bpp, unsigned int rowbytes, uint8_t 
 	/*
 	 * row:      | a | x |
 	 *
-	 * x_new = a + x
+	 * a = a + x
 	 *
-	 * v0-v31
 	 * a .. 	[v0](e8)
 	 * x ..		[v8](e8)
 	 */
-
 
 	while (row_next < rp_end) {
 
 		asm volatile ("vsetvli		zero, %0, e8, m1" : : "r" (bpp));
 
-		/* a = *row + *prev_row; */
+		/* a = *row + *prev_row */
 		asm volatile (VLE8_V"		v0, (%0)" : : "r" (row));
 		asm volatile (VLE8_V"		v8, (%0)" : : "r" (row_next));
 		asm volatile ("vadd.vv		v0, v0, v8");
 
-		/* *row = (uint8_t)a; */
-		asm volatile (VSE8_V"		v0, (%0)" : : "r" (row_next));	/* save a */
+		/* *row = a */
+		asm volatile (VSE8_V"		v0, (%0)" : : "r" (row_next));
 
 		row += bpp;
 		row_next += bpp;
@@ -68,17 +66,15 @@ void png_filters_sub_rvv_reuse(unsigned int bpp, unsigned int rowbytes, uint8_t 
 	/*
 	 * row:      | a | x |
 	 *
-	 * x_new = a + x
+	 * a = a + x
 	 *
-	 * v0-v31
-	 * a .. 	[v0-v1](e8)
-	 * x ..		[v8-v9](e8)
+	 * a .. 	[v0](e8)
+	 * x ..		[v8](e8)
 	 */
-
 
 	asm volatile ("vsetvli		zero, %0, e8, m1" : : "r" (bpp));
 
-	/* c = *row++ */
+	/* a = *row */
 	asm volatile (VLE8_V"		v0, (%0)" : : "r" (row));
 	row += bpp;
 
@@ -86,10 +82,10 @@ void png_filters_sub_rvv_reuse(unsigned int bpp, unsigned int rowbytes, uint8_t 
 
 		/* x = *row */
 		asm volatile (VLE8_V"		v8, (%0)" : : "r" (row));
-		/* c = c + x */
+		/* a = a + x */
 		asm volatile ("vadd.vv		v0, v0, v8");
 
-		/* *row++ = c; */
+		/* *row = a */
 		asm volatile (VSE8_V"		v0, (%0)" : : "r" (row));
 		row += bpp;
 	}
