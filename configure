@@ -6,8 +6,9 @@
 
 # possible values for RVVRADAR_RVV_SUPPORT
 RVVRADAR_RVV_SUPPORT_NO=0
-RVVRADAR_RVV_SUPPORT_VER_07_08=1
-RVVRADAR_RVV_SUPPORT_VER_09_10_100=2
+RVVRADAR_RVV_SUPPORT_VER_07=1
+RVVRADAR_RVV_SUPPORT_VER_08=2
+RVVRADAR_RVV_SUPPORT_VER_09_10_100=3
 
 # initial values
 RVVRADAR_INSTALL_PREFIX="/usr/local"
@@ -118,13 +119,13 @@ else
 		[[ $march != rv*v* ]] && march_tmp+=v
 
 		RVVRADAR_RVV_SUPPORT=$RVVRADAR_RVV_SUPPORT_NO
-		for rvv_support in $RVVRADAR_RVV_SUPPORT_VER_07_08 $RVVRADAR_RVV_SUPPORT_VER_09_10_100 ; do
+		for rvv_support in $RVVRADAR_RVV_SUPPORT_VER_07 $RVVRADAR_RVV_SUPPORT_VER_08 $RVVRADAR_RVV_SUPPORT_VER_09_10_100 ; do
 			if $CC								\
 				-I.							\
 				-march=$march_tmp					\
 				-DRVVRADAR_RV_SUPPORT=1					\
 				-DRVVRADAR_RVV_SUPPORT=$rvv_support			\
-				-c ${ALGDIR}/memcpy/impl_rvv.c				\
+				-c ${ALGDIR}/png_filters/avg_impl_rvv.c			\
 				-o /dev/null > /dev/null 2>&1 ;
 			then
 				RVVRADAR_RVV_SUPPORT=$rvv_support
@@ -132,8 +133,10 @@ else
 		done
 
 		if [[ $RVVRADAR_RVV_SUPPORT != $RVVRADAR_RVV_SUPPORT_NO ]] ; then
-			if [[ $RVVRADAR_RVV_SUPPORT == $RVVRADAR_RVV_SUPPORT_VER_07_08 ]] ; then
-				echo "yes (rvv v0.7/v0.8)"
+			if [[ $RVVRADAR_RVV_SUPPORT == $RVVRADAR_RVV_SUPPORT_VER_07 ]] ; then
+				echo "yes (rvv v0.7)"
+			elif [[ $RVVRADAR_RVV_SUPPORT == $RVVRADAR_RVV_SUPPORT_VER_08 ]] ; then
+				echo "yes (rvv v0.8) -- UNTESTED!"
 			else
 				echo "yes (rvv v0.9/v0.10/v1.0) -- UNTESTED!"
 			fi

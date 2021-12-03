@@ -10,9 +10,12 @@ implementations are licensed under the terms of the MIT permissive license.
 See the file COPYING for details.
 
 Supported RVV Drafts (autodetected by configure):
- * v0.7/v0.8
+ * v0.7
    * implemented
    * tested on allwinner d1
+ * v0.8
+   * implemented
+   * untested
  * v0.9/v0.10/v1.0
    * implemented
    * untested

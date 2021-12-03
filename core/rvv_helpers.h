@@ -9,13 +9,14 @@
 
 /* values for RVVRADAR_RVV_SUPPORT */
 #define RVVRADAR_RVV_SUPPORT_NO			0
-#define RVVRADAR_RVV_SUPPORT_VER_07_08		1
-#define RVVRADAR_RVV_SUPPORT_VER_09_10_100	2
+#define RVVRADAR_RVV_SUPPORT_VER_07		1
+#define RVVRADAR_RVV_SUPPORT_VER_08		2
+#define RVVRADAR_RVV_SUPPORT_VER_09_10_100	3
 
 /* build time replacement of mnemonics */
-#if RVVRADAR_RVV_SUPPORT != RVVRADAR_RVV_SUPPORT_NO
+#if RVVRADAR_RVV_SUPPORT
 
-#if RVVRADAR_RVV_SUPPORT == RVVRADAR_RVV_SUPPORT_VER_07_08
+#if RVVRADAR_RVV_SUPPORT == RVVRADAR_RVV_SUPPORT_VER_07
 #define VLE8_V		"vlbu.v"
 #define VLE16_V		"vlhu.v"
 #define VLE32_V		"vlwu.v"
@@ -23,6 +24,15 @@
 #define VSE16_V		"vsh.v"
 #define VSE32_V		"vsw.v"
 #define VNSRL_WI	"vnsrl.vi"
+
+#elif RVVRADAR_RVV_SUPPORT == RVVRADAR_RVV_SUPPORT_VER_08
+#define VLE8_V		"vlbu.v"
+#define VLE16_V		"vlhu.v"
+#define VLE32_V		"vlwu.v"
+#define VSE8_V		"vsb.v"
+#define VSE16_V		"vsh.v"
+#define VSE32_V		"vsw.v"
+#define VNSRL_WI	"vnsrl.wi"
 
 #elif RVVRADAR_RVV_SUPPORT == RVVRADAR_RVV_SUPPORT_VER_09_10_100
 #define VLE8_V		"vle8.v"

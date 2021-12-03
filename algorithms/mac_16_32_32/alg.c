@@ -107,7 +107,10 @@ static int impl_add(
 extern void mac_16_32_32_c_byte_noavect(int32_t *add_res, int16_t *mul1, int16_t *mul2, unsigned int len);
 extern void mac_16_32_32_c_byte_avect(int32_t *add_res, int16_t *mul1, int16_t *mul2, unsigned int len);
 #if RVVRADAR_RVV_SUPPORT
-#if RVVRADAR_RVV_SUPPORT == RVVRADAR_RVV_SUPPORT_VER_07_08
+#if (\
+	RVVRADAR_RVV_SUPPORT == RVVRADAR_RVV_SUPPORT_VER_07 || \
+	RVVRADAR_RVV_SUPPORT == RVVRADAR_RVV_SUPPORT_VER_08 \
+    )
 /*
  * These implementation only makes sense for rvv v0.7 and v0.8
  * In newer specs, there are no signed loads. Instead a unsigned load
@@ -116,7 +119,7 @@ extern void mac_16_32_32_c_byte_avect(int32_t *add_res, int16_t *mul1, int16_t *
  * it was decided to drop them completely for newer rvv drafts.
  */
 extern void mac_16_32_32_rvv_e32(int32_t *add_res, int16_t *mul1, int16_t *mul2, unsigned int len);
-#endif /* RVVRADAR_RVV_SUPPORT_VER_07_08 */
+#endif /* RVVRADAR_RVV_SUPPORT_VER_07/08 */
 extern void mac_16_32_32_rvv_e16_widening(int32_t *add_res, int16_t *mul1, int16_t *mul2, unsigned int len);
 #endif /* RVVRADAR_RVV_SUPPORT */
 
@@ -126,10 +129,16 @@ static int impls_add(alg_t *alg)
 
 	ret |= impl_add(alg, "c byte noavect",				(mac_16_32_32_fp_t)mac_16_32_32_c_byte_noavect);
 	ret |= impl_add(alg, "c byte avect",				(mac_16_32_32_fp_t)mac_16_32_32_c_byte_avect);
+
 #if RVVRADAR_RVV_SUPPORT
-#if RVVRADAR_RVV_SUPPORT == RVVRADAR_RVV_SUPPORT_VER_07_08
+
+#if (\
+	RVVRADAR_RVV_SUPPORT == RVVRADAR_RVV_SUPPORT_VER_07 || \
+	RVVRADAR_RVV_SUPPORT == RVVRADAR_RVV_SUPPORT_VER_08 \
+    )
 	ret |= impl_add(alg, "rvv 32bit elements",			(mac_16_32_32_fp_t)mac_16_32_32_rvv_e32);
-#endif /* RVVRADAR_RVV_SUPPORT_VER_07_08 */
+#endif /* RVVRADAR_RVV_SUPPORT_VER_07/08 */
+
 	ret |= impl_add(alg, "rvv 16bit elements with widening",	(mac_16_32_32_fp_t)mac_16_32_32_rvv_e16_widening);
 #endif /* RVVRADAR_RVV_SUPPORT */
 

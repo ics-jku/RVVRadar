@@ -7,8 +7,9 @@ RVVRADAR_RV_SUPPORT=@RVVRADAR_RV_SUPPORT@
 
 # Does toolchain support RISC-V vector extension (RVV)
 # 0 .. no
-# 1 .. rvv v0.7/v0.8
-# 2 .. rvv v0.9/v0.10/v1.0
+# 1 .. rvv v0.7
+# 2 .. rvv v0.8
+# 3 .. rvv v0.9/v0.10/v1.0
 # (can be built for non-rvv when set to zero)
 RVVRADAR_RVV_SUPPORT=@RVVRADAR_RVV_SUPPORT@
 

@@ -52,8 +52,10 @@ void print_version(void)
 	fprintf(stderr, "RISC-V RVV support is ");
 #if RVVRADAR_RVV_SUPPORT == RVVRADAR_RVV_SUPPORT_NO
 	fprintf(stderr, "disabled\n");
-#elif RVVRADAR_RVV_SUPPORT == RVVRADAR_RVV_SUPPORT_VER_07_08
-	fprintf(stderr, "enabled (v0.7/v0.8)\n");
+#elif RVVRADAR_RVV_SUPPORT == RVVRADAR_RVV_SUPPORT_VER_07
+	fprintf(stderr, "enabled (v0.7)\n");
+#elif RVVRADAR_RVV_SUPPORT == RVVRADAR_RVV_SUPPORT_VER_08
+	fprintf(stderr, "enabled (v0.8)\n");
 #elif RVVRADAR_RVV_SUPPORT == RVVRADAR_RVV_SUPPORT_VER_09_10_100
 	fprintf(stderr, "enabled (v0.9/v0.10/v1.0)\n");
 #endif /* RVVRADAR_RVV_SUPPORT */

@@ -110,7 +110,10 @@ static int impl_add(
 extern void mac_8_16_32_c_byte_noavect(int32_t *res, int16_t *add, int8_t *mul1, int8_t *mul2, unsigned int len);
 extern void mac_8_16_32_c_byte_avect(int32_t *res, int16_t *add, int8_t *mul1, int8_t *mul2, unsigned int len);
 #if RVVRADAR_RVV_SUPPORT
-#if RVVRADAR_RVV_SUPPORT == RVVRADAR_RVV_SUPPORT_VER_07_08
+#if (\
+	RVVRADAR_RVV_SUPPORT == RVVRADAR_RVV_SUPPORT_VER_07 || \
+	RVVRADAR_RVV_SUPPORT == RVVRADAR_RVV_SUPPORT_VER_08 \
+    )
 /*
  * These implementations only make sense for rvv v0.7 and v0.8
  * In newer specs, there are no signed loads. Instead a unsigned load
@@ -120,7 +123,7 @@ extern void mac_8_16_32_c_byte_avect(int32_t *res, int16_t *add, int8_t *mul1, i
  */
 extern void mac_8_16_32_rvv_e32(int32_t *res, int16_t *add, int8_t *mul1, int8_t *mul2, unsigned int len);
 extern void mac_8_16_32_rvv_e16_widening(int32_t *res, int16_t *add, int8_t *mul1, int8_t *mul2, unsigned int len);
-#endif /* RVVRADAR_RVV_SUPPORT_VER_07_08 */
+#endif /* RVVRADAR_RVV_SUPPORT_VER_07/08 */
 extern void mac_8_16_32_rvv_e8_widening(int32_t *res, int16_t *add, int8_t *mul1, int8_t *mul2, unsigned int len);
 #endif /* RVVRADAR_RVV_SUPPORT */
 
@@ -130,11 +133,17 @@ static int impls_add(alg_t *alg)
 
 	ret |= impl_add(alg, "c byte noavect",				(mac_8_16_32_fp_t)mac_8_16_32_c_byte_noavect);
 	ret |= impl_add(alg, "c byte avect",				(mac_8_16_32_fp_t)mac_8_16_32_c_byte_avect);
+
 #if RVVRADAR_RVV_SUPPORT
-#if RVVRADAR_RVV_SUPPORT == RVVRADAR_RVV_SUPPORT_VER_07_08
+
+#if (\
+	RVVRADAR_RVV_SUPPORT == RVVRADAR_RVV_SUPPORT_VER_07 || \
+	RVVRADAR_RVV_SUPPORT == RVVRADAR_RVV_SUPPORT_VER_08 \
+    )
 	ret |= impl_add(alg, "rvv 32bit elements",			(mac_8_16_32_fp_t)mac_8_16_32_rvv_e32);
 	ret |= impl_add(alg, "rvv 16bit elements with widening",	(mac_8_16_32_fp_t)mac_8_16_32_rvv_e16_widening);
-#endif /* RVVRADAR_RVV_SUPPORT_VER_07_08 */
+#endif /* RVVRADAR_RVV_SUPPORT_VER_07/08 */
+
 	ret |= impl_add(alg, "rvv 8bit elements with double widening",	(mac_8_16_32_fp_t)mac_8_16_32_rvv_e8_widening);
 #endif /* RVVRADAR_RVV_SUPPORT */
 

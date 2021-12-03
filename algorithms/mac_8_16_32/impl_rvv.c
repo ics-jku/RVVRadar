@@ -11,7 +11,11 @@
 
 #if RVVRADAR_RVV_SUPPORT
 
-#if RVVRADAR_RVV_SUPPORT == RVVRADAR_RVV_SUPPORT_VER_07_08
+#if (\
+	RVVRADAR_RVV_SUPPORT == RVVRADAR_RVV_SUPPORT_VER_07 || \
+	RVVRADAR_RVV_SUPPORT == RVVRADAR_RVV_SUPPORT_VER_08 \
+    )
+
 /*
  * These implementations only make sense for rvv v0.7 and v0.8
  * In newer specs, there are no signed loads. Instead a unsigned load
@@ -105,7 +109,7 @@ void mac_8_16_32_rvv_e16_widening(int32_t *res, int16_t *add, int8_t *mul1, int8
 	}
 }
 
-#endif /* RVVRADAR_RVV_SUPPORT_VER_07_08 */
+#endif /* RVVRADAR_RVV_SUPPORT_VER_07/08 */
 
 
 /* using e8 and widen two times(MUL, ADD) to e32 */
