@@ -138,7 +138,7 @@ else
 			elif [[ $RVVRADAR_RVV_SUPPORT == $RVVRADAR_RVV_SUPPORT_VER_08 ]] ; then
 				echo "yes (rvv v0.8) -- UNTESTED!"
 			else
-				echo "yes (rvv v0.9/v0.10/v1.0) -- UNTESTED!"
+				echo "yes (rvv v0.9(untested)/v0.10/v1.0)"
 			fi
 			
 			# override march in flags, if v was added above

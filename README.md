@@ -12,13 +12,15 @@ See the file COPYING for details.
 Supported RVV Drafts (autodetected by configure):
  * v0.7
    * implemented
-   * tested on allwinner d1
+   * tested on Allwinner D1
  * v0.8
    * implemented
    * untested
  * v0.9/v0.10/v1.0
    * implemented
-   * untested
+   * v0.9 untested
+   * v0.10 and v1.0 tested on qemu_sifive (rvv-1.0-upstream-v10)
+     using linux-5.15.6 + vector v9
 
 
 ## Directory Structure
