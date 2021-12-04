@@ -136,7 +136,7 @@ else
 			if [[ $RVVRADAR_RVV_SUPPORT == $RVVRADAR_RVV_SUPPORT_VER_07 ]] ; then
 				echo "yes (rvv v0.7)"
 			elif [[ $RVVRADAR_RVV_SUPPORT == $RVVRADAR_RVV_SUPPORT_VER_08 ]] ; then
-				echo "yes (rvv v0.8) -- UNTESTED!"
+				echo "yes (rvv v0.8)"
 			else
 				echo "yes (rvv v0.9(untested)/v0.10/v1.0)"
 			fi

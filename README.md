@@ -15,7 +15,7 @@ Supported RVV Drafts (autodetected by configure):
    * tested on Allwinner D1
  * v0.8
    * implemented
-   * untested
+   * tested on Allwinner D1 (with binary compatible v0.7.1)
  * v0.9/v0.10/v1.0
    * implemented
    * v0.9 untested
