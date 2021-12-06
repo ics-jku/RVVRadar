@@ -18,7 +18,7 @@ Supported RVV Drafts (autodetected by configure):
    * tested on Allwinner D1 (with binary compatible v0.7.1)
  * v0.9/v0.10/v1.0
    * implemented
-   * v0.9 untested
+   * v0.9 tested on Allwinner D1 (with binary compatible v0.7.1)
    * v0.10 and v1.0 tested on qemu_sifive (rvv-1.0-upstream-v10)
      using linux-5.15.6 + vector v9
 
