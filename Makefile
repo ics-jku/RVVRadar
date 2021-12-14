@@ -5,7 +5,7 @@
 # version
 BIN_NAME=RVVRadar
 RVVRADAR_VERSION="0"
-RVVRADAR_SUBVERSION="8"
+RVVRADAR_SUBVERSION="9"
 
 ifeq (,$(wildcard config.mk))
     $(error Not configured yet -> call configure / see README.md)
