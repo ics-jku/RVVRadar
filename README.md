@@ -145,11 +145,6 @@ make debug=1
 ## Usage
 
 ### Online Help
-
-```
-RVVRadar -a 0x1 -s 256 -i 1 -v
-```
-
 ```
 RVVRadar-0.8 (C) 2021 Manfred Schlaegl <manfred.schlaegl@gmx.at>
 RISC-V support is disabled
