@@ -436,11 +436,10 @@ generated results from RVVRadar.
 Lucas Klemmer, Manfred Schlaegl, and Daniel Große. RVVRadar: a framework for supporting the programmer in vectorization for RISC-V. In GLSVLSI, 2022.
 
 ```
-@STRING{glsvlsi	= {ACM Great Lakes Symposium on VLSI} }
 @InProceedings{KSG:2022,
   author        = {Lucas Klemmer and Manfred Schlaegl and Daniel Gro{\ss}e},
   title         = {{RVVRadar:} A Framework for Supporting the Programmer in Vectorization for {RISC-V}},
-  booktitle     = glsvlsi,
+  booktitle     = ACM Great Lakes Symposium on VLSI,
   year          = 2022
 }
 ```
