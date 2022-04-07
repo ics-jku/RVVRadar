@@ -439,7 +439,7 @@ Lucas Klemmer, Manfred Schlaegl, and Daniel Große. RVVRadar: a framework for su
 @InProceedings{KSG:2022,
   author        = {Lucas Klemmer and Manfred Schlaegl and Daniel Gro{\ss}e},
   title         = {{RVVRadar:} A Framework for Supporting the Programmer in Vectorization for {RISC-V}},
-  booktitle     = ACM Great Lakes Symposium on VLSI,
+  booktitle     = {ACM Great Lakes Symposium on VLSI},
   year          = 2022
 }
 ```
