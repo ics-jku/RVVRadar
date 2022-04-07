@@ -1,14 +1,17 @@
 # RVVRadar
 
-(C) 2021 Manfred Schlaegl <manfred.schlaegl@gmx.at>
+(C) 2022 Manfred Schlaegl <manfred.schlaegl@gmx.at>
 
 RVVRadar is a framework to support the programmer over the four major steps of
 development, verification, measurement and evaluation during the vectorization
 process of algorithms for the RISC-V Vector extension (RVV).
 
 Development was started in the context of a bachelor theses at the Institute
-for Complex Systems (ICS), JKU Linz. Special thanks to Dr. Daniel Große and
-Lucas Klemmer, MSc for advise and mentoring.
+for Complex Systems (ICS), JKU Linz. There is also paper resulting from this
+work. If you like this work you can cite our paper *RVVRadar: A Framework for
+Supporting the Programmer in Vectorization for RISC-V* (see last section).
+Special thanks to Dr. Daniel Große and Lucas Klemmer, MSc for advise and
+mentoring.
 
 RVVRadar is mainly released under the terms of the GNU General Public License
 version 3.0. To facilitate reuse of included algorithm implementations, these
@@ -411,7 +414,7 @@ To add a new algorithm following steps must be performed:
              compiled with GCCs *-O3*, but one with and one without using GCCs
              auto-vectorizer
     1. *impl_rv.c*, *impl_rvv.c*
-       1. Comment-out or delete content
+       1. Replace content by custom RISC-V / RVV implementations
  1. Add *newalg* to *RVVRadar.c*
     1. Include *algorithms/newalg/alg.h*
     1. Add and handle the new algorithm id *ALG_ID_PNG_FILTER_NEWALG*
@@ -427,3 +430,17 @@ After integration of *newalg* the iterative development process can begin.
 Just add new implementations (e.g. in *impl_rvv.c*) and enable them in *alg.c*
 (*impls_add*). The evaluation can then be performed using the automatically
 generated results from RVVRadar.
+
+
+## *RVVRadar: A Framework for Supporting the Programmer in Vectorization for RISC-V*
+Lucas Klemmer, Manfred Schlaegl, and Daniel Große. RVVRadar: a framework for supporting the programmer in vectorization for RISC-V. In GLSVLSI, 2022.
+
+```
+@STRING{glsvlsi	= {ACM Great Lakes Symposium on VLSI} }
+@InProceedings{KSG:2022,
+  author        = {Lucas Klemmer and Manfred Schlaegl and Daniel Gro{\ss}e},
+  title         = {{RVVRadar:} A Framework for Supporting the Programmer in Vectorization for {RISC-V}},
+  booktitle     = glsvlsi,
+  year          = 2022
+}
+```
