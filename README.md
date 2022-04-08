@@ -7,11 +7,16 @@ development, verification, measurement and evaluation during the vectorization
 process of algorithms for the RISC-V Vector extension (RVV).
 
 Development was started in the context of a bachelor theses at the Institute
-for Complex Systems (ICS), JKU Linz. There is also paper resulting from this
-work. If you like this work you can cite our paper *RVVRadar: A Framework for
-Supporting the Programmer in Vectorization for RISC-V* (see last section).
+for Complex Systems (ICS), JKU Linz. With
+[RVVRadar: A Framework for Supporting the Programmer in Vectorization for RISC-V](https://www.ics.jku.at/files/2022GLSVLSI_RVVRadar.pdf)
+there is also a paper resulting from this work. A BibTex entry to cite to the
+paper can be found in the last section.
 Special thanks to Dr. Daniel Große and Lucas Klemmer, MSc for advise and
 mentoring.
+
+A first practical application of RVVRadar was the speed up of PNG decompression
+in libpng, which is presented in
+[libpng_rvv: A RISC-V vector optimized libpng](https://github.com/mschlaegl/libpng_rvv-doc).
 
 RVVRadar is mainly released under the terms of the GNU General Public License
 version 3.0. To facilitate reuse of included algorithm implementations, these
@@ -433,7 +438,8 @@ generated results from RVVRadar.
 
 
 ## *RVVRadar: A Framework for Supporting the Programmer in Vectorization for RISC-V*
-Lucas Klemmer, Manfred Schlaegl, and Daniel Große. RVVRadar: a framework for supporting the programmer in vectorization for RISC-V. In GLSVLSI, 2022.
+
+[Lucas Klemmer, Manfred Schlaegl, and Daniel Große. RVVRadar: a framework for supporting the programmer in vectorization for RISC-V. In GLSVLSI, 2022](https://www.ics.jku.at/files/2022GLSVLSI_RVVRadar.pdf)
 
 ```
 @InProceedings{KSG:2022,
