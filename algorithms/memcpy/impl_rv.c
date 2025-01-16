@@ -18,13 +18,13 @@ void memcpy_rv_wlenx4(uint8_t *dest, uint8_t *src, unsigned int len)
 	while (dest < dest_end) {
 
 		/* load elements and update src pointer */
-		asm volatile ("lwu		t0, (%0)" : : "r" (src) : "t0", "t1", "t2", "t3", "memory");
+		asm volatile ("lw		t0, (%0)" : : "r" (src) : "t0", "t1", "t2", "t3", "memory");
 		src += 4;
-		asm volatile ("lwu		t1, (%0)" : : "r" (src) : "t0", "t1", "t2", "t3", "memory");
+		asm volatile ("lw		t1, (%0)" : : "r" (src) : "t0", "t1", "t2", "t3", "memory");
 		src += 4;
-		asm volatile ("lwu		t2, (%0)" : : "r" (src) : "t0", "t1", "t2", "t3", "memory");
+		asm volatile ("lw		t2, (%0)" : : "r" (src) : "t0", "t1", "t2", "t3", "memory");
 		src += 4;
-		asm volatile ("lwu		t3, (%0)" : : "r" (src) : "t0", "t1", "t2", "t3", "memory");
+		asm volatile ("lw		t3, (%0)" : : "r" (src) : "t0", "t1", "t2", "t3", "memory");
 		src += 4;
 
 		/* store elements and update dest pointer */
