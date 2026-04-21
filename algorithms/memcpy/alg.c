@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 Manfred Schlaegl <manfred.schlaegl@gmx.at>
+ * Copyright (C) 2021-2026 Manfred Schlaegl <manfred.schlaegl@gmx.at>
  *
  * SPDX-License-Identifier: GPL-3.0-only
  */
@@ -78,7 +78,7 @@ static int impl_postexec(impl_t *impl, bool verify)
 }
 
 
-static int impl_add(
+__attribute__((unused)) static int impl_add(
 	alg_t *alg,
 	const char *name,
 	memcpy_fp_t memcpy)
@@ -121,12 +121,15 @@ static int impls_add(alg_t *alg)
 {
 	int ret = 0;
 
+#if !RVVRADAR_RVVIMPL_ONLY
 	ret |= impl_add(alg, "c byte noavect",	 			(memcpy_fp_t)memcpy_c_byte_noavect);
 #if RVVRADAR_RV_SUPPORT
 	ret |= impl_add(alg, "4 int regs",	 			(memcpy_fp_t)memcpy_rv_wlenx4);
 #endif /* RVVRADAR_RV_SUPPORT */
 	ret |= impl_add(alg, "c byte avect",	 			(memcpy_fp_t)memcpy_c_byte_avect);
 	ret |= impl_add(alg, "system",		 			(memcpy_fp_t)memcpy);
+#endif /* !RVVRADAR_RVVIMPL_ONLY */
+
 #if RVVRADAR_RVV_SUPPORT
 	ret |= impl_add(alg, "rvv 32bit elements (no grouping)",	(memcpy_fp_t)memcpy_rvv_32_m1);
 	ret |= impl_add(alg, "rvv 8bit elements (no grouping)",  	(memcpy_fp_t)memcpy_rvv_8_m1);

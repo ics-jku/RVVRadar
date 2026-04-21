@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 Manfred Schlaegl <manfred.schlaegl@gmx.at>
+ * Copyright (C) 2021-2026 Manfred Schlaegl <manfred.schlaegl@gmx.at>
  *
  * SPDX-License-Identifier: GPL-3.0-only
  */
@@ -80,7 +80,7 @@ static int impl_postexec(impl_t *impl, bool verify)
 }
 
 
-static int impl_add(
+__attribute__((unused)) static int impl_add(
 	alg_t *alg,
 	const char *name,
 	png_filters_fp_t png_filters)
@@ -121,8 +121,11 @@ static int impls_add_up(alg_t *alg)
 {
 	int ret = 0;
 
+#if !RVVRADAR_RVVIMPL_ONLY
 	ret |= impl_add(alg, "c byte noavect",	(png_filters_fp_t)png_filters_up_c_byte_noavect);
 	ret |= impl_add(alg, "c byte avect",	(png_filters_fp_t)png_filters_up_c_byte_avect);
+#endif /* !RVVRADAR_RVVIMPL_ONLY */
+
 #if RVVRADAR_RVV_SUPPORT
 	ret |= impl_add(alg, "rvv_m1",		(png_filters_fp_t)png_filters_up_rvv_m1);
 	ret |= impl_add(alg, "rvv_m2",		(png_filters_fp_t)png_filters_up_rvv_m2);
@@ -151,8 +154,11 @@ static int impls_add_sub(alg_t *alg)
 {
 	int ret = 0;
 
+#if !RVVRADAR_RVVIMPL_ONLY
 	ret |= impl_add(alg, "c byte noavect",	(png_filters_fp_t)png_filters_sub_c_byte_noavect);
 	ret |= impl_add(alg, "c byte avect",	(png_filters_fp_t)png_filters_sub_c_byte_avect);
+#endif /* !RVVRADAR_RVVIMPL_ONLY */
+
 #if RVVRADAR_RVV_SUPPORT
 	ret |= impl_add(alg, "rvv_dload",	(png_filters_fp_t)png_filters_sub_rvv_dload);
 	ret |= impl_add(alg, "rvv_reuse",	(png_filters_fp_t)png_filters_sub_rvv_reuse);
@@ -178,8 +184,11 @@ static int impls_add_avg(alg_t *alg)
 {
 	int ret = 0;
 
+#if !RVVRADAR_RVVIMPL_ONLY
 	ret |= impl_add(alg, "c byte noavect",	(png_filters_fp_t)png_filters_avg_c_byte_noavect);
 	ret |= impl_add(alg, "c byte avect",	(png_filters_fp_t)png_filters_avg_c_byte_avect);
+#endif /* !RVVRADAR_RVVIMPL_ONLY */
+
 #if RVVRADAR_RVV_SUPPORT
 	ret |= impl_add(alg, "rvv",		(png_filters_fp_t)png_filters_avg_rvv);
 #endif /* RVVRADAR_RVV_SUPPORT */
@@ -205,8 +214,11 @@ static int impls_add_paeth(alg_t *alg)
 {
 	int ret = 0;
 
+#if !RVVRADAR_RVVIMPL_ONLY
 	ret |= impl_add(alg, "c byte noavect",	(png_filters_fp_t)png_filters_paeth_c_byte_noavect);
 	ret |= impl_add(alg, "c byte avect",	(png_filters_fp_t)png_filters_paeth_c_byte_avect);
+#endif /* !RVVRADAR_RVVIMPL_ONLY */
+
 #if RVVRADAR_RVV_SUPPORT
 	ret |= impl_add(alg, "rvv bulk load",	(png_filters_fp_t)png_filters_paeth_rvv_bulk_load);
 	ret |= impl_add(alg, "rvv",		(png_filters_fp_t)png_filters_paeth_rvv);

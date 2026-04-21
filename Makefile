@@ -1,4 +1,4 @@
-# Copyright (C) 2021 Manfred Schlaegl <manfred.schlaegl@gmx.at>
+# Copyright (C) 2021-2026 Manfred Schlaegl <manfred.schlaegl@gmx.at>
 #
 # SPDX-License-Identifier: GPL-3.0-only
 
@@ -44,7 +44,8 @@ CFLAGS+=	$(RVVRADAR_EXTRA_CFLAGS) \
 		-I. \
 		-DRVVRADAR_VERSION_STR="\"$(VERSION_STR)\"" \
 		-DRVVRADAR_RV_SUPPORT=$(RVVRADAR_RV_SUPPORT) \
-		-DRVVRADAR_RVV_SUPPORT=$(RVVRADAR_RVV_SUPPORT)
+		-DRVVRADAR_RVV_SUPPORT=$(RVVRADAR_RVV_SUPPORT) \
+		-DRVVRADAR_RVVIMPL_ONLY=$(RVVRADAR_RVVIMPL_ONLY)
 LIBS+=		-lm
 LDFLAGS+=
 

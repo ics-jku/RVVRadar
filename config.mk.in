@@ -1,4 +1,4 @@
-# Copyright (C) 2021 Manfred Schlaegl <manfred.schlaegl@gmx.at>
+# Copyright (C) 2021-2026 Manfred Schlaegl <manfred.schlaegl@gmx.at>
 #
 # SPDX-License-Identifier: GPL-3.0-only
 
@@ -12,6 +12,9 @@ RVVRADAR_RV_SUPPORT=@RVVRADAR_RV_SUPPORT@
 # 3 .. rvv v0.9/v0.10/v1.0
 # (can be built for non-rvv when set to zero)
 RVVRADAR_RVV_SUPPORT=@RVVRADAR_RVV_SUPPORT@
+
+# If set, all non-rvv algorithm implementations are disabled
+RVVRADAR_RVVIMPL_ONLY=@RVVRADAR_RVVIMPL_ONLY@
 
 # extra flags
 # (mainly used to add -march + vector -> see configure)

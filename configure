@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright (C) 2021 Manfred Schlaegl <manfred.schlaegl@gmx.at>
+# Copyright (C) 2021-2026 Manfred Schlaegl <manfred.schlaegl@gmx.at>
 #
 # SPDX-License-Identifier: GPL-3.0-only
 
@@ -14,6 +14,7 @@ RVVRADAR_RVV_SUPPORT_VER_09_10_100=3
 RVVRADAR_INSTALL_PREFIX="/usr/local"
 RVVRADAR_RV_SUPPORT=0
 RVVRADAR_RVV_SUPPORT=$RVVRADAR_RVV_SUPPORT_NO
+RVVRADAR_RVVIMPL_ONLY=0
 RVVRADAR_EXTRA_ASFLAGS=""
 RVVRADAR_EXTRA_CFLAGS=""
 
@@ -36,6 +37,7 @@ Defaults for the options are specified in brackets.
 
 Configuration:
   -h, --help              display this help and exit
+  --rvvimplonly           disabled all non-RVV algorithm implementations
 
 Installation directories:
   --prefix=PREFIX         install files in PREFIX
@@ -56,7 +58,7 @@ getflag()
 
 
 
-args=$(getopt -o h --long help,prefix: -- "$@")
+args=$(getopt -o h --long help,rvvimplonly,prefix: -- "$@")
 if [[ $? -ne 0 ]] ; then
 	usage
 	exit 1
@@ -72,6 +74,10 @@ do
 	-h|--help)
 		usage
 		exit 0
+		;;
+	--rvvimplonly)
+		echo "ENABLE ONLY RVV IMPLEMENTATIONS (SCALAR DISABLED)"
+		RVVRADAR_RVVIMPL_ONLY=1
 		;;
 	--)
 		shift
@@ -161,6 +167,7 @@ fi
 sed config.mk.in							\
 	-e s#\@RVVRADAR_RV_SUPPORT\@#$RVVRADAR_RV_SUPPORT#g		\
 	-e s#\@RVVRADAR_RVV_SUPPORT\@#$RVVRADAR_RVV_SUPPORT#g		\
+	-e s#\@RVVRADAR_RVVIMPL_ONLY\@#$RVVRADAR_RVVIMPL_ONLY#g		\
 	-e s#\@RVVRADAR_INSTALL_PREFIX\@#$RVVRADAR_INSTALL_PREFIX#g	\
 	-e s#\@RVVRADAR_EXTRA_CFLAGS\@#$RVVRADAR_EXTRA_CFLAGS#g		\
 	> config.mk

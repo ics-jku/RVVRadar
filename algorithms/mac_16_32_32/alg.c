@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 Manfred Schlaegl <manfred.schlaegl@gmx.at>
+ * Copyright (C) 2021-2026 Manfred Schlaegl <manfred.schlaegl@gmx.at>
  *
  * SPDX-License-Identifier: GPL-3.0-only
  */
@@ -78,7 +78,7 @@ static int impl_postexec(impl_t *impl, bool verify)
 }
 
 
-static int impl_add(
+__attribute__((unused)) static int impl_add(
 	alg_t *alg,
 	const char *name,
 	mac_16_32_32_fp_t mac_16_32_32)
@@ -127,8 +127,10 @@ static int impls_add(alg_t *alg)
 {
 	int ret = 0;
 
+#if !RVVRADAR_RVVIMPL_ONLY
 	ret |= impl_add(alg, "c byte noavect",				(mac_16_32_32_fp_t)mac_16_32_32_c_byte_noavect);
 	ret |= impl_add(alg, "c byte avect",				(mac_16_32_32_fp_t)mac_16_32_32_c_byte_avect);
+#endif /* !RVVRADAR_RVVIMPL_ONLY */
 
 #if RVVRADAR_RVV_SUPPORT
 
